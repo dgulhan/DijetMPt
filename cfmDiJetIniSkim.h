@@ -95,7 +95,7 @@ Float_t genPt_[MAXGEN];
 Float_t genPhi_[MAXGEN];
 Float_t genEta_[MAXGEN];
 
-void SetIniBranches(bool montecarlo)
+void SetIniBranches(Bool_t montecarlo = false)
 {
   //Track Tree Branches
 
@@ -148,7 +148,7 @@ void SetIniBranches(bool montecarlo)
 }
 
 
-void getIniBranches(bool montecarlo = false)
+void getIniBranches(Bool_t montecarlo = false)
 {
   //Track Tree Branches
 
@@ -195,9 +195,9 @@ void getIniBranches(bool montecarlo = false)
 }
 
 
-void InitDiJetIniSkim(bool montecarlo = false)
+void InitDiJetIniSkim(Bool_t montecarlo = false)
 {
-  std::cout << "DiJet Skim Init" << std::endl;
+  std::cout << "Init DiJet IniSkim" << std::endl;
 
   trackTreeIni_p = new TTree("trackTreeIni", "trackTreeIni");
   jetTreeIni_p = new TTree("jetTreeIni", "jetTreeIni");
@@ -206,6 +206,20 @@ void InitDiJetIniSkim(bool montecarlo = false)
     genTreeIni_p = new TTree("genTreeIni", "genTreeIni");
 
   SetIniBranches(montecarlo);
+}
+
+
+void GetDiJetIniSkim(TFile* iniFile, Bool_t montecarlo = false)
+{
+  std::cout << "Get DiJet IniSkim" << std::endl;
+
+  trackTreeIni_p = (TTree*)inFile_p->Get("trackTreeIni");
+  jetTreeIni_p = (TTree*)inFile_p->Get("jetTreeIni");
+
+  if(montecarlo)
+    genTreeIni_p = (TTree*)inFile_p->Get("genTreeIni");
+
+  GetIniBranches(montecarlo);
 }
 
 
