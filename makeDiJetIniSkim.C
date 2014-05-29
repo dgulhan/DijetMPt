@@ -58,7 +58,7 @@ Bool_t passesDijet(Jets jtCollection)
 int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_CFMSKIM.root", Int_t num = 0)
 {
   //Define MC or Data
-  bool montecarlo = false;
+  Bool_t montecarlo = false;
   if(sType == kPPMC || sType == kPAMC || sType == kHIMC)
     montecarlo = true;
 
@@ -126,7 +126,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   std::cout << "Cuts, Lead/Sublead Pt, delphi, eta: " << leadJtPtCut << ", " << subLeadJtPtCut << ", " << jtDelPhiCut << ", " << jtEtaCut << std::endl; 
 
-  for(Long64_t jentry = 0; jentry < 100000; jentry++){
+  for(Long64_t jentry = 0; jentry < 10000; jentry++){
     c->GetEntry(jentry);
 
     totEv++;
@@ -143,8 +143,6 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       vzCut++;
       continue;
     }
-
-    InitJetVar(montecarlo);
 
     //particle flow
 

@@ -148,7 +148,7 @@ void SetIniBranches(Bool_t montecarlo = false)
 }
 
 
-void getIniBranches(Bool_t montecarlo = false)
+void GetIniBranches(Bool_t montecarlo = false)
 {
   //Track Tree Branches
 
@@ -209,15 +209,15 @@ void InitDiJetIniSkim(Bool_t montecarlo = false)
 }
 
 
-void GetDiJetIniSkim(TFile* iniFile, Bool_t montecarlo = false)
+void GetDiJetIniSkim(TFile* iniFile_p, Bool_t montecarlo = false)
 {
   std::cout << "Get DiJet IniSkim" << std::endl;
 
-  trackTreeIni_p = (TTree*)inFile_p->Get("trackTreeIni");
-  jetTreeIni_p = (TTree*)inFile_p->Get("jetTreeIni");
+  trackTreeIni_p = (TTree*)iniFile_p->Get("trackTreeIni");
+  jetTreeIni_p = (TTree*)iniFile_p->Get("jetTreeIni");
 
   if(montecarlo)
-    genTreeIni_p = (TTree*)inFile_p->Get("genTreeIni");
+    genTreeIni_p = (TTree*)iniFile_p->Get("genTreeIni");
 
   GetIniBranches(montecarlo);
 }
