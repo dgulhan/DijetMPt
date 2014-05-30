@@ -195,6 +195,15 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       pthat_ = c->akPu3PF.pthat;
     }
 
+    hiEvtPlane_ = c->evt.hiEvtPlanes[21];                                                          
+                                                                                                   
+    TComplex cn1((c->pf.sumpt[0])*(c->pf.vn[2][0]), c->pf.psin[2][0], true);                       
+    TComplex cn2((c->pf.sumpt[14])*(c->pf.vn[2][14]), c->pf.psin[2][14], true);                    
+                                                                                                   
+    TComplex cn = cn1+cn2;                                                                         
+                                                                                                   
+    psin_ = cn.Theta();      
+
     run_ = c->evt.run;
     evt_ = c->akPu3PF.evt;
     lumi_ = c->evt.lumi;

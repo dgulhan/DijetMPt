@@ -71,6 +71,9 @@ Int_t hiBin_;
 
 Float_t pthat_;
 
+Float_t hiEvtPlane_;
+Float_t psin_;
+
 Int_t nPu3Calo_;
 Float_t Pu3CaloPt_[MAXJETS];
 Float_t Pu3CaloPhi_[MAXJETS];
@@ -124,6 +127,8 @@ void SetIniBranches(Bool_t montecarlo = false)
   if(montecarlo)
     jetTreeIni_p->Branch("pthat", &pthat_, "pthat/F");
 
+  jetTreeIni_p->Branch("hiEvtPlane", &hiEvtPlane_, "hiEvtPlane/F");
+  jetTreeIni_p->Branch("psin", &psin_, "psin/F");
   
   jetTreeIni_p->Branch("nPu3Calo", &nPu3Calo_, "nPu3Calo/I");
   jetTreeIni_p->Branch("Pu3CaloPt", &Pu3CaloPt_, "Pu3CaloPt[nPu3Calo]/F");
@@ -185,6 +190,9 @@ void GetIniBranches(Bool_t montecarlo = false)
 
   if(montecarlo)
     jetTreeIni_p->SetBranchAddress("pthat", &pthat_);
+
+  jetTreeIni_p->SetBranchAddress("hiEvtPlane", &hiEvtPlane_);
+  jetTreeIni_p->SetBranchAddress("psin", &psin_);
 
   jetTreeIni_p->SetBranchAddress("nPu3Calo", &nPu3Calo_);
   jetTreeIni_p->SetBranchAddress("Pu3CaloPt", &Pu3CaloPt_);
