@@ -337,15 +337,12 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   std::cout << "vzCut: " << tempTot << std::endl;
 
   outFile->cd();
-  /*
+
   jetTreeIni_p->Write("", TObject::kOverwrite);
   trackTreeIni_p->Write("", TObject::kOverwrite);
 
   if(montecarlo)
     genTreeIni_p->Write("", TObject::kOverwrite);
-  */
-
-  outFile->Write();
 
   outFile->Close();
 

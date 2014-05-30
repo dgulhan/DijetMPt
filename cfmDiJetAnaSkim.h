@@ -533,11 +533,11 @@ void InitDiJetAnaSkim(Bool_t montecarlo = false)
 {
   std::cout << "Init DiJet AnaSkim" << std::endl;
 
-  trackTreeAna_p = new TTree("trackTree", "trackTree");
-  jetTreeAna_p = new TTree("jetTree", "jetTree");
+  trackTreeAna_p = new TTree("trackTreeAna", "trackTreeAna");
+  jetTreeAna_p = new TTree("jetTreeAna", "jetTreeAna");
 
   if(montecarlo)
-    genTreeAna_p = new TTree("genTree", "genTree");
+    genTreeAna_p = new TTree("genTreeAna", "genTreeAna");
 
   SetAnaBranches(montecarlo);
 }

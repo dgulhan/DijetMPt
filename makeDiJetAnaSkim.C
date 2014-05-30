@@ -167,7 +167,7 @@ Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPhi[], F
 }
 
 
-int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const char *outName = "defaultName_CFMSKIM.root", Int_t num = 0)
+int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_CFMSKIM.root", Int_t num = 0)
 {
   //Define MC or Data
   Bool_t montecarlo = false;
@@ -177,7 +177,29 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
   std::cout << sType << std::endl;
   std::cout << montecarlo << std::endl;
 
-  TFile* iniSkim_p = new TFile(IniSkimName, "READ");
+  string buffer;
+  std::vector<string> listOfFiles;
+  int nLines = 0;
+  ifstream inFile(fList.data());
+
+  std::cout << fList << std::endl;
+  std::cout << inFile.is_open() << std::endl;
+
+  if(!inFile.is_open()){
+    std::cout << "Error opening file. Exiting." <<std::endl;
+    return 1;
+  }
+  else{
+    while(!inFile.eof()){
+      inFile >> buffer;
+      listOfFiles.push_back(buffer);
+      nLines++;
+    }
+  }
+
+  std::cout << "FileList Loaded" << std::endl;
+
+  TFile* iniSkim_p = new TFile(listOfFiles[0].data(), "READ");
 
   GetDiJetIniSkim(iniSkim_p, montecarlo);
 
