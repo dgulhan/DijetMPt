@@ -8,14 +8,13 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1F.h"
-#include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/hiForest.h"
 #include "commonUtility.h"
 #include "cfmDiJetAnaSkim.h"
 #include "stdlib.h"
 #include <iostream>
 #include <fstream>
 #include "factorizedPtCorr.h"
-
+#include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/hiForest.h"
 #include "TComplex.h"
 
 const Float_t leadJtPtCut = 120.;
@@ -74,7 +73,7 @@ Float_t getAvePhi(Float_t inLeadPhi, Float_t inSubLeadPhi)
 }
 
 
-void getJtVar(Int_t nJt, Float_t jtPt[nJt], Float_t jtPhi[nJt], Float_t jtEta[nJt], Float_t refPt[nJt], Float_t refPhi[nJt], Float_t refEta[nJt], Int_t algNum, Bool_t montecarlo = false)
+void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float_t refPt[], Float_t refPhi[], Float_t refEta[], Int_t algNum, Bool_t montecarlo = false)
 {
   eventSet_[algNum] = true;
 
@@ -98,7 +97,7 @@ void getJtVar(Int_t nJt, Float_t jtPt[nJt], Float_t jtPhi[nJt], Float_t jtEta[nJ
     AlgThirdJtPt_[algNum] = jtPt[2];
     AlgThirdJtPhi_[algNum] = jtPhi[2];
     AlgThirdJtEta_[algNum] = jtEta[2];
-    
+
     if(montecarlo && algNum != 2){
       AlgThirdRefPt_[algNum] = refPt[2];
       AlgThirdRefPhi_[algNum] = refPhi[2];
@@ -111,26 +110,27 @@ void getJtVar(Int_t nJt, Float_t jtPt[nJt], Float_t jtPhi[nJt], Float_t jtEta[nJ
       AlgFourthJtEta_[algNum] = jtEta[3];
 
       if(montecarlo && algNum != 2){
-	AlgFourthRefPt_[algNum] = refPt[3];
-	AlgFourthRefPhi_[algNum] = refPhi[3];
-	AlgFourthRefEta_[algNum] = refEta[3];
+        AlgFourthRefPt_[algNum] = refPt[3];
+        AlgFourthRefPhi_[algNum] = refPhi[3];
+        AlgFourthRefEta_[algNum] = refEta[3];
       }
 
     }
   }
 
   AlgJtAvePhi_[algNum] = getAvePhi(AlgLeadJtPhi_[algNum], AlgSubLeadJtPhi_[algNum]);
-  AlgJtDelPhi_[algNum] = getAbsDelDphi(AlgLeadJtPhi_[algNum], AlgSubLeadJtPhi_[algNum]);
+  AlgJtDelPhi_[algNum] = getAbsDphi(AlgLeadJtPhi_[algNum], AlgSubLeadJtPhi_[algNum]);
   AlgJtAsymm_[algNum] = (AlgLeadJtPt_[algNum] - AlgSubLeadJtPt_[algNum])/(AlgLeadJtPt_[algNum] + AlgSubLeadJtPt_[algNum]);
 
   if(montecarlo && algNum != 2){
     AlgRefAvePhi_[algNum] = getAvePhi(AlgLeadRefPhi_[algNum], AlgSubLeadRefPhi_[algNum]);
-    AlgRefDelPhi_[algNum] = getAbsDelDphi(AlgLeadRefPhi_[algNum], AlgSubLeadRefPhi_[algNum]);
+    AlgRefDelPhi_[algNum] = getAbsDphi(AlgLeadRefPhi_[algNum], AlgSubLeadRefPhi_[algNum]);
     AlgRefAsymm_[algNum] = (AlgLeadRefPt_[algNum] - AlgSubLeadRefPt_[algNum])/(AlgLeadRefPt_[algNum] + AlgSubLeadRefPt_[algNum]);
   }
 
   return;
 }
+
 
 
 void getPtProj(Float_t cutPt, Float_t inPt, Float_t phi, Float_t jtPhi, Float_t& ProjF, Float_t& Proj0_1, Float_t& Proj1_2, Float_t& Proj2_4, Float_t& Proj4_8, Float_t& Proj8_100)
@@ -152,7 +152,7 @@ void getPtProj(Float_t cutPt, Float_t inPt, Float_t phi, Float_t jtPhi, Float_t&
 }
 
 
-Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPhi[nJt], Float_t jtEta[nJt])
+Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPhi[], Float_t jtEta[])
 {
   Float_t trkRMin = 199;
 
@@ -237,18 +237,18 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
 
     //Jet Edits here
 
-    if(nPu3Calo > 1){
-      getJtVar(nPu3Calo, Pu3CaloPt, Pu3CaloPhi, Pu3CaloEta, Pu3CaloRefPt, Pu3CaloRefPhi, Pu3CaloRefEta, 0, montecarlo);
+    if(nPu3Calo_ > 1){
+      getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, Pu3CaloRefPt_, Pu3CaloRefPhi_, Pu3CaloRefEta_, 0, montecarlo);
     }
 
-    if(nVs3Calo > 1){
-      getJtVar(nVs3Calo, Vs3CaloPt, Vs3CaloPhi, Vs3CaloEta, Vs3CaloRefPt, Vs3CaloRefPhi, Vs3CaloRefEta, 1, montecarlo);
+    if(nVs3Calo_ > 1){
+      getJtVar(nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_, Vs3CaloRefPt_, Vs3CaloRefPhi_, Vs3CaloRefEta_, 1, montecarlo);
     }
 
-    Float_t dummyArray[nT3];
+    Float_t dummyArray[nT3_];
 
-    if(nT3 > 1){
-      getJtVar(nPu3Calo, Pu3CaloPt, Pu3CaloPhi, Pu3CaloEta, dummyArray, dummyArray, dummyArray, 2, montecarlo);
+    if(nT3_ > 1){
+      getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, dummyArray, dummyArray, dummyArray, 2, montecarlo);
     }
     
     if(eventSet_[PuCalo] == false && eventSet_[VsCalo] == false && eventSet_[T] == false){
@@ -378,12 +378,8 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
 	      if(tempLeadR > 0 && tempSubLeadR > 0){
 		if(tempLeadR < .8 || tempSubLeadR < .8)
 		  getPtProj(trkPt_[trkEntry], tempCorr[setIter], trkPhi_[trkEntry], AlgJtAvePhi_[setIter], rAlgImbProjACF_[setIter + 3], rAlgImbProjAC0_1_[setIter + 3], rAlgImbProjAC1_2_[setIter + 3], rAlgImbProjAC2_4_[setIter + 3], rAlgImbProjAC4_8_[setIter + 3], rAlgImbProjAC8_100_[setIter + 3]);
-		else{
+		else
 		  getPtProj(trkPt_[trkEntry], tempCorr[setIter], trkPhi_[trkEntry], AlgJtAvePhi_[setIter], rAlgImbProjANCF_[setIter + 3], rAlgImbProjANC0_1_[setIter + 3], rAlgImbProjANC1_2_[setIter + 3], rAlgImbProjANC2_4_[setIter + 3], rAlgImbProjANC4_8_[setIter + 3], rAlgImbProjANC8_100_[setIter + 3]);		
-
-		  if(tempLeadR < TMath::Pi()/2 || tempSubLeadR < TMath::Pi()/2)
-		    getPtProj(trkPt_[trkEntry], tempCorr[setIter], trkPhi_[trkEntry], AlgJtAvePhi_[setIter], rAlgImbProjANCCutF_[setIter + 3], rAlgImbProjANCCut0_1_[setIter + 3], rAlgImbProjANCCut1_2_[setIter + 3], rAlgImbProjANCCut2_4_[setIter + 3], rAlgImbProjANCCut4_8_[setIter + 3], rAlgImbProjANCCut8_100_[setIter + 3]);		
-		}		
 
 		if(tempLeadR < .20 || tempSubLeadR < .20)
 		  getPtProj(trkPt_[trkEntry], tempCorr[setIter], trkPhi_[trkEntry], AlgJtAvePhi_[setIter], rAlgImbProjA1CF_[setIter + 3], rAlgImbProjA1C0_1_[setIter + 3], rAlgImbProjA1C1_2_[setIter + 3], rAlgImbProjA1C2_4_[setIter + 3], rAlgImbProjA1C4_8_[setIter + 3], rAlgImbProjA1C8_100_[setIter + 3]);

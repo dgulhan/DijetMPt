@@ -4,8 +4,8 @@
 // DiJet Initial Skim Class (MC)                                                    
 //                                                                              
 //=============================================  
-#ifndef cfmDiJetSkim_h
-#define cfmDiJetSkim_h
+#ifndef cfmDiJetIniSkim_h
+#define cfmDiJetIniSkim_h
 
 #include "TTree.h"
 #include "TFile.h"
@@ -64,15 +64,15 @@ Float_t trkEta_[MAXTRKS];
 
 const int MAXJETS = 504; //From SetupJetTree.h
 
-Int_t run_;
-Int_t evt_;
-Int_t lumi_;
-Int_t hiBin_;
+Int_t runIni_;
+Int_t evtIni_;
+Int_t lumiIni_;
+Int_t hiBinIni_;
 
-Float_t pthat_;
+Float_t pthatIni_;
 
-Float_t hiEvtPlane_;
-Float_t psin_;
+Float_t hiEvtPlaneIni_;
+Float_t psinIni_;
 
 Int_t nPu3Calo_;
 Float_t Pu3CaloPt_[MAXJETS];
@@ -118,17 +118,17 @@ void SetIniBranches(Bool_t montecarlo = false)
   
   //Jet Tree Branches
 
-  jetTreeIni_p->Branch("run", &run_, "run/I");
-  jetTreeIni_p->Branch("evt", &evt_, "evt/I");
-  jetTreeIni_p->Branch("lumi", &lumi_, "lumi/I");
-  jetTreeIni_p->Branch("hiBin", &hiBin_, "hiBin/I");
+  jetTreeIni_p->Branch("runIni", &runIni_, "runIni/I");
+  jetTreeIni_p->Branch("evtIni", &evtIni_, "evtIni/I");
+  jetTreeIni_p->Branch("lumiIni", &lumiIni_, "lumiIni/I");
+  jetTreeIni_p->Branch("hiBinIni", &hiBinIni_, "hiBinIni/I");
 
    
   if(montecarlo)
-    jetTreeIni_p->Branch("pthat", &pthat_, "pthat/F");
+    jetTreeIni_p->Branch("pthatIni", &pthatIni_, "pthatIni/F");
 
-  jetTreeIni_p->Branch("hiEvtPlane", &hiEvtPlane_, "hiEvtPlane/F");
-  jetTreeIni_p->Branch("psin", &psin_, "psin/F");
+  jetTreeIni_p->Branch("hiEvtPlaneIni", &hiEvtPlaneIni_, "hiEvtPlaneIni/F");
+  jetTreeIni_p->Branch("psinIni", &psinIni_, "psinIni/F");
   
   jetTreeIni_p->Branch("nPu3Calo", &nPu3Calo_, "nPu3Calo/I");
   jetTreeIni_p->Branch("Pu3CaloPt", &Pu3CaloPt_, "Pu3CaloPt[nPu3Calo]/F");
@@ -183,16 +183,16 @@ void GetIniBranches(Bool_t montecarlo = false)
 
   //Jet Tree Branches
 
-  jetTreeIni_p->SetBranchAddress("run", &run_);
-  jetTreeIni_p->SetBranchAddress("evt", &evt_);
-  jetTreeIni_p->SetBranchAddress("lumi", &lumi_);
-  jetTreeIni_p->SetBranchAddress("hiBin", &hiBin_);
+  jetTreeIni_p->SetBranchAddress("runIni", &runIni_);
+  jetTreeIni_p->SetBranchAddress("evtIni", &evtIni_);
+  jetTreeIni_p->SetBranchAddress("lumiIni", &lumiIni_);
+  jetTreeIni_p->SetBranchAddress("hiBinIni", &hiBinIni_);
 
   if(montecarlo)
-    jetTreeIni_p->SetBranchAddress("pthat", &pthat_);
+    jetTreeIni_p->SetBranchAddress("pthatIni", &pthatIni_);
 
-  jetTreeIni_p->SetBranchAddress("hiEvtPlane", &hiEvtPlane_);
-  jetTreeIni_p->SetBranchAddress("psin", &psin_);
+  jetTreeIni_p->SetBranchAddress("hiEvtPlaneIni", &hiEvtPlaneIni_);
+  jetTreeIni_p->SetBranchAddress("psinIni", &psinIni_);
 
   jetTreeIni_p->SetBranchAddress("nPu3Calo", &nPu3Calo_);
   jetTreeIni_p->SetBranchAddress("Pu3CaloPt", &Pu3CaloPt_);

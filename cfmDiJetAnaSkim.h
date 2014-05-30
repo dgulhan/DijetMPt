@@ -4,52 +4,10 @@
 // DiJet Analysis Skim Class (MC)                                                    
 //                                                                              
 //=============================================  
-#ifndef cfmDiJetSkim_h
-#define cfmDiJetSkim_h
+#ifndef cfmDiJetAnaSkim_h
+#define cfmDiJetAnaSkim_h
 
-#include "TTree.h"
-#include "TFile.h"
-#include "TH1F.h"
 #include "cfmDiJetIniSkim.h"
-
-enum sampleType {
-  kHIDATA, //0
-  kHIMC,   //1
-  kPPDATA, //2
-  kPPMC,   //3
-  kPADATA, //4 
-  kPAMC    //5
-};
-
-
-enum AlgoType_PbPb {
-  PuCalo,
-  VsCalo,
-  T,
-  PuCaloCorr,
-  VsCaloCorr,
-  TCorr
-};
-
-
-TString getSampleName ( sampleType colli) {
-  if (colli == kHIDATA) return "pbpbDATA";
-  if (colli == kHIMC) return "pbpbMC";
-  if (colli == kPPDATA) return "ppDATA";
-  if (colli == kPPMC) return "ppMC";
-  if (colli == kPADATA) return "ppbDATA";
-  if (colli == kPAMC) return "ppbMC";
-  return "NULL";
-}
-TString getSampleName ( int colli) {
-  if (colli == kHIDATA) return "pbpbDATA";
-  if (colli == kHIMC) return "pbpbMC";
-  if (colli == kPPDATA) return "ppDATA";
-  if (colli == kPPMC) return "ppMC";
-  if (colli == kPADATA) return "ppbDATA";
-  if (colli == kPAMC) return "ppbMC";
-  return "NULL";
-}
 
 TTree* trackTreeAna_p;
 TTree* jetTreeAna_p;
@@ -152,7 +110,15 @@ Float_t rAlgImbProjA10C8_100_[6];
 
 //Jet Tree Variables
 
-const int MAXJETS = 504; //From SetupJetTree.h
+Int_t run_;
+Int_t evt_;
+Int_t lumi_;
+Int_t hiBin_;
+
+Float_t pthat_;
+
+Float_t hiEvtPlane_;
+Float_t psin_;
 
 //Set Bool
 
@@ -209,8 +175,6 @@ Float_t AlgRefDelPhi_[3];
 Float_t AlgRefAsymm_[3];
 
 //Gen Tree Variables
-
-const int MAXGEN = 50000; //From SetupGenParticleTree.h
 
 //Gen. proj. onto Jets, ordered by algorithm according to enum, PuPF == [0], PuCalo == [1], etc.
 
@@ -834,5 +798,6 @@ void InitProjPerp(Bool_t montecarlo = false)
   }
 
 }
+
 
 #endif
