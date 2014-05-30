@@ -469,20 +469,6 @@ void SetAnaBranches(Bool_t montecarlo = false)
     jetTreeAna_p->Branch("AlgRefDelPhi", &AlgRefDelPhi_, "AlgRefDelPhi[3]/F");
     jetTreeAna_p->Branch("AlgRefAsymm", &AlgRefAsymm_, "AlgRefAsymm[3]/F");
 
-    //Gen Tree Branches
-
-    /*
-    genTreeAna_p->Branch("nGen", &nGen_, "nGen/I");
-    genTreeAna_p->Branch("genPt", &genPt_, "genPt[nGen]/F");
-    genTreeAna_p->Branch("genPtPuPF", &genPtPuPF_, "genPtPuPF[nGen]/F");
-    genTreeAna_p->Branch("genPtPuCalo", &genPtPuCalo_, "genPtPuCalo[nGen]/F");
-    genTreeAna_p->Branch("genPtT", &genPtT_, "genPtT[nGen]/F");
-    genTreeAna_p->Branch("genPtVsPF", &genPtVsPF_, "genPtVsPF[nGen]/F");
-    genTreeAna_p->Branch("genPtVsCalo", &genPtVsCalo_, "genPtVsCalo[nGen]/F");
-    genTreeAna_p->Branch("genPhi", &genPhi_, "genPhi[nGen]/F");
-    genTreeAna_p->Branch("genEta", &genEta_, "genEta[nGen]/F");
-    genTreeAna_p->Branch("genLeadDelPhi", &genLeadDelPhi_, "genLeadDelPhi[nGen]/F");
-    */    
 
     //Gen. proj. onto jetAlg, array ordered according to enum
 

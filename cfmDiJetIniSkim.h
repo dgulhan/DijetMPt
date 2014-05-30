@@ -75,11 +75,17 @@ Int_t nPu3Calo_;
 Float_t Pu3CaloPt_[MAXJETS];
 Float_t Pu3CaloPhi_[MAXJETS];
 Float_t Pu3CaloEta_[MAXJETS];
+Float_t Pu3CaloRefPt_[MAXJETS];
+Float_t Pu3CaloRefPhi_[MAXJETS];
+Float_t Pu3CaloRefEta_[MAXJETS];
 
 Int_t nVs3Calo_;
 Float_t Vs3CaloPt_[MAXJETS];
 Float_t Vs3CaloPhi_[MAXJETS];
 Float_t Vs3CaloEta_[MAXJETS];
+Float_t Vs3CaloRefPt_[MAXJETS];
+Float_t Vs3CaloRefPhi_[MAXJETS];
+Float_t Vs3CaloRefEta_[MAXJETS];
 
 Int_t nT3_;
 Float_t T3Pt_[MAXJETS];
@@ -124,16 +130,27 @@ void SetIniBranches(Bool_t montecarlo = false)
   jetTreeIni_p->Branch("Pu3CaloPhi", &Pu3CaloPhi_, "Pu3CaloPhi[nPu3Calo]/F");
   jetTreeIni_p->Branch("Pu3CaloEta", &Pu3CaloEta_, "Pu3CaloEta[nPu3Calo]/F");
 
+  if(montecarlo){
+    jetTreeIni_p->Branch("Pu3CaloRefPt", &Pu3CaloRefPt_, "Pu3CaloRefPt[nPu3Calo]/F");
+    jetTreeIni_p->Branch("Pu3CaloRefPhi", &Pu3CaloRefPhi_, "Pu3CaloRefPhi[nPu3Calo]/F");
+    jetTreeIni_p->Branch("Pu3CaloRefEta", &Pu3CaloRefEta_, "Pu3CaloRefEta[nPu3Calo]/F");
+  }    
+
   jetTreeIni_p->Branch("nVs3Calo", &nVs3Calo_, "nVs3Calo/I");
   jetTreeIni_p->Branch("Vs3CaloPt", &Vs3CaloPt_, "Vs3CaloPt[nVs3Calo]/F");
   jetTreeIni_p->Branch("Vs3CaloPhi", &Vs3CaloPhi_, "Vs3CaloPhi[nVs3Calo]/F");
   jetTreeIni_p->Branch("Vs3CaloEta", &Vs3CaloEta_, "Vs3CaloEta[nVs3Calo]/F");
 
-  jetTreeIni_p->Branch("nT3", &nT3_, "nT3/I");
-  jetTreeIni_p->Branch("T3Pt", &T3Pt_, "T3Pt[nT3]/F");
-  jetTreeIni_p->Branch("T3Phi", &T3Phi_, "T3Phi[nT3]/F");
-  jetTreeIni_p->Branch("T3Eta", &T3Eta_, "T3Eta[nT3]/F");
-  
+  if(montecarlo){
+    jetTreeIni_p->Branch("Vs3CaloRefPt", &Vs3CaloRefPt_, "Vs3CaloRefPt[nVs3Calo]/F");
+    jetTreeIni_p->Branch("Vs3CaloRefPhi", &Vs3CaloRefPhi_, "Vs3CaloRefPhi[nVs3Calo]/F");
+    jetTreeIni_p->Branch("Vs3CaloRefEta", &Vs3CaloRefEta_, "Vs3CaloRefEta[nVs3Calo]/F");
+
+    jetTreeIni_p->Branch("nT3", &nT3_, "nT3/I");
+    jetTreeIni_p->Branch("T3Pt", &T3Pt_, "T3Pt[nT3]/F");
+    jetTreeIni_p->Branch("T3Phi", &T3Phi_, "T3Phi[nT3]/F");
+    jetTreeIni_p->Branch("T3Eta", &T3Eta_, "T3Eta[nT3]/F");
+  }
 
   //Gen Tree Branches
 
@@ -174,15 +191,28 @@ void GetIniBranches(Bool_t montecarlo = false)
   jetTreeIni_p->SetBranchAddress("Pu3CaloPhi", &Pu3CaloPhi_);
   jetTreeIni_p->SetBranchAddress("Pu3CaloEta", &Pu3CaloEta_);
 
+  if(montecarlo){
+    jetTreeIni_p->SetBranchAddress("Pu3CaloRefPt", &Pu3CaloRefPt_);
+    jetTreeIni_p->SetBranchAddress("Pu3CaloRefPhi", &Pu3CaloRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Pu3CaloRefEta", &Pu3CaloRefEta_);
+  }
+
   jetTreeIni_p->SetBranchAddress("nVs3Calo", &nVs3Calo_);
   jetTreeIni_p->SetBranchAddress("Vs3CaloPt", &Vs3CaloPt_);
   jetTreeIni_p->SetBranchAddress("Vs3CaloPhi", &Vs3CaloPhi_);
   jetTreeIni_p->SetBranchAddress("Vs3CaloEta", &Vs3CaloEta_);
 
-  jetTreeIni_p->SetBranchAddress("nT3", &nT3_);
-  jetTreeIni_p->SetBranchAddress("T3Pt", &T3Pt_);
-  jetTreeIni_p->SetBranchAddress("T3Phi", &T3Phi_);
-  jetTreeIni_p->SetBranchAddress("T3Eta", &T3Eta_);
+  if(montecarlo){
+    jetTreeIni_p->SetBranchAddress("Vs3CaloRefPt", &Vs3CaloRefPt_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloRefPhi", &Vs3CaloRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloRefEta", &Vs3CaloRefEta_);
+
+    jetTreeIni_p->SetBranchAddress("nT3", &nT3_);
+    jetTreeIni_p->SetBranchAddress("T3Pt", &T3Pt_);
+    jetTreeIni_p->SetBranchAddress("T3Phi", &T3Phi_);
+    jetTreeIni_p->SetBranchAddress("T3Eta", &T3Eta_);
+  }
+
 
   //Gen Tree Branches
 

@@ -28,35 +28,6 @@ collisionType getCType(sampleType sType);
 const char* algType[3] = {"PuCalo", "VsCalo", "T"};
 
 
-void getJtVar(Int_t nJt, Float_t jtPt[nJt], Float_t jtPhi[nJt], Float_t jtEta[nJt], Int_t algNum)
-{
-  eventSet_[algNum] = true;
-
-  AlgLeadJtPt_[algNum] = jtPt[0];
-  AlgLeadJtPhi_[algNum] = jtPhi[0];
-  AlgLeadJtEta_[algNum] = jtEta[0];
-  AlgSubLeadJtPt_[algNum] = jtPt[1];
-  AlgSubLeadJtPhi_[algNum] = jtPhi[1];
-  AlgSubLeadJtEta_[algNum] = jtEta[1];
-
-  if(nJt > 2){
-    AlgThirdJtPt_[algNum] = jtPt[2];
-    AlgThirdJtPhi_[algNum] = jtPhi[2];
-    AlgThirdJtEta_[algNum] = jtEta[2];
-    
-
-    if(nJt > 3){
-      AlgFourthJtPt_[algNum] = jtPt[3];
-      AlgFourthJtPhi_[algNum] = jtPhi[3];
-      AlgFourthJtEta_[algNum] = jtEta[3];
-    }
-  }
-
-  //Edit here please
-
-}
-
-
 Float_t getFlippedPhi(Float_t inPhi)
 {
   Float_t outPhi;
@@ -100,6 +71,65 @@ Float_t getAvePhi(Float_t inLeadPhi, Float_t inSubLeadPhi)
   }
 
   return avePhi;
+}
+
+
+void getJtVar(Int_t nJt, Float_t jtPt[nJt], Float_t jtPhi[nJt], Float_t jtEta[nJt], Float_t refPt[nJt], Float_t refPhi[nJt], Float_t refEta[nJt], Int_t algNum, Bool_t montecarlo = false)
+{
+  eventSet_[algNum] = true;
+
+  AlgLeadJtPt_[algNum] = jtPt[0];
+  AlgLeadJtPhi_[algNum] = jtPhi[0];
+  AlgLeadJtEta_[algNum] = jtEta[0];
+  AlgSubLeadJtPt_[algNum] = jtPt[1];
+  AlgSubLeadJtPhi_[algNum] = jtPhi[1];
+  AlgSubLeadJtEta_[algNum] = jtEta[1];
+
+  if(montecarlo && algNum != 2){
+    AlgLeadRefPt_[algNum] = refPt[0];
+    AlgLeadRefPhi_[algNum] = refPhi[0];
+    AlgLeadRefEta_[algNum] = refEta[0];
+    AlgSubLeadRefPt_[algNum] = refPt[1];
+    AlgSubLeadRefPhi_[algNum] = refPhi[1];
+    AlgSubLeadRefEta_[algNum] = refEta[1];
+  }
+
+  if(nJt > 2){
+    AlgThirdJtPt_[algNum] = jtPt[2];
+    AlgThirdJtPhi_[algNum] = jtPhi[2];
+    AlgThirdJtEta_[algNum] = jtEta[2];
+    
+    if(montecarlo && algNum != 2){
+      AlgThirdRefPt_[algNum] = refPt[2];
+      AlgThirdRefPhi_[algNum] = refPhi[2];
+      AlgThirdRefEta_[algNum] = refEta[2];
+    }
+
+    if(nJt > 3){
+      AlgFourthJtPt_[algNum] = jtPt[3];
+      AlgFourthJtPhi_[algNum] = jtPhi[3];
+      AlgFourthJtEta_[algNum] = jtEta[3];
+
+      if(montecarlo && algNum != 2){
+	AlgFourthRefPt_[algNum] = refPt[3];
+	AlgFourthRefPhi_[algNum] = refPhi[3];
+	AlgFourthRefEta_[algNum] = refEta[3];
+      }
+
+    }
+  }
+
+  AlgJtAvePhi_[algNum] = getAvePhi(AlgLeadJtPhi_[algNum], AlgSubLeadJtPhi_[algNum]);
+  AlgJtDelPhi_[algNum] = getAbsDelDphi(AlgLeadJtPhi_[algNum], AlgSubLeadJtPhi_[algNum]);
+  AlgJtAsymm_[algNum] = (AlgLeadJtPt_[algNum] - AlgSubLeadJtPt_[algNum])/(AlgLeadJtPt_[algNum] + AlgSubLeadJtPt_[algNum]);
+
+  if(montecarlo && algNum != 2){
+    AlgRefAvePhi_[algNum] = getAvePhi(AlgLeadRefPhi_[algNum], AlgSubLeadRefPhi_[algNum]);
+    AlgRefDelPhi_[algNum] = getAbsDelDphi(AlgLeadRefPhi_[algNum], AlgSubLeadRefPhi_[algNum]);
+    AlgRefAsymm_[algNum] = (AlgLeadRefPt_[algNum] - AlgSubLeadRefPt_[algNum])/(AlgLeadRefPt_[algNum] + AlgSubLeadRefPt_[algNum]);
+  }
+
+  return;
 }
 
 
@@ -221,19 +251,23 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
     //Jet Edits here
 
     if(nPu3Calo > 1){
-
+      getJtVar(nPu3Calo, Pu3CaloPt, Pu3CaloPhi, Pu3CaloEta, Pu3CaloRefPt, Pu3CaloRefPhi, Pu3CaloRefEta, 0, montecarlo);
     }
 
     if(nVs3Calo > 1){
-
+      getJtVar(nVs3Calo, Vs3CaloPt, Vs3CaloPhi, Vs3CaloEta, Vs3CaloRefPt, Vs3CaloRefPhi, Vs3CaloRefEta, 1, montecarlo);
     }
+
+    Float_t dummyArray[nT3];
 
     if(nT3 > 1){
-
+      getJtVar(nPu3Calo, Pu3CaloPt, Pu3CaloPhi, Pu3CaloEta, dummyArray, dummyArray, dummyArray, 2, montecarlo);
     }
     
-    if(eventSet_[PuPF] == false && eventSet_[PuCalo] == false && eventSet_[VsPF] == false && eventSet_[VsCalo] == false && eventSet_[T] == false)
+    if(eventSet_[PuCalo] == false && eventSet_[VsCalo] == false && eventSet_[T] == false){
+      std::cout << "No event pass after IniSkim; Potential bug" << std::endl;
       continue;
+    }
 
     if(montecarlo){
       Float_t pthatWeights[5] = {4.29284e-01, 2.99974e-02, 3.38946e-04, 1.06172e-04, 2.79631e-05};
@@ -246,12 +280,9 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
 	}
       }
     }
+    //Some IniSkim editing needed here
 
-    run_ = c->evt.run;
-    evt_ = c->akPu3PF.evt;
-    lumi_ = c->evt.lumi;
-    hiBin_ = c->evt.hiBin;
-
+    /* 
     hiEvtPlane_ = c->evt.hiEvtPlanes[21];
 
     TComplex cn1((c->pf.sumpt[0])*(c->pf.vn[2][0]), c->pf.psin[2][0], true);
@@ -260,7 +291,7 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
     TComplex cn = cn1+cn2;
 
     psin_ = cn.Theta();
-
+    */
 
     if(montecarlo){
       for(Int_t algIter = 0; algIter < 4; algIter++){
@@ -280,207 +311,55 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
 
     //Iterate over tracks
 
-    nTrk_ = 0;
-
     InitProjPerp(montecarlo);
 
-    Tracks trkCollection;
-    trkCollection = c->track;
-
-    for(Int_t trkEntry = 0; trkEntry < trkCollection.nTrk; trkEntry++){
-      for(Int_t setIter = 0; setIter < 5; setIter++){
-	if(eventSet_[setIter]) AlgTotTrk[setIter] = AlgTotTrk[setIter] + 1;
-      }
-
-      if(TMath::Abs(trkCollection.trkEta[trkEntry]) > 2.4){
-	for(Int_t setIter = 0; setIter < 5; setIter++){
-	  if(eventSet_[setIter]) AlgTrkEtaCut[setIter] = AlgTrkEtaCut[setIter] + 1;
-	}
-	continue;
-      }
-
-      if(trkCollection.trkPt[trkEntry] <= 0.5){
-	for(Int_t setIter = 0; setIter < 5; setIter++){
-	  if(eventSet_[setIter]) AlgTrkPtCut[setIter] = AlgTrkPtCut[setIter] + 1;
-	}
-	continue;
-      }
-
-      if(!trkCollection.highPurity[trkEntry]){
-	for(Int_t setIter = 0; setIter < 5; setIter++){
-	  if(eventSet_[setIter]) AlgPurityCut[setIter] = AlgPurityCut[setIter] + 1;
-	}
-	continue;
-      }
-
-      if(TMath::Abs(trkCollection.trkDz1[trkEntry]/trkCollection.trkDzError1[trkEntry]) > 3){
-	for(Int_t setIter = 0; setIter < 5; setIter++){
-	  if(eventSet_[setIter]) AlgTrkDzCut[setIter] = AlgTrkDzCut[setIter] + 1;
-	}
-	continue;
-      }
-
-      if(TMath::Abs(trkCollection.trkDxy1[trkEntry]/trkCollection.trkDxyError1[trkEntry]) > 3){
-	for(Int_t setIter = 0; setIter < 5; setIter++){
-	  if(eventSet_[setIter]) AlgTrkDxyCut[setIter] = AlgTrkDxyCut[setIter] + 1;
-	}
-	continue;
-      }
-
-      if(trkCollection.trkPtError[trkEntry]/trkCollection.trkPt[trkEntry] > 0.1){
-	for(Int_t setIter = 0; setIter < 5; setIter++){
-	  if(eventSet_[setIter]) AlgTrkPtErrorCut[setIter] = AlgTrkPtErrorCut[setIter] + 1;
-	}
-	continue;
-      }
-
-      /*
-      if(montecarlo){
-	if(trkCollection.trkFake[trkEntry] == 1)
-	  continue;
-
-	if(trkCollection.trkStatus[trkEntry] < 0)
-	  continue;
-      }
-      */
-
-      trkPt_[nTrk_] = trkCollection.trkPt[trkEntry];
-      trkPhi_[nTrk_] = trkCollection.trkPhi[trkEntry];
-      trkEta_[nTrk_] = trkCollection.trkEta[trkEntry];
-
-      trkPtCorrPuPF_[nTrk_] = trkCollection.trkPt[trkEntry];
-      trkPtCorrPuCalo_[nTrk_] = trkCollection.trkPt[trkEntry];
-      trkPtCorrT_[nTrk_] = trkCollection.trkPt[trkEntry];
-      trkPtCorrVsPF_[nTrk_] = trkCollection.trkPt[trkEntry];
-      trkPtCorrVsCalo_[nTrk_] = trkCollection.trkPt[trkEntry];
-      
+    for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
+          
       //Grab proj. Pt Spectra For Tracks in each Event Subset
-
-      if(eventSet_[PuPF]){
-	trkPtPuPF_[nTrk_] = -trkCollection.trkPt[trkEntry]*cos(getDPHI(trkCollection.trkPhi[trkEntry], AlgLeadJtPhi_[PuPF]));
-	trkRLeadPuPF_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgLeadJtEta_[PuPF], AlgLeadJtPhi_[PuPF]);
-	trkRSubLeadPuPF_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgSubLeadJtEta_[PuPF], AlgSubLeadJtPhi_[PuPF]);
-        trkPuPFLeadDelPhi_[nTrk_] = getAbsDphi(AlgLeadJtPhi_[PuPF], trkCollection.trkPhi[trkEntry]);
-     }
-      else{
-	trkPtPuPF_[nTrk_] = 0;
-	trkRLeadPuPF_[nTrk_] = -1;
-	trkRSubLeadPuPF_[nTrk_] = -1;
-        trkPuPFLeadDelPhi_[nTrk_] = -10;
-      }
-
-      if(eventSet_[PuCalo]){
-	trkPtPuCalo_[nTrk_] = -trkCollection.trkPt[trkEntry]*cos(getDPHI(trkCollection.trkPhi[trkEntry], AlgLeadJtPhi_[PuCalo]));
-	trkRLeadPuCalo_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgLeadJtEta_[PuCalo], AlgLeadJtPhi_[PuCalo]);
-      	trkRSubLeadPuCalo_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgSubLeadJtEta_[PuCalo], AlgSubLeadJtPhi_[PuCalo]);
-        trkPuCaloLeadDelPhi_[nTrk_] = getAbsDphi(AlgLeadJtPhi_[PuCalo], trkCollection.trkPhi[trkEntry]);
-      }
-      else{
-	trkPtPuCalo_[nTrk_] = 0;
-	trkRLeadPuCalo_[nTrk_] = -1;
-	trkRSubLeadPuCalo_[nTrk_] = -1;
-        trkPuCaloLeadDelPhi_[nTrk_] = -10;
-      }
-
-      if(eventSet_[VsPF]){
-	trkPtVsPF_[nTrk_] = -trkCollection.trkPt[trkEntry]*cos(getDPHI(trkCollection.trkPhi[trkEntry], AlgLeadJtPhi_[VsPF]));
-	trkRLeadVsPF_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgLeadJtEta_[VsPF], AlgLeadJtPhi_[VsPF]);
-	trkRSubLeadVsPF_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgSubLeadJtEta_[VsPF], AlgSubLeadJtPhi_[VsPF]);
-        trkVsPFLeadDelPhi_[nTrk_] = getAbsDphi(AlgLeadJtPhi_[VsPF], trkCollection.trkPhi[trkEntry]);
-      }
-      else{
-	trkPtVsPF_[nTrk_] = 0;
-	trkRLeadVsPF_[nTrk_] = -1;
-	trkRSubLeadVsPF_[nTrk_] = -1;
-        trkVsPFLeadDelPhi_[nTrk_] = -10;
-      }
-
-      if(eventSet_[VsCalo]){
-	trkPtVsCalo_[nTrk_] = -trkCollection.trkPt[trkEntry]*cos(getDPHI(trkCollection.trkPhi[trkEntry], AlgLeadJtPhi_[VsCalo]));
-	trkRLeadVsCalo_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgLeadJtEta_[VsCalo], AlgLeadJtPhi_[VsCalo]);
-	trkRSubLeadVsCalo_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgSubLeadJtEta_[VsCalo], AlgSubLeadJtPhi_[VsCalo]);
-        trkVsCaloLeadDelPhi_[nTrk_] = getAbsDphi(AlgLeadJtPhi_[VsCalo], trkCollection.trkPhi[trkEntry]);
-      }
-      else{
-	trkPtVsCalo_[nTrk_] = 0;
-	trkRLeadVsCalo_[nTrk_] = -1;
-	trkRSubLeadVsCalo_[nTrk_] = -1;
-        trkVsCaloLeadDelPhi_[nTrk_] = -10;
-      }
-
-      if(montecarlo && eventSet_[T]){
-	trkPtT_[nTrk_] = -trkCollection.trkPt[trkEntry]*cos(getDPHI(trkCollection.trkPhi[trkEntry], AlgLeadJtPhi_[T]));
-	trkRLeadT_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgLeadJtEta_[T], AlgLeadJtPhi_[T]);
-	trkRSubLeadT_[nTrk_] = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgSubLeadJtEta_[T], AlgSubLeadJtPhi_[T]);
-        trkTLeadDelPhi_[nTrk_] = getAbsDphi(AlgLeadJtPhi_[T], trkCollection.trkPhi[trkEntry]);
-      }
-      else{
-	trkPtT_[nTrk_] = 0;
-	trkRLeadT_[nTrk_] = -1;
-	trkRSubLeadT_[nTrk_] = -1;
-        trkTLeadDelPhi_[nTrk_] = -10;
-      }
-
     
-      for(Int_t jtIter = 0; jtIter < 5; jtIter++){
+      for(Int_t jtIter = 0; jtIter < 3; jtIter++){
 	if(eventSet_[jtIter]){
-	  getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjAF_[jtIter], rAlgImbProjA0_1_[jtIter], rAlgImbProjA1_2_[jtIter], rAlgImbProjA2_4_[jtIter], rAlgImbProjA4_8_[jtIter], rAlgImbProjA8_100_[jtIter]);
+	  getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjAF_[jtIter], rAlgImbProjA0_1_[jtIter], rAlgImbProjA1_2_[jtIter], rAlgImbProjA2_4_[jtIter], rAlgImbProjA4_8_[jtIter], rAlgImbProjA8_100_[jtIter]);
 
-	  Float_t tempLeadDelR = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgLeadJtEta_[jtIter], AlgLeadJtPhi_[jtIter]);
-	  Float_t tempSubLeadDelR = getDR(trkEta_[nTrk_], trkPhi_[nTrk_], AlgSubLeadJtEta_[jtIter], AlgSubLeadJtPhi_[jtIter]);
+	  Float_t tempLeadDelR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgLeadJtEta_[jtIter], AlgLeadJtPhi_[jtIter]);
+	  Float_t tempSubLeadDelR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgSubLeadJtEta_[jtIter], AlgSubLeadJtPhi_[jtIter]);
 
 	  if(tempLeadDelR > 0 && tempSubLeadDelR > 0){
 	    if(tempLeadDelR < .8 || tempSubLeadDelR < .8)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjACF_[jtIter], rAlgImbProjAC0_1_[jtIter], rAlgImbProjAC1_2_[jtIter], rAlgImbProjAC2_4_[jtIter], rAlgImbProjAC4_8_[jtIter], rAlgImbProjAC8_100_[jtIter]); 
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjACF_[jtIter], rAlgImbProjAC0_1_[jtIter], rAlgImbProjAC1_2_[jtIter], rAlgImbProjAC2_4_[jtIter], rAlgImbProjAC4_8_[jtIter], rAlgImbProjAC8_100_[jtIter]); 
      	    else{
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjANCF_[jtIter], rAlgImbProjANC0_1_[jtIter], rAlgImbProjANC1_2_[jtIter], rAlgImbProjANC2_4_[jtIter], rAlgImbProjANC4_8_[jtIter], rAlgImbProjANC8_100_[jtIter]);
-
-	      if(tempLeadDelR < TMath::Pi()/2 || tempSubLeadDelR < TMath::Pi()/2)
-		getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjANCCutF_[jtIter], rAlgImbProjANCCut0_1_[jtIter], rAlgImbProjANCCut1_2_[jtIter], rAlgImbProjANCCut2_4_[jtIter], rAlgImbProjANCCut4_8_[jtIter], rAlgImbProjANCCut8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjANCF_[jtIter], rAlgImbProjANC0_1_[jtIter], rAlgImbProjANC1_2_[jtIter], rAlgImbProjANC2_4_[jtIter], rAlgImbProjANC4_8_[jtIter], rAlgImbProjANC8_100_[jtIter]);
 	    }
 	    
 	    if(tempLeadDelR < .20 || tempSubLeadDelR < .20)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA1CF_[jtIter], rAlgImbProjA1C0_1_[jtIter], rAlgImbProjA1C1_2_[jtIter], rAlgImbProjA1C2_4_[jtIter], rAlgImbProjA1C4_8_[jtIter], rAlgImbProjA1C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA1CF_[jtIter], rAlgImbProjA1C0_1_[jtIter], rAlgImbProjA1C1_2_[jtIter], rAlgImbProjA1C2_4_[jtIter], rAlgImbProjA1C4_8_[jtIter], rAlgImbProjA1C8_100_[jtIter]);
 	    else if(tempLeadDelR < .40 || tempSubLeadDelR < .40)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA2CF_[jtIter], rAlgImbProjA2C0_1_[jtIter], rAlgImbProjA2C1_2_[jtIter], rAlgImbProjA2C2_4_[jtIter], rAlgImbProjA2C4_8_[jtIter], rAlgImbProjA2C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA2CF_[jtIter], rAlgImbProjA2C0_1_[jtIter], rAlgImbProjA2C1_2_[jtIter], rAlgImbProjA2C2_4_[jtIter], rAlgImbProjA2C4_8_[jtIter], rAlgImbProjA2C8_100_[jtIter]);
 	    else if(tempLeadDelR < .60 || tempSubLeadDelR < .60)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA3CF_[jtIter], rAlgImbProjA3C0_1_[jtIter], rAlgImbProjA3C1_2_[jtIter], rAlgImbProjA3C2_4_[jtIter], rAlgImbProjA3C4_8_[jtIter], rAlgImbProjA3C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA3CF_[jtIter], rAlgImbProjA3C0_1_[jtIter], rAlgImbProjA3C1_2_[jtIter], rAlgImbProjA3C2_4_[jtIter], rAlgImbProjA3C4_8_[jtIter], rAlgImbProjA3C8_100_[jtIter]);
 	    else if(tempLeadDelR < .80 || tempSubLeadDelR < .80)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA4CF_[jtIter], rAlgImbProjA4C0_1_[jtIter], rAlgImbProjA4C1_2_[jtIter], rAlgImbProjA4C2_4_[jtIter], rAlgImbProjA4C4_8_[jtIter], rAlgImbProjA4C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA4CF_[jtIter], rAlgImbProjA4C0_1_[jtIter], rAlgImbProjA4C1_2_[jtIter], rAlgImbProjA4C2_4_[jtIter], rAlgImbProjA4C4_8_[jtIter], rAlgImbProjA4C8_100_[jtIter]);
 	    else if(tempLeadDelR < 1.0 || tempSubLeadDelR < 1.0)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA5CF_[jtIter], rAlgImbProjA5C0_1_[jtIter], rAlgImbProjA5C1_2_[jtIter], rAlgImbProjA5C2_4_[jtIter], rAlgImbProjA5C4_8_[jtIter], rAlgImbProjA5C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA5CF_[jtIter], rAlgImbProjA5C0_1_[jtIter], rAlgImbProjA5C1_2_[jtIter], rAlgImbProjA5C2_4_[jtIter], rAlgImbProjA5C4_8_[jtIter], rAlgImbProjA5C8_100_[jtIter]);
 	    else if(tempLeadDelR < 1.2 || tempSubLeadDelR < 1.2)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA6CF_[jtIter], rAlgImbProjA6C0_1_[jtIter], rAlgImbProjA6C1_2_[jtIter], rAlgImbProjA6C2_4_[jtIter], rAlgImbProjA6C4_8_[jtIter], rAlgImbProjA6C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA6CF_[jtIter], rAlgImbProjA6C0_1_[jtIter], rAlgImbProjA6C1_2_[jtIter], rAlgImbProjA6C2_4_[jtIter], rAlgImbProjA6C4_8_[jtIter], rAlgImbProjA6C8_100_[jtIter]);
 	    else if(tempLeadDelR < 1.4 || tempSubLeadDelR < 1.4)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA7CF_[jtIter], rAlgImbProjA7C0_1_[jtIter], rAlgImbProjA7C1_2_[jtIter], rAlgImbProjA7C2_4_[jtIter], rAlgImbProjA7C4_8_[jtIter], rAlgImbProjA7C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA7CF_[jtIter], rAlgImbProjA7C0_1_[jtIter], rAlgImbProjA7C1_2_[jtIter], rAlgImbProjA7C2_4_[jtIter], rAlgImbProjA7C4_8_[jtIter], rAlgImbProjA7C8_100_[jtIter]);
 	    else if(tempLeadDelR < 1.6 || tempSubLeadDelR < 1.6)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA8CF_[jtIter], rAlgImbProjA8C0_1_[jtIter], rAlgImbProjA8C1_2_[jtIter], rAlgImbProjA8C2_4_[jtIter], rAlgImbProjA8C4_8_[jtIter], rAlgImbProjA8C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA8CF_[jtIter], rAlgImbProjA8C0_1_[jtIter], rAlgImbProjA8C1_2_[jtIter], rAlgImbProjA8C2_4_[jtIter], rAlgImbProjA8C4_8_[jtIter], rAlgImbProjA8C8_100_[jtIter]);
 	    else if(tempLeadDelR < 1.8 || tempSubLeadDelR < 1.8)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA9CF_[jtIter], rAlgImbProjA9C0_1_[jtIter], rAlgImbProjA9C1_2_[jtIter], rAlgImbProjA9C2_4_[jtIter], rAlgImbProjA9C4_8_[jtIter], rAlgImbProjA9C8_100_[jtIter]);
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA9CF_[jtIter], rAlgImbProjA9C0_1_[jtIter], rAlgImbProjA9C1_2_[jtIter], rAlgImbProjA9C2_4_[jtIter], rAlgImbProjA9C4_8_[jtIter], rAlgImbProjA9C8_100_[jtIter]);
 	    else 
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA10CF_[jtIter], rAlgImbProjA10C0_1_[jtIter], rAlgImbProjA10C1_2_[jtIter], rAlgImbProjA10C2_4_[jtIter], rAlgImbProjA10C4_8_[jtIter], rAlgImbProjA10C8_100_[jtIter]); 
+	      getPtProj(trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA10CF_[jtIter], rAlgImbProjA10C0_1_[jtIter], rAlgImbProjA10C1_2_[jtIter], rAlgImbProjA10C2_4_[jtIter], rAlgImbProjA10C4_8_[jtIter], rAlgImbProjA10C8_100_[jtIter]); 
 	    
-
-	    if(tempLeadDelR < .40 || tempSubLeadDelR < .40)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA21CF_[jtIter], rAlgImbProjA21C0_1_[jtIter], rAlgImbProjA21C1_2_[jtIter], rAlgImbProjA21C2_4_[jtIter], rAlgImbProjA21C4_8_[jtIter], rAlgImbProjA21C8_100_[jtIter]);
-	    else if(tempLeadDelR < .80 || tempSubLeadDelR < .80)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA22CF_[jtIter], rAlgImbProjA22C0_1_[jtIter], rAlgImbProjA22C1_2_[jtIter], rAlgImbProjA22C2_4_[jtIter], rAlgImbProjA22C4_8_[jtIter], rAlgImbProjA22C8_100_[jtIter]);
-	    else if(tempLeadDelR < 1.2 || tempSubLeadDelR < 1.2)
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA23CF_[jtIter], rAlgImbProjA23C0_1_[jtIter], rAlgImbProjA23C1_2_[jtIter], rAlgImbProjA23C2_4_[jtIter], rAlgImbProjA23C4_8_[jtIter], rAlgImbProjA23C8_100_[jtIter]);
-	    else
-	      getPtProj(trkCollection.trkPt[trkEntry], trkCollection.trkPt[trkEntry], trkCollection.trkPhi[trkEntry], AlgJtAvePhi_[jtIter], rAlgImbProjA24CF_[jtIter], rAlgImbProjA24C0_1_[jtIter], rAlgImbProjA24C1_2_[jtIter], rAlgImbProjA24C2_4_[jtIter], rAlgImbProjA24C4_8_[jtIter], rAlgImbProjA24C8_100_[jtIter]);
 	  }
 	}
-      }
-      
-      nTrk_++;
-      if(nTrk_ > MAXTRKS - 1){
-	printf("ERROR: Trk arrays not large enough.\n");
-	return(1);
       }
     }
 
     //Get trk rmin/corrections for 3 Jet subsets
+
+    //Fix the rmin stuff
     
     for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
       trkRMinPuPF_[trkEntry] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], AlgJtCollection[0]);
@@ -503,8 +382,6 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
 	for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
 	  Int_t ptPos = getPtBin(trkPt_[trkEntry], hiSetEff[hiBinIter*6], hiSetEff[hiBinIter*6 + 1], hiSetEff[hiBinIter*6 + 2], hiSetEff[hiBinIter*6 + 3], hiSetEff[hiBinIter*6 + 4], hiSetEff[hiBinIter*6 + 5], 28);
 	
-	  //	  trkPtFactPuPF_[trkEntry] = factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinPuPF_[trkEntry], PuPFcent_p[ptPos], PuPFphiEta_p[ptPos], PuPFpt_p[ptPos], PuPFdelR_p[ptPos], 3);
-	  //	  trkPtCorrPuPF_[trkEntry] = trkPt_[trkEntry]/trkPtFactPuPF_[trkEntry];
 
 	  trkPtFactPuCalo_[trkEntry] = factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinPuCalo_[trkEntry], VsCalocent_p[ptPos], VsCalophiEta_p[ptPos], VsCalopt_p[ptPos], VsCalodelR_p[ptPos], 5);
 	  trkPtFactPuCalo_[trkEntry] = (1 - factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinPuCalo_[trkEntry], FakeVsCalocent_p[ptPos], FakeVsCalophiEta_p[ptPos], FakeVsCalopt_p[ptPos], FakeVsCalodelR_p[ptPos], 5, false))/trkPtFactPuCalo_[trkEntry];
@@ -513,9 +390,6 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
 	  trkPtFactVsCalo_[trkEntry] = factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinVsCalo_[trkEntry], VsCalocent_p[ptPos], VsCalophiEta_p[ptPos], VsCalopt_p[ptPos], VsCalodelR_p[ptPos], 5);
 	  trkPtFactVsCalo_[trkEntry] = (1 - factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinVsCalo_[trkEntry], FakeVsCalocent_p[ptPos], FakeVsCalophiEta_p[ptPos], FakeVsCalopt_p[ptPos], FakeVsCalodelR_p[ptPos], 5, false))/trkPtFactVsCalo_[trkEntry];
 	  trkPtCorrVsCalo_[trkEntry] = trkPt_[trkEntry]*trkPtFactVsCalo_[trkEntry];
-
-	  //	  if(trkEntry == 100)
-	  //	    std::cout << "Cent, Pt, ptPos: " << hiBin_ << ", " << trkPt_[trkEntry] << ", " << ptPos << std::endl;
 
 
 	  if(montecarlo){
@@ -593,11 +467,6 @@ int makeDiJetAnaSkim(const char* IniSkimName, sampleType sType = kHIDATA, const 
 
     if(montecarlo){
       //Iterate over truth
-
-      nGen_ = 0;
-
-      GenParticles genCollection;
-      genCollection = c->genparticle;
 
       for(Int_t genEntry = 0; genEntry < genCollection.mult; genEntry++){
 	for(Int_t setIter = 0; setIter < 5; setIter++){
