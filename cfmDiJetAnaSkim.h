@@ -154,9 +154,6 @@ Float_t rAlgImbProjA10C8_100_[6];
 
 const int MAXJETS = 504; //From SetupJetTree.h
 
-Float_t hiEvtPlane_;
-Float_t psin_;
-
 //Set Bool
 
 //Event Set Bool array, [0] == PuPF, [1] == PuCalo, .etc according to enum
