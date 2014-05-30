@@ -75,6 +75,9 @@ Float_t getAvePhi(Float_t inLeadPhi, Float_t inSubLeadPhi)
 
 void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float_t refPt[], Float_t refPhi[], Float_t refEta[], Int_t algNum, Bool_t montecarlo = false)
 {
+  if(jtPt[0] < leadJtPtCut)
+    return;
+
   eventSet_[algNum] = true;
 
   AlgLeadJtPt_[algNum] = jtPt[0];
@@ -211,22 +214,22 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
   InitCorrHists();
 
   TFile *centHistFile_p = new TFile("centHist_eventSelect.root", "READ");
-  TH1F *hist_DataOverMC_p[4];
+  TH1F *hist_DataOverMC_p[2];
 
   TFile *centHistFile_2pi3_p = new TFile("centHist_eventSelect_2pi3.root", "READ");
-  TH1F *hist_DataOverMC_2pi3_p[4];
+  TH1F *hist_DataOverMC_2pi3_p[2];
 
   TFile *centHistFile_120_5pi6_p = new TFile("centHist_eventSelect_120_5pi6.root", "READ");
-  TH1F *hist_DataOverMC_120_5pi6_p[4];
+  TH1F *hist_DataOverMC_120_5pi6_p[2];
 
   TFile *centHistFile_hatAll_0_p = new TFile("centHist_eventSelect_hatAll_0.root", "READ");
-  TH1F *hist_DataOverMC_hatAll_0_p[4];
+  TH1F *hist_DataOverMC_hatAll_0_p[2];
 
   TFile *centHistFile_hatAll_1_p = new TFile("centHist_eventSelect_hatAll_1.root", "READ");
-  TH1F *hist_DataOverMC_hatAll_1_p[4];
+  TH1F *hist_DataOverMC_hatAll_1_p[2];
 
   if(montecarlo){
-    for(Int_t algIter = 0; algIter < 4; algIter++){
+    for(Int_t algIter = 0; algIter < 2; algIter++){
       hist_DataOverMC_p[algIter] = (TH1F*)centHistFile_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
       hist_DataOverMC_2pi3_p[algIter] = (TH1F*)centHistFile_2pi3_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
       hist_DataOverMC_120_5pi6_p[algIter] = (TH1F*)centHistFile_120_5pi6_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
@@ -270,7 +273,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
     Float_t dummyArray[nT3_];
 
     if(nT3_ > 1){
-      getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, dummyArray, dummyArray, dummyArray, 2, montecarlo);
+      getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray, dummyArray, dummyArray, 2, montecarlo);
     }
     
     if(eventSet_[PuCalo] == false && eventSet_[VsCalo] == false && eventSet_[T] == false){
@@ -291,7 +294,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     if(montecarlo){
-      for(Int_t algIter = 0; algIter < 4; algIter++){
+      for(Int_t algIter = 0; algIter < 2; algIter++){
 	centWeight_[algIter] = hist_DataOverMC_p[algIter]->GetBinContent(hist_DataOverMC_p[algIter]->FindBin(hiBin_));
 	centWeight_2pi3_[algIter] = hist_DataOverMC_2pi3_p[algIter]->GetBinContent(hist_DataOverMC_2pi3_p[algIter]->FindBin(hiBin_));
 	centWeight_120_5pi6_[algIter] = hist_DataOverMC_120_5pi6_p[algIter]->GetBinContent(hist_DataOverMC_120_5pi6_p[algIter]->FindBin(hiBin_));
@@ -433,7 +436,6 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
       }
     }
     
-
     if(montecarlo){
       //Iterate over truth
 
