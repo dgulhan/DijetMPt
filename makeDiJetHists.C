@@ -216,10 +216,12 @@ void makeDiJetHists(const char* inName, const char* outName, Bool_t montecarlo =
 	for(Int_t centIter = 0; centIter < 6; centIter++){
 	  for(Int_t FPTIter = 0; FPTIter < 6; FPTIter++){
 
-	    makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNC[CNCIter], FPT[FPTIter], centLow[centIter], centHi[centIter], -60, 60, corr[corrIter], montecarlo);
+	    if((CNCIter == 0 && centIter < 4) || (CNCIter != 0 && centIter >= 4)){
+	      makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNC[CNCIter], FPT[FPTIter], centLow[centIter], centHi[centIter], -60, 60, corr[corrIter], montecarlo);
 
-	    if(montecarlo && corrIter == 0)
-	      makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNC[CNCIter], FPT[FPTIter], centLow[centIter], centHi[centIter], -60, 60, corr[corrIter], montecarlo);
+	      if(montecarlo && corrIter == 0)
+		makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNC[CNCIter], FPT[FPTIter], centLow[centIter], centHi[centIter], -60, 60, corr[corrIter], montecarlo);
+	    }
 
 	  }
 	}
