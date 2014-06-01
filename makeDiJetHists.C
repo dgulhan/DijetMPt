@@ -14,6 +14,8 @@
 #include "TCut.h"
 #include "TProfile.h"
 #include "TH1F.h"
+#include "diJetFileTag.h"
+
 
 Float_t getDPHI( Float_t phi1, Float_t phi2){
   Float_t dphi = phi1 - phi2;
@@ -65,44 +67,68 @@ Bool_t checkSetRange(Int_t setNum)
 
 TCut makeSetCut(Int_t setNum)
 {
-  TCut setCut = "";
-
   if(!checkSetRange(setNum))
-    return setCut;
+    return "";
 
-  setCut = Form("eventSet[%d]", setNum);
-
-  return setCut;
+  return Form("eventSet[%d]", setNum);
 }
 
 
 TCut makeCentCut(Int_t centLow, Int_t centHi)
 {
-  TCut centCut = "";
   if(centLow >= 0 && centHi >= centLow && centHi <= 199)
-    centCut = Form("hiBin >= %d && hiBin <= %d", centLow, centHi);
-  else
+    return Form("hiBin >= %d && hiBin <= %d", centLow, centHi);
+  else{
     std::cout << "makeCentCut: centLow/centHi incorrectly specified, empty cut returned" << std::endl;
-
-  return centCut;
+    return "";
+  }
 }
 
 
-TCut makeAsymmCut(Int_t setNum, Float_t asymmLow, Float_t asymmHi, Bool_t ref = false)
+TCut makeAsymmCut(Int_t setNum, Float_t asymmLow, Float_t asymmHi)
 {
-  TCut asymmCut = "";
-
   if(!checkSetRange(setNum))
-    return asymmCut;
+    return "";
 
   const char* cutVar = Form("AlgJtAsymm[%d]", setNum);
 
   if(asymmLow >= .00 && asymmHi >= asymmLow && asymmHi <= 1.)
-    asymmCut = Form("%s > %f && %s < %f ", cutVar, asymmLow, cutVar, asymmHi);
-  else
+    return Form("%s > %f && %s < %f ", cutVar, asymmLow, cutVar, asymmHi);
+  else{
     std::cout << "makeAsymmCut: asymmLow/asymmHi incorrectly specified, empty cut returned" << std::endl;
-
-  return asymmCut;
+    return "";
+  }
 }
 
 
+TCut makeEtaCut(Int_t setNum, Float_t overallCut = 2.0)
+{
+  if(!checkSetRange(setNum))
+    return "";
+
+  const char* leadJt = Form("AlgLeadJtEta[%d]", setNum);
+  const char* subLeadJt = Form("AlgSubLeadJtEta[%d]", setNum);
+
+  return Form("TMath::Abs(%s) < %f && TMath::Abs(%s) < %f", leadJt, overallCut, subLeadJt, overallCut);
+}
+
+
+TCut makeDelPhiCut(Int_t setNum, Float_t delPhiLow = 0)
+{
+  if(!checkSetRange(setNum))
+    return "";
+
+  const char* jtDelPhi = Form("AlgJtDelPhi[%d]", setNum);
+
+  return Form("%s > %f", jtDelPhi, delPhiLow);
+}
+
+
+void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNC, const char* FPT, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", Bool_t montecarlo = false)
+{
+  Int_t setCorrNum = setNum;
+  if(!strcmp("", Corr))
+    setCorrNum = setNum + 3;
+
+  const char* title = Form();
+}
