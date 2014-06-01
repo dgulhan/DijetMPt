@@ -1,8 +1,11 @@
 #ifndef diJetFileTag_h
 #define diJetFileTag_h
 
-
 #include "iostream"
+#include "TH1F.h"
+#include "TCut.h"
+
+const char* algType[3] = {"PuCalo", "VsCalo", "T"};
 
 const char* fileTag;
 
@@ -48,6 +51,8 @@ const char* DataG_5 = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_
 const char* DataF_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4-merged_0_CFMSKIM_20140430_JtCutDown_0.root";
 const char* DataG_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMSKIM_20140508_jtCutDown_0.root";
 
+
+const char* TEST = "testAna_0.root";
 
 void setFileTag(const char* inName)
 {
@@ -174,6 +179,10 @@ void setFileTag(const char* inName)
   else if(!strcmp(inName, DataG_JtCutDown)){
     std::cout << DataG_JtCutDown << std::endl;
     fileTag = "DataG_JtCutDown";
+  }
+  else if(!strcmp(inName, TEST)){
+    std::cout << TEST << std::endl;
+    fileTag = "TEST";
   }
 
   std::cout << "fileTag is: " << fileTag << std::endl;

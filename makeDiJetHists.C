@@ -11,12 +11,11 @@
 #include "TTree.h"
 #include "TDatime.h"
 #include "TFile.h"
-#include "TCut.h"
-#include "TProfile.h"
-#include "TH1F.h"
 #include "diJetFileTag.h"
+#include "TH1F.h"
+#include "TCut.h"
 
-const char* algType[5] = {"PuCalo", "VsCalo", "T"};
+const char* algType[3] = {"PuCalo", "VsCalo", "T"};
 
 TFile* inFile_p = 0;
 TFile* outFile_p = 0;
