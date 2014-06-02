@@ -5,12 +5,16 @@
 //                                                                                            
 //=============================================                                               
 
-#include "commonUtility.h"
 #include "TDatime.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "TLegend.h"
+#include "TMath.h"
+#include "TLine.h"
+#include "TLatex.h"
+#include <iostream>
 
 TFile* histFile_p = 0;
 
@@ -18,10 +22,18 @@ TFile* plotFile_p = 0;
 
 const char* algType[3] = {"PuCalo", "VsCalo", "T"};
 
+
+Bool_t sameSign(Double_t num1, Double_t num2)
+{
+  if((num1 > 0 && num2 > 0) || (num1 < 0 && num2 < 0)) return true;
+
+  return false;
+}
+
+
 Double_t quadSum(Double_t one, Double_t two)
 {
-  Double_t err = TMath::Sqrt(one*one + two*two);
-  return err;
+  return TMath::Sqrt(one*one + two*two);
 }
 
 
@@ -31,6 +43,30 @@ void drawPatch(float x1, float y1, float x2, float y2){
   t1->SetBorderSize(0);
   t1->SetFillStyle(1001);
   t1->Draw("");
+
+  return;
+}
+
+
+void handsomeTH1( TH1 *a=0, Int_t col =1, Float_t size=1, Int_t markerstyle=20)
+{
+  a->SetMarkerColor(col);
+  a->SetMarkerSize(size);
+  a->SetMarkerStyle(markerstyle);
+  a->SetLineColor(col);
+  a->GetYaxis()->SetTitleOffset(1.25);
+  a->GetXaxis()->CenterTitle();
+  a->GetYaxis()->CenterTitle();
+
+  return;
+}
+
+void handsomeTH1N( TH1 *a=0, Int_t col =1)
+{
+  handsomeTH1(a,col);
+  a->Scale(1./a->GetEntries());
+
+  return;
 }
 
 
@@ -41,6 +77,8 @@ void niceTH1(TH1F* uglyTH1, float max , float min, float ndivX, float ndivY)
   uglyTH1->SetMinimum(min);
   uglyTH1->SetNdivisions(ndivX);
   uglyTH1->SetNdivisions(ndivY, "Y");
+
+  return;
 }
 
 
@@ -109,7 +147,7 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
       if(i==0){
         if(j == 0)
           pad[i][j]->SetLeftMargin(leftMargin*1.2);
-        else
+       else
           pad[i][j]->SetLeftMargin(leftMargin);
       }
       else if(i==1 && j==1){
@@ -141,6 +179,8 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
     }
   }
   pad[0][0]->cd();
+
+  return;
 }
 
 
@@ -164,7 +204,7 @@ Double_t sumYForPTStack(Double_t dIn = 0, Double_t comp1 = 0, Double_t comp2 = 0
 }
 
 
-void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* CNC = "")
+void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4)
 {
   for(Int_t iter = 0; iter < 4; iter++){
     h_p[3]->SetBinContent(iter + 1, sumYForPTStack(h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
@@ -202,6 +242,8 @@ void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt)
   drawHist_p->SetMarkerSize(.5);
   drawHist_p->DrawCopy(drawOpt);
   drawHist_p->DrawCopy("E1 SAME");
+
+  return;
 }
 
 void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0)
@@ -231,7 +273,7 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0)
 
 void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNC = "", Bool_t montecarlo = false)
 {
-  TFile histPbPbFile_p = new TFile(filePbPbName, "READ");
+  TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
 
   const char* mcLabel[4] = {"PYTHIA", "PYTHIA + HYDJET", "PYTHIA + HYDJET", "(P + H) - P"};
   const char* dataLabel[4] = {"pp 5.3 pb^{-1}", "PbPb 150 #mub^{-1}", "PbPb", "PbPb - pp"};
@@ -252,22 +294,20 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   TH1F* hist2_p[6];
   TH1F* hist3_p[6];
   TH1F* hist4_p[6];
-  TH1F* histpp_p[6];
-
-  Float_t binArrayX[5] = {.00, .11, .22, .33, .499};
+  //  TH1F* histpp_p[6];
 
   const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
   for(Int_t histIter = 0; histIter < 6; histIter++){
     if(!strcmp(CNC, "")){
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get("%s%sImbAsymmProjA%s%s%s_50100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTag);
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get("%s%sImbAsymmProjA%s%s%s_3050_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTag);
-      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get("%s%sImbAsymmProjA%s%s%s_1030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTag);
-      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get("%s%sImbAsymmProjA%s%s%s_010_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTag);
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s_50100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s_3050_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTagPbPb));
+      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s_1030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTagPbPb));
+      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s_010_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTagPbPb));
     }
     else{
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get("%s%sImbAsymmProjA%s%s%s_30100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTag);
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get("%s%sImbAsymmProjA%s%s%s_030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTag);
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s_30100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s_030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTagPbPb));
       niceTH1(hist3_p[histIter], 59.999, -59.999, 505, 406);
       niceTH1(hist4_p[histIter], 59.999, -59.999, 505, 406);
     }
@@ -278,17 +318,17 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   //Draw first PbPb panel
 
-  makeHistForPtStack(hist1_p, 2, CNC);
+  makeHistForPtStack(hist1_p, 2);
 
   TCanvas* profPanel_p;
 
   if(!strcmp(CNC, "")){
-    profPanel_p = new TCanvas(Form("%s%sImbAsymm%s%s%s%sPTStackPP_%s_%s_c", gorr, algType[setNum], Tight, perpProj, CNC, Corr, GLN, fileTag1), Form("%s%sImbAsymm%s%s%s%sPTStackPP_%s_%s_c", gorr, algType[setNum], Tight, perpProj, CNC, Corr, GLN, fileTag1), 5*300, 700);
+    profPanel_p = new TCanvas(Form("%s%sImbAsymm%s%sPTStackPP_%s_c", gorr, algType[setNum], CNC, Corr, fileTagPbPb), Form("%s%sImbAsymm%s%sPTStackPP_%s_c", gorr, algType[setNum], CNC, Corr, fileTagPbPb), 5*300, 700);
     makeMultiPanelCanvas(profPanel_p, 5, 2, 0.0, 0.0, 0.2, 0.2, 0.05);
     std::cout << "FivePanel Init" << std::endl;
   }
   else{
-    profPanel_p = new TCanvas(Form("%s%sImbAsymm%s%s%s%sPTStackPP_%s_%s_c", gorr, algType[setNum], Tight, perpProj, CNC, Corr, GLN, fileTag1), Form("%s%sImbAsymm%s%s%s%sPTStackPP_%s_%s_c", gorr, algType[setNum], Tight, perpProj, CNC, Corr, GLN, fileTag1), 300*3, 700);
+    profPanel_p = new TCanvas(Form("%s%sImbAsymm%s%sPTStackPP_%s_c", gorr, algType[setNum], CNC, Corr, fileTagPbPb), Form("%s%sImbAsymm%s%sPTStackPP_%s_c", gorr, algType[setNum], CNC, Corr, fileTagPbPb), 300*3, 700);
     makeMultiPanelCanvas(profPanel_p, 3, 2, 0.0, 0.0, 0.2, 0.2, 0.01, CNC);
     std::cout << "ThreePanel Init" << std::endl;
   }
@@ -334,7 +374,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   //Draw second PbPb hist
 
-  makeHistForPtStack(hist2_p, 3, CNC);
+  makeHistForPtStack(hist2_p, 3);
 
   drawFullStack(hist2_p, 0, 28);
 
@@ -351,7 +391,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   if(!strcmp(CNC, "")){
     profPanel_p->cd(4);
 
-    makeHistForPtStack(hist3_p, 4, CNC);
+    makeHistForPtStack(hist3_p, 4);
 
     hist3_p[5]->SetMarkerStyle(28);
     hist3_p[5]->SetFillColor(0);
@@ -365,7 +405,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
     profPanel_p->cd(5);
 
-    makeHistForPtStack(hist4_p, 5, CNC);
+    makeHistForPtStack(hist4_p, 5);
 
     hist4_p[5]->SetMarkerStyle(28);
     hist4_p[5]->SetFillColor(0);
@@ -412,10 +452,10 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
   for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
     for(Int_t corrIter = 0; corrIter < 2; corrIter++){
       for(Int_t CNCIter = 0; CNCIter < 3; CNCIter++){
-	makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "r", setNum, corr[corrIter], CNC[CNCIter], montecarlo);
+	makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNC[CNCIter], montecarlo);
 	
 	if(montecarlo && corrIter > 0)
-	  makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "g", setNum, corr[corrIter], CNC[CNCIter], montecarlo);
+	  makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNC[CNCIter], montecarlo);
       }
     }
   }
