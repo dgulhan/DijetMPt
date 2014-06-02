@@ -281,6 +281,14 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
       continue;
     }
 
+    run_ = runIni_;
+    evt_ = evtIni_;
+    lumi_ = lumiIni_;
+    hiBin_ = hiBinIni_;
+    pthat_ = pthatIni_;
+    hiEvtPlane_ = hiEvtPlaneIni_;
+    psin_ = psinIni_;
+
     if(montecarlo){
       Float_t pthatWeights[5] = {4.29284e-01, 2.99974e-02, 3.38946e-04, 1.06172e-04, 2.79631e-05};
       Float_t pthatCuts[6] = {30, 50, 80, 100, 120, 100000};

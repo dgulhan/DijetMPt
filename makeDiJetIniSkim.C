@@ -126,7 +126,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   std::cout << "Cuts, Lead/Sublead Pt, delphi, eta: " << leadJtPtCut << ", " << subLeadJtPtCut << ", " << jtDelPhiCut << ", " << jtEtaCut << std::endl; 
 
-  for(Long64_t jentry = 0; jentry < 10000; jentry++){
+  for(Long64_t jentry = 0; jentry < 50000; jentry++){
     c->GetEntry(jentry);
 
     totEv++;

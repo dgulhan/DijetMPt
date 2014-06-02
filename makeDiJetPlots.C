@@ -82,6 +82,13 @@ void niceTH1(TH1F* uglyTH1, float max , float min, float ndivX, float ndivY)
 }
 
 
+void claverCanvasSaving(TCanvas* c, TString s,TString format="gif")
+{
+  TDatime* date = new TDatime();
+  c->SaveAs(Form("%s_%d.%s",s.Data(),date->GetDate(), format.Data()));
+}
+
+
 void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows, const Float_t leftOffset, const Float_t bottomOffset, const Float_t leftMargin, const Float_t bottomMargin, const Float_t edge, const char* CNC = ""){
   if(canv==0){
     Error("makeMultiPanelCanvas","Got null canvas.");
@@ -209,11 +216,11 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4)
   for(Int_t iter = 0; iter < 4; iter++){
     h_p[3]->SetBinContent(iter + 1, sumYForPTStack(h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
 
-    h_p[2]->SetBinContent(iter + 1, sumYForPTStack(h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
+    h_p[2]->SetBinContent(iter + 1, sumYForPTStack(h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1)));
 
-    h_p[1]->SetBinContent(iter + 1, sumYForPTStack(h_p[1]->GetBinContent(iter+1), h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
+    h_p[1]->SetBinContent(iter + 1, sumYForPTStack(h_p[1]->GetBinContent(iter+1), h_p[2]->GetBinContent(iter+1)));
 
-    h_p[0]->SetBinContent(iter + 1, sumYForPTStack(h_p[0]->GetBinContent(iter+1), h_p[1]->GetBinContent(iter+1), h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
+    h_p[0]->SetBinContent(iter + 1, sumYForPTStack(h_p[0]->GetBinContent(iter+1), h_p[1]->GetBinContent(iter+1)));
   }
 
   h_p[4]->SetXTitle("A_{J}");
@@ -259,7 +266,7 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0)
 
   h_p[5]->DrawCopy("SAME E1");
 
-  if(!leg_p){
+  if(leg_p != 0){
     leg_p->AddEntry(h_p[0], "0.5 - 1.0", "F");
     leg_p->AddEntry(h_p[1], "1.0 - 2.0", "F");
     leg_p->AddEntry(h_p[2], "2.0 - 4.0", "F");
@@ -308,12 +315,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     else{
       hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s_30100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTagPbPb));
       hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s_030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, fileTagPbPb));
-      niceTH1(hist3_p[histIter], 59.999, -59.999, 505, 406);
-      niceTH1(hist4_p[histIter], 59.999, -59.999, 505, 406);
     }
-
-    niceTH1(hist1_p[histIter], 59.999, -59.999, 505, 406);
-    niceTH1(hist2_p[histIter], 59.999, -59.999, 505, 406);
   }
 
   //Draw first PbPb panel
@@ -347,6 +349,10 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   legB_p->SetTextFont(43);
   legB_p->SetTextSizePixels(22);
   legB_p->SetBorderSize(0);
+
+  profPanel_p->cd(1);
+
+  drawFullStack(hist1_p, 0, 28, legA_p);
 
   profPanel_p->cd(2);
 
@@ -393,9 +399,6 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
     makeHistForPtStack(hist3_p, 4);
 
-    hist3_p[5]->SetMarkerStyle(28);
-    hist3_p[5]->SetFillColor(0);
-
     drawFullStack(hist3_p, 0, 28);
 
     zeroLine_p->Draw();
@@ -407,9 +410,6 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
     makeHistForPtStack(hist4_p, 5);
 
-    hist4_p[5]->SetMarkerStyle(28);
-    hist4_p[5]->SetFillColor(0);
-
     drawFullStack(hist4_p, 0, 28);
 
     zeroLine_p->Draw();
@@ -418,8 +418,9 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     label1_p->DrawLatex(.05, overCoord[1], "0-10%");
   }
 
-  TFile* outFile_p = new TFile(outName, "RECREATE");
+  TFile* outFile_p = new TFile(outName, "UPDATE");
   profPanel_p->Write();
+  claverCanvasSaving(profPanel_p, Form("pdfDir/%s%sImbAsymmProjA%s%sPTStack_%s", gorr, algType[setNum], CNC, Corr, fileTagPbPb), "pdf");
   outFile_p->Close();
 
   delete outFile_p;
