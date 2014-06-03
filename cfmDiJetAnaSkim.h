@@ -7,7 +7,7 @@
 #ifndef cfmDiJetAnaSkim_h
 #define cfmDiJetAnaSkim_h
 
-#include "cfmDiJetIniSkim.h"
+#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_12_patch3/src/DijetInitialSkim/cfmDiJetIniSkim.h"
 
 TTree* trackTreeAna_p;
 TTree* jetTreeAna_p;
