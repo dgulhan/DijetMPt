@@ -25,10 +25,15 @@ const Float_t jtEtaCut = 2.0; // Default Max at 2.4 to avoid transition junk, ot
 
 collisionType getCType(sampleType sType);
 
-Bool_t passesDijet(Jets jtCollection)
+Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut, Int_t num)
 {
   Int_t leadJtIndex = -1;
   Int_t subLeadJtIndex = -1;
+
+  if(jtCollection.nref == 0){
+    lPtCut++;
+    return false;
+  }
 
   for(Int_t jtEntry = 0; jtEntry < jtCollection.nref; jtEntry++){
     if(leadJtIndex < 0){
@@ -36,22 +41,37 @@ Bool_t passesDijet(Jets jtCollection)
 	if(TMath::Abs(jtCollection.jteta[jtEntry]) < jtEtaCut)
 	  leadJtIndex = jtEntry;
       }
-      else 
+      else{
+	lPtCut++;
 	return false;
+      }
     }
     else if(subLeadJtIndex < 0){
       if(jtCollection.jtpt[jtEntry] > subLeadJtPtCut){
 	if(TMath::Abs(jtCollection.jteta[jtEntry]) < jtEtaCut)
 	  subLeadJtIndex = jtEntry;
       }
-      else
+      else{
+	sLPtCut++;
 	return false;
+      }
     }
     else
       return true;
   }
 
-  return false;
+  if(leadJtIndex > 0){
+    if(subLeadJtIndex > 0)
+      return true;
+    else{
+      sLPtCut++;
+      return false;
+    }
+  }
+  else{
+    lPtCut++;
+    return false;
+  }
 }
 
 
@@ -124,9 +144,12 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   Int_t selectCut = 0;
   Int_t vzCut = 0;
 
+  Int_t AlgLeadJtPtCut[3] = {0, 0, 0};
+  Int_t AlgSubLeadJtPtCut[3] = {0, 0, 0};
+
   std::cout << "Cuts, Lead/Sublead Pt, delphi, eta: " << leadJtPtCut << ", " << subLeadJtPtCut << ", " << jtDelPhiCut << ", " << jtEtaCut << std::endl; 
 
-  for(Long64_t jentry = 0; jentry < 50000; jentry++){
+  for(Long64_t jentry = 0; jentry < nentries; jentry++){
     c->GetEntry(jentry);
 
     totEv++;
@@ -151,7 +174,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     Bool_t algPasses[3] = {false, false, false};
 
     for(Int_t algIter = 0; algIter < 2; algIter++){
-      algPasses[algIter] = passesDijet(AlgJtCollection[algIter]);
+      algPasses[algIter] = passesDijet(AlgJtCollection[algIter], AlgLeadJtPtCut[algIter], AlgSubLeadJtPtCut[algIter], jentry);
     }
 
     //truth, doesn't work w/ getLeadJt because truth doesnt get its own tree
@@ -335,6 +358,14 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   std::cout << "selectCut: " << tempTot << std::endl;
   tempTot = tempTot - vzCut;
   std::cout << "vzCut: " << tempTot << std::endl;
+
+  for(Int_t cutIter = 0; cutIter < 3; cutIter++){
+    std::cout << std::endl;
+    tempTot = totEv - selectCut - vzCut - AlgLeadJtPtCut[cutIter];
+    std::cout << "AlgLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
+    tempTot = tempTot - AlgSubLeadJtPtCut[cutIter];
+    std::cout << "AlgSubLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
+  }
 
   outFile->cd();
 
