@@ -117,7 +117,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
 
-  InitDiJetIniSkim(montecarlo);
+  InitDiJetIniSkim(montecarlo, sType);
 
   HiForest *c = new HiForest(listOfFiles[0].data(), "Forest", cType, montecarlo);
 
@@ -153,7 +153,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   std::cout << "Cuts, Lead/Sublead Pt, delphi, eta: " << leadJtPtCut << ", " << subLeadJtPtCut << ", " << jtDelPhiCut << ", " << jtEtaCut << std::endl; 
 
-  for(Long64_t jentry = 0; jentry < nentries; jentry++){
+  for(Long64_t jentry = 0; jentry < 5000; jentry++){
     c->GetEntry(jentry);
 
     totEv++;
@@ -187,31 +187,52 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       Int_t leadJtIndex = -1;
       Int_t subLeadJtIndex = -1;
 
-      for(Int_t jtEntry = 0; jtEntry < c->akPu3PF.ngen; jtEntry++){
-	if(leadJtIndex < 0){
-	  if(c->akPu3PF.genpt[jtEntry] > leadJtPtCut){
-	    if(TMath::Abs(c->akPu3PF.geneta[jtEntry]) < jtEtaCut)
-	      leadJtIndex = jtEntry;
+      if(c->akPu3PF.ngen == 0){
+	AlgLeadJtPtCut[2]++;
+	algPasses[2] = false;
+      }
+      else if(c->akPu3PF.ngen == 1){
+	AlgSubLeadJtPtCut[2]++;
+	algPasses[2] = false;
+      }
+      else{
+	for(Int_t jtEntry = 0; jtEntry < c->akPu3PF.ngen; jtEntry++){
+	  if(leadJtIndex < 0){
+	    if(c->akPu3PF.genpt[jtEntry] > leadJtPtCut){
+	      if(TMath::Abs(c->akPu3PF.geneta[jtEntry]) < jtEtaCut)
+		leadJtIndex = jtEntry;
+	    }
+	    else{
+	      algPasses[2] = false;
+	      break;
+	    }
+	  }
+	  else if(subLeadJtIndex < 0){
+	    if(c->akPu3PF.genpt[jtEntry] > subLeadJtPtCut){
+	      if(TMath::Abs(c->akPu3PF.geneta[jtEntry]) < jtEtaCut)
+		subLeadJtIndex = jtEntry;
+	    }
+	    else{
+	      algPasses[2] = false;
+	      break;
+	    }
 	  }
 	  else{
-	    algPasses[2] = false;
+	    algPasses[2] = true;
 	    break;
 	  }
 	}
-	else if(subLeadJtIndex < 0){
-	  if(c->akPu3PF.genpt[jtEntry] > subLeadJtPtCut){
-	    if(TMath::Abs(c->akPu3PF.geneta[jtEntry]) < jtEtaCut)
-	      subLeadJtIndex = jtEntry;
-	  }
-	  else{
-	    algPasses[2] = false;
-	    break;
-	  }
-	}
-	else{
+      }
+
+      if(leadJtIndex >= 0){
+	if(subLeadJtIndex >= 0)
 	  algPasses[2] = true;
-	  break;
-	}
+	else
+	  algPasses[2] = false;
+      }
+      else{
+	AlgLeadJtPtCut[2]++;
+	algPasses[2] = false;
       }
     }
     
@@ -222,19 +243,20 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       pthatIni_ = c->akPu3PF.pthat;
     }
 
-    hiEvtPlaneIni_ = c->evt.hiEvtPlanes[21];                                                          
-                                                                                                   
-    TComplex cn1((c->pf.sumpt[0])*(c->pf.vn[2][0]), c->pf.psin[2][0], true);                       
-    TComplex cn2((c->pf.sumpt[14])*(c->pf.vn[2][14]), c->pf.psin[2][14], true);                    
-                                                                                                   
-    TComplex cn = cn1+cn2;                                                                         
-                                                                                                   
-    psinIni_ = cn.Theta();      
+    if(sType == kHIDATA || sType == kHIMC){
+      hiEvtPlaneIni_ = c->evt.hiEvtPlanes[21];                                                  
+      TComplex cn1((c->pf.sumpt[0])*(c->pf.vn[2][0]), c->pf.psin[2][0], true);                    
+      TComplex cn2((c->pf.sumpt[14])*(c->pf.vn[2][14]), c->pf.psin[2][14], true);                
+      TComplex cn = cn1+cn2;                                                                    
+      psinIni_ = cn.Theta();      
+    }      
 
     runIni_ = c->evt.run;
     evtIni_ = c->akPu3PF.evt;
     lumiIni_ = c->evt.lumi;
-    hiBinIni_ = c->evt.hiBin;
+
+    if(sType == kHIDATA || sType == kHIMC)
+      hiBinIni_ = c->evt.hiBin;
 
     //Iterate over jets
 

@@ -104,7 +104,7 @@ Float_t genPt_[MAXGEN];
 Float_t genPhi_[MAXGEN];
 Float_t genEta_[MAXGEN];
 
-void SetIniBranches(Bool_t montecarlo = false)
+void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   //Track Tree Branches
 
@@ -121,15 +121,19 @@ void SetIniBranches(Bool_t montecarlo = false)
   jetTreeIni_p->Branch("runIni", &runIni_, "runIni/I");
   jetTreeIni_p->Branch("evtIni", &evtIni_, "evtIni/I");
   jetTreeIni_p->Branch("lumiIni", &lumiIni_, "lumiIni/I");
-  jetTreeIni_p->Branch("hiBinIni", &hiBinIni_, "hiBinIni/I");
+
+  if(sType == kHIDATA || sType == kHIMC)
+    jetTreeIni_p->Branch("hiBinIni", &hiBinIni_, "hiBinIni/I");
 
    
   if(montecarlo)
     jetTreeIni_p->Branch("pthatIni", &pthatIni_, "pthatIni/F");
 
-  jetTreeIni_p->Branch("hiEvtPlaneIni", &hiEvtPlaneIni_, "hiEvtPlaneIni/F");
-  jetTreeIni_p->Branch("psinIni", &psinIni_, "psinIni/F");
-  
+  if(sType == kHIDATA || sType == kHIMC){
+    jetTreeIni_p->Branch("hiEvtPlaneIni", &hiEvtPlaneIni_, "hiEvtPlaneIni/F");
+    jetTreeIni_p->Branch("psinIni", &psinIni_, "psinIni/F");
+  }    
+
   jetTreeIni_p->Branch("nPu3Calo", &nPu3Calo_, "nPu3Calo/I");
   jetTreeIni_p->Branch("Pu3CaloPt", &Pu3CaloPt_, "Pu3CaloPt[nPu3Calo]/F");
   jetTreeIni_p->Branch("Pu3CaloPhi", &Pu3CaloPhi_, "Pu3CaloPhi[nPu3Calo]/F");
@@ -170,7 +174,7 @@ void SetIniBranches(Bool_t montecarlo = false)
 }
 
 
-void GetIniBranches(Bool_t montecarlo = false)
+void GetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   //Track Tree Branches
 
@@ -186,13 +190,17 @@ void GetIniBranches(Bool_t montecarlo = false)
   jetTreeIni_p->SetBranchAddress("runIni", &runIni_);
   jetTreeIni_p->SetBranchAddress("evtIni", &evtIni_);
   jetTreeIni_p->SetBranchAddress("lumiIni", &lumiIni_);
-  jetTreeIni_p->SetBranchAddress("hiBinIni", &hiBinIni_);
+
+  if(sType == kHIDATA || sType == kHIMC)
+    jetTreeIni_p->SetBranchAddress("hiBinIni", &hiBinIni_);
 
   if(montecarlo)
     jetTreeIni_p->SetBranchAddress("pthatIni", &pthatIni_);
 
-  jetTreeIni_p->SetBranchAddress("hiEvtPlaneIni", &hiEvtPlaneIni_);
-  jetTreeIni_p->SetBranchAddress("psinIni", &psinIni_);
+  if(sType == kHIDATA || sType == kHIMC){
+    jetTreeIni_p->SetBranchAddress("hiEvtPlaneIni", &hiEvtPlaneIni_);
+    jetTreeIni_p->SetBranchAddress("psinIni", &psinIni_);
+  }  
 
   jetTreeIni_p->SetBranchAddress("nPu3Calo", &nPu3Calo_);
   jetTreeIni_p->SetBranchAddress("Pu3CaloPt", Pu3CaloPt_);
@@ -233,7 +241,7 @@ void GetIniBranches(Bool_t montecarlo = false)
 }
 
 
-void InitDiJetIniSkim(Bool_t montecarlo = false)
+void InitDiJetIniSkim(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   std::cout << "Init DiJet IniSkim" << std::endl;
 
@@ -243,11 +251,11 @@ void InitDiJetIniSkim(Bool_t montecarlo = false)
   if(montecarlo)
     genTreeIni_p = new TTree("genTreeIni", "genTreeIni");
 
-  SetIniBranches(montecarlo);
+  SetIniBranches(montecarlo, sType);
 }
 
 
-void GetDiJetIniSkim(TFile* iniFile_p, Bool_t montecarlo = false)
+void GetDiJetIniSkim(TFile* iniFile_p, Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   std::cout << "Get DiJet IniSkim" << std::endl;
 
@@ -257,7 +265,7 @@ void GetDiJetIniSkim(TFile* iniFile_p, Bool_t montecarlo = false)
   if(montecarlo)
     genTreeIni_p = (TTree*)iniFile_p->Get("genTreeIni");
 
-  GetIniBranches(montecarlo);
+  GetIniBranches(montecarlo, sType);
 }
 
 

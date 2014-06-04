@@ -26,7 +26,6 @@ collisionType getCType(sampleType sType);
 
 const char* algType[3] = {"PuCalo", "VsCalo", "T"};
 
-
 Float_t getFlippedPhi(Float_t inPhi)
 {
   Float_t outPhi;
@@ -135,7 +134,6 @@ void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float
 }
 
 
-
 void getPtProj(Float_t cutPt, Float_t inPt, Float_t phi, Float_t jtPhi, Float_t& ProjF, Float_t& Proj0_1, Float_t& Proj1_2, Float_t& Proj2_4, Float_t& Proj4_8, Float_t& Proj8_100)
 {
   ProjF += -inPt*cos(getDPHI(phi, jtPhi));
@@ -204,7 +202,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   TFile* iniSkim_p = new TFile(listOfFiles[0].data(), "READ");
 
-  GetDiJetIniSkim(iniSkim_p, montecarlo);
+  GetDiJetIniSkim(iniSkim_p, montecarlo, sType);
 
   std::cout << "IniSkim Loaded" << std::endl;
 
@@ -240,7 +238,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
 
-  InitDiJetAnaSkim(montecarlo);
+  InitDiJetAnaSkim(montecarlo, sType);
 
   Long64_t nentries = trackTreeIni_p->GetEntries();
 
@@ -258,7 +256,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(jentry%1000 == 0)
       std::cout << jentry << std::endl;
 
-    InitJetVar(montecarlo);
+    InitJetVar(montecarlo, sType);
 
     //Jet Edits here
 
@@ -284,10 +282,15 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
     run_ = runIni_;
     evt_ = evtIni_;
     lumi_ = lumiIni_;
-    hiBin_ = hiBinIni_;
-    pthat_ = pthatIni_;
-    hiEvtPlane_ = hiEvtPlaneIni_;
-    psin_ = psinIni_;
+
+    if(montecarlo)
+      pthat_ = pthatIni_;
+    
+    if(sType == kHIDATA || sType == kHIMC){
+      hiBin_ = hiBinIni_;
+      hiEvtPlane_ = hiEvtPlaneIni_;
+      psin_ = psinIni_;
+    }
 
     if(montecarlo){
       Float_t pthatWeights[5] = {4.29284e-01, 2.99974e-02, 3.38946e-04, 1.06172e-04, 2.79631e-05};
@@ -302,18 +305,16 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     if(montecarlo){
-      for(Int_t algIter = 0; algIter < 2; algIter++){
-	centWeight_[algIter] = hist_DataOverMC_p[algIter]->GetBinContent(hist_DataOverMC_p[algIter]->FindBin(hiBin_));
-	centWeight_2pi3_[algIter] = hist_DataOverMC_2pi3_p[algIter]->GetBinContent(hist_DataOverMC_2pi3_p[algIter]->FindBin(hiBin_));
-	centWeight_120_5pi6_[algIter] = hist_DataOverMC_120_5pi6_p[algIter]->GetBinContent(hist_DataOverMC_120_5pi6_p[algIter]->FindBin(hiBin_));
-	centWeight_hatAll_0_[algIter] = hist_DataOverMC_hatAll_0_p[algIter]->GetBinContent(hist_DataOverMC_hatAll_0_p[algIter]->FindBin(hiBin_));
-	centWeight_hatAll_1_[algIter] = hist_DataOverMC_hatAll_1_p[algIter]->GetBinContent(hist_DataOverMC_hatAll_1_p[algIter]->FindBin(hiBin_));
+      for(Int_t algIter = 0; algIter < 3; algIter++){
+	if(sType == kHIMC){
+	  centWeight_[algIter] = hist_DataOverMC_p[algIter]->GetBinContent(hist_DataOverMC_p[algIter]->FindBin(hiBin_));
+	  centWeight_2pi3_[algIter] = hist_DataOverMC_2pi3_p[algIter]->GetBinContent(hist_DataOverMC_2pi3_p[algIter]->FindBin(hiBin_));
+	  centWeight_120_5pi6_[algIter] = hist_DataOverMC_120_5pi6_p[algIter]->GetBinContent(hist_DataOverMC_120_5pi6_p[algIter]->FindBin(hiBin_));
+	  centWeight_hatAll_0_[algIter] = hist_DataOverMC_hatAll_0_p[algIter]->GetBinContent(hist_DataOverMC_hatAll_0_p[algIter]->FindBin(hiBin_));
+	  centWeight_hatAll_1_[algIter] = hist_DataOverMC_hatAll_1_p[algIter]->GetBinContent(hist_DataOverMC_hatAll_1_p[algIter]->FindBin(hiBin_));
+	}	  
 
 	fullWeight_[algIter] = centWeight_hatAll_1_[algIter]*pthatWeight_;
-
-	if(algIter == 3)
-	  std::cout << "Hibin, pos, centWeight: " << hiBin_ << ", " << hist_DataOverMC_hatAll_1_p[algIter]->FindBin(hiBin_) << ", " << centWeight_hatAll_1_[algIter] << std::endl;  
-
       }
     }
 
@@ -433,9 +434,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 		else if(tempLeadR < 1.8 || tempSubLeadR < 1.8)
 		  getPtProj(trkPt_[trkEntry], tempCorr[setIter], trkPhi_[trkEntry], AlgJtAvePhi_[setIter], rAlgImbProjA9CF_[setIter + 3], rAlgImbProjA9C0_1_[setIter + 3], rAlgImbProjA9C1_2_[setIter + 3], rAlgImbProjA9C2_4_[setIter + 3], rAlgImbProjA9C4_8_[setIter + 3], rAlgImbProjA9C8_100_[setIter + 3]);
 		else
-		  getPtProj(trkPt_[trkEntry], tempCorr[setIter], trkPhi_[trkEntry], AlgJtAvePhi_[setIter], rAlgImbProjA10CF_[setIter + 3], rAlgImbProjA10C0_1_[setIter + 3], rAlgImbProjA10C1_2_[setIter + 3], rAlgImbProjA10C2_4_[setIter + 3], rAlgImbProjA10C4_8_[setIter + 3], rAlgImbProjA10C8_100_[setIter + 3]);
-
-		    
+		  getPtProj(trkPt_[trkEntry], tempCorr[setIter], trkPhi_[trkEntry], AlgJtAvePhi_[setIter], rAlgImbProjA10CF_[setIter + 3], rAlgImbProjA10C0_1_[setIter + 3], rAlgImbProjA10C1_2_[setIter + 3], rAlgImbProjA10C2_4_[setIter + 3], rAlgImbProjA10C4_8_[setIter + 3], rAlgImbProjA10C8_100_[setIter + 3]);		    
 	      }
 	    }
 	  }  

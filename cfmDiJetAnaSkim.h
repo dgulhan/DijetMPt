@@ -271,7 +271,7 @@ Float_t gAlgImbProjA10C4_8_[3];
 Float_t gAlgImbProjA10C8_100_[3];
 
 
-void SetAnaBranches(Bool_t montecarlo = false)
+void SetAnaBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   //Track Tree Branches
 
@@ -375,17 +375,22 @@ void SetAnaBranches(Bool_t montecarlo = false)
   jetTreeAna_p->Branch("run", &run_, "run/I");
   jetTreeAna_p->Branch("evt", &evt_, "evt/I");
   jetTreeAna_p->Branch("lumi", &lumi_, "lumi/I");
-  jetTreeAna_p->Branch("hiBin", &hiBin_, "hiBin/I");
 
-  jetTreeAna_p->Branch("hiEvtPlane", &hiEvtPlane_, "hiEvtPlane/F");
-  jetTreeAna_p->Branch("psin", &psin_, "psin/F");
+  if(sType == kHIDATA || sType == kHIMC){
+    jetTreeAna_p->Branch("hiBin", &hiBin_, "hiBin/I");
+    jetTreeAna_p->Branch("hiEvtPlane", &hiEvtPlane_, "hiEvtPlane/F");
+    jetTreeAna_p->Branch("psin", &psin_, "psin/F");
+  }
 
   jetTreeAna_p->Branch("eventSet", &eventSet_, "eventSet[3]/O");
-  jetTreeAna_p->Branch("centWeight", &centWeight_, "centWeight[3]/F");
-  jetTreeAna_p->Branch("centWeight_2pi3", &centWeight_2pi3_, "centWeight_2pi3[3]/F");
-  jetTreeAna_p->Branch("centWeight_120_5pi6", &centWeight_120_5pi6_, "centWeight_120_5pi6[3]/F");
-  jetTreeAna_p->Branch("centWeight_hatAll_0", &centWeight_hatAll_0_, "centWeight_hatAll_0[3]/F");
-  jetTreeAna_p->Branch("centWeight_hatAll_1", &centWeight_hatAll_1_, "centWeight_hatAll_1[3]/F");
+
+  if(sType == kHIMC){
+    jetTreeAna_p->Branch("centWeight", &centWeight_, "centWeight[3]/F");
+    jetTreeAna_p->Branch("centWeight_2pi3", &centWeight_2pi3_, "centWeight_2pi3[3]/F");
+    jetTreeAna_p->Branch("centWeight_120_5pi6", &centWeight_120_5pi6_, "centWeight_120_5pi6[3]/F");
+    jetTreeAna_p->Branch("centWeight_hatAll_0", &centWeight_hatAll_0_, "centWeight_hatAll_0[3]/F");
+    jetTreeAna_p->Branch("centWeight_hatAll_1", &centWeight_hatAll_1_, "centWeight_hatAll_1[3]/F");
+  }    
 
   jetTreeAna_p->Branch("fullWeight", &fullWeight_, "fullWeight[3]/F");
 
@@ -529,7 +534,7 @@ void SetAnaBranches(Bool_t montecarlo = false)
 }
 
 
-void InitDiJetAnaSkim(Bool_t montecarlo = false)
+void InitDiJetAnaSkim(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   std::cout << "Init DiJet AnaSkim" << std::endl;
 
@@ -539,21 +544,24 @@ void InitDiJetAnaSkim(Bool_t montecarlo = false)
   if(montecarlo)
     genTreeAna_p = new TTree("genTreeAna", "genTreeAna");
 
-  SetAnaBranches(montecarlo);
+  SetAnaBranches(montecarlo, sType);
 }
 
 
-void InitJetVar(Bool_t montecarlo = false)
+void InitJetVar(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   for(Int_t initIter = 0; initIter < 3; initIter++){
     eventSet_[initIter] = false;
-    centWeight_[initIter] = -1;
-    centWeight_2pi3_[initIter] = -1;
-    centWeight_120_5pi6_[initIter] = -1;
-    centWeight_hatAll_0_[initIter] = -1;
-    centWeight_hatAll_1_[initIter] = -1;
 
-    fullWeight_[initIter] = -1;
+    if(sType == kHIMC){
+      centWeight_[initIter] = 1;
+      centWeight_2pi3_[initIter] = 1;
+      centWeight_120_5pi6_[initIter] = 1;
+      centWeight_hatAll_0_[initIter] = 1;
+      centWeight_hatAll_1_[initIter] = 1;
+    }
+
+    fullWeight_[initIter] = 1;
 
     AlgLeadJtPt_[initIter] = -10;
     AlgSubLeadJtPt_[initIter] = -10;
