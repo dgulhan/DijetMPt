@@ -25,13 +25,17 @@ const Float_t jtEtaCut = 2.0; // Default Max at 2.4 to avoid transition junk, ot
 
 collisionType getCType(sampleType sType);
 
-Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut, Int_t num)
+Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
 {
   Int_t leadJtIndex = -1;
   Int_t subLeadJtIndex = -1;
 
   if(jtCollection.nref == 0){
     lPtCut++;
+    return false;
+  }
+  else if(jtCollection.nref == 1){
+    sLPtCut++;
     return false;
   }
 
@@ -60,8 +64,8 @@ Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut, Int_t num)
       return true;
   }
 
-  if(leadJtIndex > 0){
-    if(subLeadJtIndex > 0)
+  if(leadJtIndex >= 0){
+    if(subLeadJtIndex >= 0)
       return true;
     else{
       sLPtCut++;
@@ -174,7 +178,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     Bool_t algPasses[3] = {false, false, false};
 
     for(Int_t algIter = 0; algIter < 2; algIter++){
-      algPasses[algIter] = passesDijet(AlgJtCollection[algIter], AlgLeadJtPtCut[algIter], AlgSubLeadJtPtCut[algIter], jentry);
+      algPasses[algIter] = passesDijet(AlgJtCollection[algIter], AlgLeadJtPtCut[algIter], AlgSubLeadJtPtCut[algIter]);
     }
 
     //truth, doesn't work w/ getLeadJt because truth doesnt get its own tree
