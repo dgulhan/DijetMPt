@@ -359,7 +359,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   //Make legend
 
   TLegend* legA_p = new TLegend(0.25, 0.18, 0.99, 0.88);
-  TLegend* legB_p = new TLegend(0.45, 0.01, 0.99, 0.80);
+  TLegend* legB_p = new TLegend(0.25, 0.1, 0.55, 0.40);
 
   legA_p->SetFillColor(0);
   legA_p->SetTextFont(43);
@@ -368,19 +368,12 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   legB_p->SetFillColor(0);
   legB_p->SetTextFont(43);
-  legB_p->SetTextSizePixels(22);
+  legB_p->SetTextSizePixels(28);
   legB_p->SetBorderSize(0);
 
   profPanel_p->cd(1);
 
   drawFullStack(hist1_p, 0, 28);
-
-  profPanel_p->cd(2);
-
-  drawFullStack(hist1_p, 0, 28, legA_p);
-
-  Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
-  if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA50100, hist1_p[5]);
 
   TLine* zeroLine_p = new TLine(0., 0., 0.5, 0.);
   zeroLine_p->SetLineColor(1);
@@ -391,6 +384,20 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   label1_p->SetNDC();
   label1_p->SetTextFont(43);
   label1_p->SetTextSizePixels(28);
+
+  label1_p->DrawLatex(.28, overCoord[0], Form("%s", overLabel[0]));
+  label1_p->DrawLatex(.28, overCoord[1], "CMS Preliminary");
+
+  legB_p->Draw("SAME");
+
+  profPanel_p->cd(2);
+
+  drawFullStack(hist1_p, 0, 28, legA_p);
+
+  Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
+  if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA50100, hist1_p[5]);
+
+  zeroLine_p->Draw();
 
   label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[1]));
   if(strcmp("", CNC) == 0)
@@ -405,7 +412,13 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   else
     profPanel_p->cd(4);
 
+  TH1F* histDum_p = new TH1F("histDum_p", "histDum_p", 10, 0, 1);
+  histDum_p->SetMarkerStyle(28);
+  legA_p->AddEntry(histDum_p, "> 0.5", "p");
+  legB_p->AddEntry(histDum_p, "PbPb", "p");
   legA_p->Draw("SAME");
+
+  label1_p->DrawLatex(.30, .92, "p_{T}^{trk} (|#eta|<2.4)");
 
   profPanel_p->cd(3);
 
@@ -459,11 +472,49 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   }
 
   Int_t panels;
+  Int_t ppStart;
+  const char* ppChar[2];
 
-  if(!strcmp(CNC, ""))
+  if(!strcmp(CNC, "")){
     panels = 10;
-  else 
+    ppStart = 7;
+    ppChar[0] = "50-100%";
+    ppChar[1] = "30-50%";
+  }
+  else{
     panels = 6;
+    ppStart = 5;
+    ppChar[0] = "30-100%";
+    ppChar[1] = "0-30%";
+  }
+
+  profPanel_p->cd(ppStart);
+  hist1_p[5]->Draw("E1");
+  label1_p->DrawLatex(.22, overCoord[2], overLabel[3]);
+  label1_p->DrawLatex(.22, overCoord[3], ppChar[0]);
+  label1_p->DrawLatex(.24, .38, "p_{T,1}>120 GeV/c");
+  label1_p->DrawLatex(.24, .28, "p_{T,2}>50 GeV/c");
+
+
+  profPanel_p->cd(ppStart+1);
+  hist2_p[5]->Draw("E1");
+  label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
+  label1_p->DrawLatex(.05, overCoord[3], ppChar[1]);
+  label1_p->DrawLatex(.05, .38, "|#eta|_{1},|#eta|_{2}<1.6");
+  label1_p->DrawLatex(.05, .28, "#Delta#phi_{1,2}>5#pi/6");
+
+  if(!strcmp(CNC, "")){
+    profPanel_p->cd(9);
+    hist2_p[5]->Draw("E1");
+    label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
+    label1_p->DrawLatex(.05, overCoord[3], "10-30%");
+    label1_p->DrawLatex(.05, .38, "anti-k_{T} Calo R = 0.3");
+
+    profPanel_p->cd(10);
+    hist2_p[5]->Draw("E1");
+    label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
+    label1_p->DrawLatex(.05, overCoord[3], "0-10%");
+  }
 
   for(Int_t panelIter = 0; panelIter < panels; panelIter++){
     profPanel_p->cd(panelIter)->RedrawAxis();

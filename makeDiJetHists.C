@@ -29,7 +29,8 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 
   const char* title = Form("%s%sImbAsymmProjA%s%s%s_%d%d_%s_h", gorr, algType[setNum], CNC, FPT[FPTNum], Corr, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
 
-  Float_t xArr[5] = {.0, .11, .22, .33, .50};
+  Float_t xArr[5] = {.0001, .11, .22, .33, .4999};
+  if(centHi == 199) xArr[0] = .0;
 
   TH1F* imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 4, xArr);
   imbAsymmHist_p->GetXaxis()->SetLimits(0.00, 0.50);
