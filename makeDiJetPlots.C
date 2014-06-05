@@ -280,6 +280,25 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0)
 }
 
 
+void makeSysError(Float_t sysArr[4], TH1F* hist_p)
+{
+  for(Int_t iter = 0; iter < hist_p->GetNbinsX(); iter++){
+    Float_t yVal = hist_p->GetBinContent(iter+1);
+    Float_t sys = sysArr[iter];
+    TLine* l = new TLine(hist_p->GetBinLowEdge(iter+1) + .01, yVal - TMath::Sqrt(sys*sys), hist_p->GetBinLowEdge(iter+2) - .01, yVal - TMath::Sqrt(sys*sys));
+    l->SetLineColor(1);
+    l->Draw();
+    l->DrawLine(hist_p->GetBinLowEdge(iter+1) + .01, yVal - TMath::Sqrt(sys*sys), hist_p->GetBinLowEdge(iter+1) + .01, yVal - TMath::Sqrt(sys*sys) + 2);
+    l->DrawLine(hist_p->GetBinLowEdge(iter + 2) - .01, yVal - TMath::Sqrt(sys*sys), hist_p->GetBinLowEdge(iter + 2) - .01, yVal - TMath::Sqrt(sys*sys) + 2);
+    l->DrawLine(hist_p->GetBinLowEdge(iter + 1) + .01, yVal + TMath::Sqrt(sys*sys), hist_p->GetBinLowEdge(iter + 2) -.01, yVal + TMath::Sqrt(sys*sys));
+
+    l->DrawLine(hist_p->GetBinLowEdge(iter + 1) + .01, yVal + TMath::Sqrt(sys*sys) - 2, hist_p->GetBinLowEdge(iter + 1) + .01, yVal + TMath::Sqrt(sys*sys));
+
+    l->DrawLine(hist_p->GetBinLowEdge(iter + 2) - .01, yVal + TMath::Sqrt(sys*sys) - 2, hist_p->GetBinLowEdge(iter + 2) - .01, yVal + TMath::Sqrt(sys*sys));
+  }
+}
+
+
 void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNC = "", Bool_t montecarlo = false)
 {
   TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
@@ -354,11 +373,14 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   profPanel_p->cd(1);
 
-  drawFullStack(hist1_p, 0, 28, legA_p);
+  drawFullStack(hist1_p, 0, 28);
 
   profPanel_p->cd(2);
 
   drawFullStack(hist1_p, 0, 28, legA_p);
+
+  Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
+  if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA50100, hist1_p[5]);
 
   TLine* zeroLine_p = new TLine(0., 0., 0.5, 0.);
   zeroLine_p->SetLineColor(1);
@@ -378,6 +400,13 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   label1_p->DrawLatex(.05, .05, "#sqrt{s_{NN}} = 2.76 TeV");
 
+  if(!strcmp(CNC, ""))
+    profPanel_p->cd(6);
+  else
+    profPanel_p->cd(4);
+
+  legA_p->Draw("SAME");
+
   profPanel_p->cd(3);
 
   //Draw second PbPb hist
@@ -385,6 +414,9 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   makeHistForPtStack(hist2_p, 3);
 
   drawFullStack(hist2_p, 0, 28);
+
+  Float_t sysA3050[4] = {3.8, 4.4, 5.8, 6.5};
+  if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA3050, hist2_p[5]);
 
   zeroLine_p->Draw();
 
@@ -403,6 +435,9 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
     drawFullStack(hist3_p, 0, 28);
 
+    Float_t sysA1030[4] = {2.3, 2.9, 3.7, 4.3};
+    if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA1030, hist3_p[5]);
+
     zeroLine_p->Draw();
 
     label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[2]));
@@ -414,10 +449,24 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
     drawFullStack(hist4_p, 0, 28);
 
+    Float_t sysA010[4] = {3.1, 3.5, 4.2, 5.5};
+    if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA010, hist4_p[5]);
+
     zeroLine_p->Draw();
 
     label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[2]));
     label1_p->DrawLatex(.05, overCoord[1], "0-10%");
+  }
+
+  Int_t panels;
+
+  if(!strcmp(CNC, ""))
+    panels = 10;
+  else 
+    panels = 6;
+
+  for(Int_t panelIter = 0; panelIter < panels; panelIter++){
+    profPanel_p->cd(panelIter)->RedrawAxis();
   }
 
   TFile* outFile_p = new TFile(outName, "UPDATE");
