@@ -53,7 +53,7 @@ const char* DataF_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4-merg
 const char* DataG_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMSKIM_20140508_jtCutDown_0.root";
 
 
-const char* TEST = "testAna2_0.root";
+const char* TEST = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMANASKIM_20140605_TEST_0.root";
 
 void setFileTag(const char* inName)
 {
@@ -282,8 +282,8 @@ TCut makeEtaCut(Int_t setNum, Float_t overallCut = 2.0)
   if(!checkSetRange(setNum))
     return "";
 
-  const char* leadJt = Form("AlgLeadJtEta[%d]", setNum);
-  const char* subLeadJt = Form("AlgSubLeadJtEta[%d]", setNum);
+  const char* leadJt = Form("AlgJtEta[%d][0]", setNum);
+  const char* subLeadJt = Form("AlgJtEta[%d][1]", setNum);
 
   return Form("TMath::Abs(%s) < %f && TMath::Abs(%s) < %f", leadJt, overallCut, subLeadJt, overallCut);
 }
