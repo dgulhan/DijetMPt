@@ -5,6 +5,20 @@
 #include "TH1F.h"
 #include "TCut.h"
 
+enum sampleType{
+  kHIDATA, //0                                                                                                                 
+  kHIMC,   //1                                                                                                                  
+  kPPDATA, //2                                                                                                                    
+  kPPMC,   //3                                                                                                                  
+  kPADATA, //4                                                                                                                  
+  kPAMC    //5                                                                                                                   
+};
+
+enum AlgoType_PbPb{
+  PuCalo, //0
+  VsCalo, //1
+  T       //3
+};
 
 const char* algType[3] = {"PuCalo", "VsCalo", "T"};
 
@@ -53,7 +67,7 @@ const char* DataF_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4-merg
 const char* DataG_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMSKIM_20140508_jtCutDown_0.root";
 
 
-const char* TEST = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMANASKIM_20140605_TEST_0.root";
+const char* TEST = "HiForest_pp_Jet80_v8_PP2013_HiForest_PromptReco_JsonPP_Jet80_PPReco_merged_forest_0_CFMANASKIM_20140606_0.root";
 
 void setFileTag(const char* inName)
 {

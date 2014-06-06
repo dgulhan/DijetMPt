@@ -19,18 +19,27 @@ Int_t subLeadJtCut = 50;
 
 const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
-void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNC, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", Bool_t montecarlo = false)
+void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNC, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", sampleType sType = kHIDATA)
 {
   inFile_p->cd();
+
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC)
+    montecarlo = true;
 
   Int_t setCorrNum = setNum;
   if(!strcmp("Corr", Corr))
     setCorrNum = setNum + 3;
 
-  const char* title = Form("%s%sImbAsymmProjA%s%s%s_%d%d_%s_h", gorr, algType[setNum], CNC, FPT[FPTNum], Corr, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
+  const char* title;
+
+  if(sType == kHIDATA || sType == kHIMC)
+    title = Form("%s%sImbAsymmProjA%s%s%s_%d%d_%s_h", gorr, algType[setNum], CNC, FPT[FPTNum], Corr, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
+  else
+    title = Form("%s%sImbAsymmProjA%s%s%s_PP_%s_h", gorr, algType[setNum], CNC, FPT[FPTNum], Corr, fileTag);
 
   Float_t xArr[5] = {.0001, .11, .22, .33, .4999};
-  if(centHi == 199) xArr[0] = .0;
+  if(centHi == 199 || sType == kPPMC || sType == kPPDATA) xArr[0] = .0;
 
   TH1F* imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 4, xArr);
   imbAsymmHist_p->GetXaxis()->SetLimits(0.00, 0.50);
@@ -41,7 +50,8 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
   TString var = Form("%sAlgImbProjA%s[%d][%d]", gorr, CNC, setCorrNum, FPTNum);
 
   TCut setCut = makeSetCut(setNum);
-  TCut centCut = makeCentCut(centLow, centHi);
+  TCut centCut = "";
+  if(sType == kHIDATA || sType == kHIMC) centCut = makeCentCut(centLow, centHi);
   TCut etaCut = makeEtaCut(setNum, 1.6);
   TCut phiCut = makeDelPhiCut(setNum, 5*TMath::Pi()/6);
 
@@ -78,9 +88,13 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 }
 
 
-void makeDiJetHists(const char* inName, const char* outName, Bool_t montecarlo = false)
+void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA)
 {
   TH1::SetDefaultSumw2();
+
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC)
+    montecarlo = true;
 
   setFileTag(inName);
 
@@ -98,22 +112,26 @@ void makeDiJetHists(const char* inName, const char* outName, Bool_t montecarlo =
   const char* corr[2] = {"", "Corr"};
   const char* CNC[3] = {"", "C", "NC"};
 
+
+  Int_t centBins = 6;
   Int_t centLow[6] = {0, 20, 60, 100, 0, 60};
   Int_t centHi[6] = {19, 59, 99, 199, 59, 199};
+
+  if(sType == kPPMC || sType == kPPDATA) centBins = 1;
 
   for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
     std::cout << "Algorithm: " << algType[algIter] << std::endl;
 
     for(Int_t corrIter = 0; corrIter < 2; corrIter++){
       for(Int_t CNCIter = 0; CNCIter < 3; CNCIter++){
-	for(Int_t centIter = 0; centIter < 6; centIter++){
+	for(Int_t centIter = 0; centIter < centBins; centIter++){
 	  for(Int_t FPTIter = 0; FPTIter < 6; FPTIter++){
 
-	    if((CNCIter == 0 && centIter < 4) || (CNCIter != 0 && centIter >= 4)){
-	      makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNC[CNCIter], FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], montecarlo);
+	    if((CNCIter == 0 && centIter < 4) || (CNCIter != 0 && centIter >= 4) || sType == kPPMC || sType == kPPDATA){
+	      makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNC[CNCIter], FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], sType);
 
 	      if(montecarlo && corrIter == 0)
-		makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNC[CNCIter], FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], montecarlo);
+		makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNC[CNCIter], FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], sType);
 	    }
 
 	  }

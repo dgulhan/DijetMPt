@@ -128,19 +128,32 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   c->hasSkimTree = true;
   c->hasTrackTree = true;
   c->hasEvtTree = true;
-  c->hasAkPu3JetTree = true;
-  c->hasAkPu3CaloJetTree = true;
-  c->hasAkVs3CaloJetTree = true;
+
+  if(sType == kHIDATA || sType == kHIMC){
+    c->hasAkPu3JetTree = true;
+    c->hasAkPu3CaloJetTree = true;
+    c->hasAkVs3CaloJetTree = true;
+  }
+  else if(sType == kPPDATA || sType == kPPMC){
+    c->hasAk3CaloJetTree = true;
+  }
+
+  std::cout << "TreeTruth: " << c->hasAk3CaloJetTree << std::endl;
 
   Float_t meanVz = 0;
 
-  if(montecarlo){
+  if(sType == kHIMC){
     c->hasGenParticleTree = true;
     //mean mc .16458, mean data -.337
     meanVz = .16458 + .337;
   }
+  else if(sType == kPPMC){
+    c->hasGenParticleTree = true;
+    //MC vz = .4205,  Data vz = .6953
+    meanVz = .4205 - .6953;
+  }
 
-  Long64_t nentries = c->GetEntries();
+  Long64_t nentries = c->ak3CaloJetTree->GetEntries();
 
   std::cout << nentries << std::endl;
 
@@ -153,7 +166,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   std::cout << "Cuts, Lead/Sublead Pt, delphi, eta: " << leadJtPtCut << ", " << subLeadJtPtCut << ", " << jtDelPhiCut << ", " << jtEtaCut << std::endl; 
 
-  for(Long64_t jentry = 0; jentry < 5000; jentry++){
+  for(Long64_t jentry = 0; jentry < nentries; jentry++){
     c->GetEntry(jentry);
 
     totEv++;
@@ -173,7 +186,16 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
     //particle flow
 
-    Jets AlgJtCollection[2] = {c->akPu3Calo, c->akVs3Calo};
+    Jets AlgJtCollection[2];
+
+    if(sType == kHIDATA || sType == kHIMC){
+      AlgJtCollection[0] = c->akPu3Calo;
+      AlgJtCollection[1] = c->akVs3Calo;
+    }
+    else if(sType == kPPDATA || sType == kPPMC){
+      AlgJtCollection[0] = c->akPu3Calo;
+      AlgJtCollection[1] = c->ak3Calo;
+    }
 
     Bool_t algPasses[3] = {false, false, false};
 
@@ -239,9 +261,8 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(algPasses[0] == false && algPasses[1] == false && algPasses[2] == false)
       continue;
 
-    if(montecarlo){
-      pthatIni_ = c->akPu3PF.pthat;
-    }
+    if(kHIMC) pthatIni_ = c->akPu3PF.pthat;
+    else if(kPPMC) pthatIni_ = c->ak3Calo.pthat;
 
     if(sType == kHIDATA || sType == kHIMC){
       hiEvtPlaneIni_ = c->evt.hiEvtPlanes[21];                                                  
@@ -252,7 +273,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }      
 
     runIni_ = c->evt.run;
-    evtIni_ = c->akPu3PF.evt;
+    evtIni_ = c->evt.evt;
     lumiIni_ = c->evt.lumi;
 
     if(sType == kHIDATA || sType == kHIMC)
@@ -264,43 +285,45 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     nVs3Calo_ = 0;
     nT3_ = 0;
 
-    for(Int_t Pu3CaloIter = 0; Pu3CaloIter < c->akPu3Calo.nref; Pu3CaloIter++){
-      if(c->akPu3Calo.jtpt[Pu3CaloIter] < subLeadJtPtCut)
+    for(Int_t Pu3CaloIter = 0; Pu3CaloIter < AlgJtCollection[0].nref; Pu3CaloIter++){
+      if(AlgJtCollection[0].jtpt[Pu3CaloIter] < subLeadJtPtCut)
 	break;
-      else if(TMath::Abs(c->akPu3Calo.jteta[Pu3CaloIter]) > jtEtaCut)
+      else if(TMath::Abs(AlgJtCollection[0].jteta[Pu3CaloIter]) > jtEtaCut)
 	continue;
 
-      Pu3CaloPt_[nPu3Calo_] = c->akPu3Calo.jtpt[Pu3CaloIter];
-      Pu3CaloPhi_[nPu3Calo_] = c->akPu3Calo.jtphi[Pu3CaloIter];
-      Pu3CaloEta_[nPu3Calo_] = c->akPu3Calo.jteta[Pu3CaloIter];
+      Pu3CaloPt_[nPu3Calo_] = AlgJtCollection[0].jtpt[Pu3CaloIter];
+      Pu3CaloPhi_[nPu3Calo_] = AlgJtCollection[0].jtphi[Pu3CaloIter];
+      Pu3CaloEta_[nPu3Calo_] = AlgJtCollection[0].jteta[Pu3CaloIter];
 
       nPu3Calo_++;
     }
 
-    for(Int_t Vs3CaloIter = 0; Vs3CaloIter < c->akVs3Calo.nref; Vs3CaloIter++){
-      if(c->akVs3Calo.jtpt[Vs3CaloIter] < subLeadJtPtCut)
+    for(Int_t Vs3CaloIter = 0; Vs3CaloIter < AlgJtCollection[1].nref; Vs3CaloIter++){
+      if(AlgJtCollection[1].jtpt[Vs3CaloIter] < subLeadJtPtCut)
 	break;
-      else if(TMath::Abs(c->akVs3Calo.jteta[Vs3CaloIter]) > jtEtaCut)
+      else if(TMath::Abs(AlgJtCollection[1].jteta[Vs3CaloIter]) > jtEtaCut)
 	continue;
 
-      Vs3CaloPt_[nVs3Calo_] = c->akVs3Calo.jtpt[Vs3CaloIter];
-      Vs3CaloPhi_[nVs3Calo_] = c->akVs3Calo.jtphi[Vs3CaloIter];
-      Vs3CaloEta_[nVs3Calo_] = c->akVs3Calo.jteta[Vs3CaloIter];
+      Vs3CaloPt_[nVs3Calo_] = AlgJtCollection[1].jtpt[Vs3CaloIter];
+      Vs3CaloPhi_[nVs3Calo_] = AlgJtCollection[1].jtphi[Vs3CaloIter];
+      Vs3CaloEta_[nVs3Calo_] = AlgJtCollection[1].jteta[Vs3CaloIter];
 
       nVs3Calo_++;
     }
 
-    for(Int_t T3Iter = 0; T3Iter < c->akPu3PF.ngen; T3Iter++){
-      if(c->akPu3PF.genpt[T3Iter] < subLeadJtPtCut)
-	break;
-      else if(TMath::Abs(c->akPu3PF.geneta[T3Iter]) > jtEtaCut)
-	continue;
-
-      T3Pt_[nT3_] = c->akPu3PF.genpt[T3Iter];
-      T3Phi_[nT3_] = c->akPu3PF.genphi[T3Iter];
-      T3Eta_[nT3_] = c->akPu3PF.geneta[T3Iter];
-
-      nT3_++;
+    if(montecarlo){
+      for(Int_t T3Iter = 0; T3Iter < c->akPu3PF.ngen; T3Iter++){
+	if(c->akPu3PF.genpt[T3Iter] < subLeadJtPtCut)
+	  break;
+	else if(TMath::Abs(c->akPu3PF.geneta[T3Iter]) > jtEtaCut)
+	  continue;
+	
+	T3Pt_[nT3_] = c->akPu3PF.genpt[T3Iter];
+	T3Phi_[nT3_] = c->akPu3PF.genphi[T3Iter];
+	T3Eta_[nT3_] = c->akPu3PF.geneta[T3Iter];
+	
+	nT3_++;
+      }
     }
 
     //Iterate over tracks

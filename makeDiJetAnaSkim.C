@@ -178,8 +178,8 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   //Setup correction tables
 
-  InitCorrFiles();
-  InitCorrHists();
+  InitCorrFiles(sType);
+  InitCorrHists(sType);
 
   TFile *centHistFile_p = new TFile("centHist_eventSelect.root", "READ");
   TH1F *hist_DataOverMC_p[2];
