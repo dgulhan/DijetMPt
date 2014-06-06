@@ -126,7 +126,7 @@ void InitCorrFiles(sampleType sType = kHIDATA)
     FakeVsCaloFile_p[27] = new TFile("fake_pt300_800_cent20_100.root", "READ");
     FakeVsCaloFile_p[28] = new TFile("fake_pt800_30000_cent0_100.root", "READ");
   }
-  else if(sType == kPPDATA || sType == kHIMC){
+  else if(sType == kPPDATA || sType == kPPMC){
     CaloFile_p[0] = new TFile("eff_pt0_1_ak3Calo_dogenjet0.root", "READ");
     CaloFile_p[1] = new TFile("eff_pt1_3_ak3Calo_dogenjet0.root", "READ");
     CaloFile_p[2] = new TFile("eff_pt3_8_ak3Calo_dogenjet0.root", "READ");
@@ -214,7 +214,7 @@ Int_t getPtBin(Float_t pt, sampleType sType = kHIDATA)
     Float_t ptArr[8] = {.50, .55, .65, .80, 1.00, 3.00, 8.00, 1000000};
     
     for(Int_t ptPosIter = 0; ptPosIter < 7; ptPosIter++){
-      if(pt > ptArr[ptPosIter] && pt < ptArr[ptPosIter + 1]){
+      if(pt > ptArr[ptPosIter] && pt <= ptArr[ptPosIter + 1]){
 	return posArrPbPb[ptPosIter];
       }
     }
@@ -223,10 +223,13 @@ Int_t getPtBin(Float_t pt, sampleType sType = kHIDATA)
     Float_t ptArr[5] = {.50, 1.00, 3.00, 8.00, 1000000};
 
     for(Int_t ptPosIter = 0; ptPosIter < 4; ptPosIter++){
-      if(pt > ptArr[ptPosIter] && pt < ptArr[ptPosIter + 1])
+      if(pt > ptArr[ptPosIter] && pt <= ptArr[ptPosIter + 1])
 	return ptPosIter;
     }
   }
+
+  std::cout << "getPtBin: Shouldn't reach this point; check input" << std::endl;
+  return -1;
 }
 
 

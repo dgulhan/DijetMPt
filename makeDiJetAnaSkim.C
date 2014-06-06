@@ -320,7 +320,8 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
       }
     }
  
-    InitPosArrPbPb(hiBin_);
+    if(sType == kHIDATA || sType == kHIMC)
+      InitPosArrPbPb(hiBin_);
  
     for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
       Int_t ptPos = getPtBin(trkPt_[trkEntry], sType);
@@ -332,11 +333,11 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
       tempRMin[T] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nT3_, T3Phi_, T3Eta_);
       
       Float_t tempCorr[3];
-      
+
       tempCorr[PuCalo] = trkPt_[trkEntry]*factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[PuCalo], sType);
-      tempCorr[VsCalo] = trkPt_[trkEntry]*factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[PuCalo], sType);
+      tempCorr[VsCalo] = trkPt_[trkEntry]*factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[VsCalo], sType);
       if(montecarlo)
-	tempCorr[T] = trkPt_[trkEntry]*factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[PuCalo], sType);
+	tempCorr[T] = trkPt_[trkEntry]*factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T], sType);
 
       Int_t ptIter = getPtRange(trkPt_[trkEntry]);
       
