@@ -10,7 +10,7 @@
 #include "TProfile2D.h"
 #include "TMath.h"
 #include <iostream>
-#include "enumFile.h"
+#include "../DijetInitialSkim/cfmDiJetIniSkim.h"
 
 //Current # of correction histograms
 
