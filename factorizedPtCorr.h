@@ -1,5 +1,9 @@
-//=============================================                                                         // Author: Chris McGinn                                                                                 //                                                                                                      // DiJet Analysis Class (MC)                                                                            //                                                                                                     
-//=============================================                                                                         
+//=============================================                                                     
+// Author: Chris McGinn                                                                           
+//                                                                                                  
+// DiJet Analysis Class (MC)                                                                 
+//                                                                                            
+//=============================================                                                     
 
 #include "TFile.h"
 #include "TProfile.h"
@@ -8,14 +12,7 @@
 
 #include <iostream>
 
-enum sample{
-  kHIDATA, //0
-  kHIMC,   //1
-  kPPDATA, //2
-  kPPMC,   //3
-  kPADATA, //4
-  kPAMC    //5
-}
+#include "../DijetInitialSkim/cfmDiJetIniSkim.h"
 
 //Current # of correction histograms
 
@@ -36,6 +33,8 @@ TProfile2D* FakeVsCalophiEta_p[nHistPbPb];
 TProfile* FakeVsCalopt_p[nHistPbPb];
 TProfile* FakeVsCalodelR_p[nHistPbPb];
 
+Int_t posArrPbPb[7] = {0, 5, 10, 15, 20, 25, 28};
+
 //PP Vs Calo
 
 TFile* CaloFile_p[nHistPP];
@@ -52,7 +51,7 @@ TFile* SecondCaloFile_p;
 TH2D* SecondCaloptEta_p;
 
 
-void InitCorrFiles(sample sType = kHIDATA)
+void InitCorrFiles(sampleType sType = kHIDATA)
 {
   //File names w/ various binnings, ordered by pt and then centrality. Each Jet Algorithm gets a file array
 
@@ -147,7 +146,7 @@ void InitCorrFiles(sample sType = kHIDATA)
 }
 
 
-void InitCorrHists(sample sType = kHIDATA)
+void InitCorrHists(sampleType sType = kHIDATA)
 {
   if(sType == kHIDATA || sType == kHIMC){
     for(Int_t hIter = 0; hIter < nHistPbPb; hIter++){
@@ -180,68 +179,123 @@ void InitCorrHists(sample sType = kHIDATA)
 }
 
 
-Int_t getPtBin(Float_t pt, Int_t hiSet1, Int_t hiSet2, Int_t hiSet3, Int_t hiSet4, Int_t hiSet5, Int_t hiSet6, Int_t hiSet7)
+void InitPosArrPbPb(Int_t hiBin)
 {
-  Int_t ptPos = -1;
+  if(hiBin < 0 || hiBin > 199){
+    std::cout << "InitPosArrPbPb: hiBin out of range; check input" << std::endl;
+    return;
+  }
 
-  if(.5 <= pt && pt < .55)
-    ptPos = hiSet1;
-  else if(.55 <= pt && pt < .65)
-    ptPos = hiSet2;
-  else if(.65 <= pt && pt < .80)
-    ptPos = hiSet3;
-  else if(.80 <= pt && pt < 1.00)
-    ptPos = hiSet4;
-  else if(1.00 <= pt && pt < 3.00)
-    ptPos = hiSet5;
-  else if(3.00 <= pt && pt < 8.00)
-    ptPos = hiSet6;
-  else if(8 <= pt)
-    ptPos = hiSet7;
+  Int_t startArrPbPb[7] = {0, 5, 10, 15, 20, 25, 28};
+  Int_t hiBinDiv[5] = {20, 40, 60, 100, 200};
 
-  return ptPos;
+  for(Int_t hiBinIter = 0; hiBinIter < 5; hiBinIter++){
+    if(hiBin < hiBinDiv[hiBinIter]){
+      for(Int_t arrIter = 0; arrIter < 6; arrIter++){
+	posArrPbPb[arrIter] = startArrPbPb[arrIter] + hiBinIter;
+      }
+      break;
+    }
+  }
+
+  if(hiBin >= 60)
+    posArrPbPb[5] = 27;
+
+  return;
+}
+
+
+Int_t getPtBin(Float_t pt, sampleType sType = kHIDATA)
+{
+  if(pt < .50 || pt > 1000000){
+    std::cout << "getPtBin: pt outside of acceptable range; check input" << std::endl;
+    return -1;
+  }
+
+  if(sType == kHIDATA || sType == kHIMC){    
+    Float_t ptArr[8] = {.50, .55, .65, .80, 1.00, 3.00, 8.00, 1000000};
+    
+    for(Int_t ptPosIter = 0; ptPosIter < 7; ptPosIter++){
+      if(pt > ptArr[ptPosIter] && pt < ptArr[ptPosIter + 1]){
+	return posArrPbPb[ptPosIter];
+      }
+    }
+  }
+  else if(sType == kPPDATA || sType == kPPMC){
+    Float_t ptArr[5] = {.50, 1.00, 3.00, 8.00, 1000000};
+
+    for(Int_t ptPosIter = 0; ptPosIter < 4; ptPosIter++){
+      if(pt > ptArr[ptPosIter] && pt < ptArr[ptPosIter + 1])
+	return ptPosIter;
+    }
+  }
+}
+
+
+Float_t getEffCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Float_t eta, Float_t rmin, sampleType sType = kHIDATA)
+{
+  Float_t effCorr = 1;
+
+  if(sType == kHIDATA || sType == kHIMC){
+    effCorr = effCorr*(VsCalocent_p[corrBin]->GetBinContent(VsCalocent_p[corrBin]->FindBin(hiBin)));
+    effCorr = effCorr*(VsCalophiEta_p[corrBin]->GetBinContent(VsCalophiEta_p[corrBin]->FindBin(phi, eta)));
+    effCorr = effCorr*(VsCalopt_p[corrBin]->GetBinContent(VsCalopt_p[corrBin]->FindBin(pt)));
+    effCorr = effCorr*(VsCalodelR_p[corrBin]->GetBinContent(VsCalodelR_p[corrBin]->FindBin(rmin)));
+  }
+  else if(sType == kPPDATA || kPPMC){
+    effCorr = effCorr*(CalophiEta_p[corrBin]->GetBinContent(CalophiEta_p[corrBin]->FindBin(phi, eta)));
+    effCorr = effCorr*(Calopt_p[corrBin]->GetBinContent(Calopt_p[corrBin]->FindBin(pt)));
+    effCorr = effCorr*(CalodelR_p[corrBin]->GetBinContent(CalodelR_p[corrBin]->FindBin(rmin)));
+  }
+
+  return effCorr;
+}
+
+
+Float_t getFakeCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Float_t eta, Float_t rmin, sampleType sType = kHIDATA)
+{
+  Float_t fakeCorr = 0;
+
+  if(sType == kHIDATA || sType == kHIMC){
+    fakeCorr = fakeCorr + (FakeVsCalocent_p[corrBin]->GetBinContent(FakeVsCalocent_p[corrBin]->FindBin(hiBin)));
+    fakeCorr = fakeCorr + (FakeVsCalophiEta_p[corrBin]->GetBinContent(FakeVsCalophiEta_p[corrBin]->FindBin(phi, eta)));
+    fakeCorr = fakeCorr + (FakeVsCalopt_p[corrBin]->GetBinContent(FakeVsCalopt_p[corrBin]->FindBin(pt)));
+    fakeCorr = fakeCorr + (FakeVsCalodelR_p[corrBin]->GetBinContent(FakeVsCalodelR_p[corrBin]->FindBin(rmin)));
+  }
+  else if(sType == kPPDATA || kPPMC){
+    fakeCorr = fakeCorr + (FakeCalophiEta_p[corrBin]->GetBinContent(FakeCalophiEta_p[corrBin]->FindBin(phi, eta)));
+    fakeCorr = fakeCorr + (FakeCalopt_p[corrBin]->GetBinContent(FakeCalopt_p[corrBin]->FindBin(pt)));
+    fakeCorr = fakeCorr + (FakeCalodelR_p[corrBin]->GetBinContent(FakeCalodelR_p[corrBin]->FindBin(rmin)));
+  }
+
+  return fakeCorr;
+}
+
+
+Float_t getSecondCorr(Float_t pt, Float_t eta)
+{
+  return SecondCaloptEta_p->GetBinContent(SecondCaloptEta_p->FindBin(pt, eta));
 }
 
 
 //Feed variables and the histograms along w/ the appropriate rmincut (currently rmin only defined to 3 for PuPF and 5 for calo)
 
-Float_t factorizedPtCorr(Int_t hiBin, Float_t pt, Float_t phi, Float_t eta, Float_t rmin, TProfile* centProf_p, TProfile2D* etaPhiProf_p, TProfile* ptProf_p, TProfile* rminProf_p, Bool_t eff = true)
+Float_t factorizedPtCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Float_t eta, Float_t rmin, sampleType sType = kHIDATA)
 {
+  if(hiBin < 0 || hiBin > 199){
+    std::cout << "factorizedPtCorr: hiBin outside of acceptable range; check input" << std::endl;
+    return 1;
+  }
+  else if(pt < 0.5){
+    std::cout << "factorizedPtCorr: pt outside of acceptable range; check input" << std::endl;
+  }
+
   Float_t corrFactor = 1;
 
-  if(hiBin < 0 || hiBin > 200){
-    if(eff)
-      return 1;
-    else
-      return 0;
-  }
+  corrFactor = (1 - getFakeCorr(corrBin, hiBin, pt, phi, eta, rmin, sType))/(getEffCorr(corrBin, hiBin, pt, phi, eta, rmin, sType));
 
-  if(pt < .5){
-    if(eff)
-      return 1;
-    else
-      return 0;
-  }
-
-  if(eff){
-    corrFactor = corrFactor*(centProf_p->GetBinContent(centProf_p->FindBin(hiBin)));
-    corrFactor = corrFactor*(etaPhiProf_p->GetBinContent(etaPhiProf_p->FindBin(phi, eta)));
-    corrFactor = corrFactor*(ptProf_p->GetBinContent(ptProf_p->FindBin(pt)));
-    corrFactor = corrFactor*(rminProf_p->GetBinContent(rminProf_p->FindBin(rmin)));
-
-    if(corrFactor == 0){
-      if(pt > 100)
-	corrFactor = .8;
-      else
-	corrFactor = 1;
-    }
-  }
-  else{
-    corrFactor = 0;
-    corrFactor = corrFactor + centProf_p->GetBinContent(centProf_p->FindBin(hiBin));
-    corrFactor = corrFactor + etaPhiProf_p->GetBinContent(etaPhiProf_p->FindBin(phi, eta));
-    corrFactor = corrFactor + ptProf_p->GetBinContent(ptProf_p->FindBin(pt)) ;
-    corrFactor = corrFactor +  rminProf_p->GetBinContent(rminProf_p->FindBin(rmin));
+  if(sType = kPPDATA || sType == kPPMC){
+    corrFactor = corrFactor*(1 - SecondCaloptEta_p->GetBinContent(SecondCaloptEta_p->FindBin(pt, eta)));
   }
 
   return corrFactor;
