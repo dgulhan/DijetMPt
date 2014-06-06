@@ -9,10 +9,8 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TMath.h"
-
 #include <iostream>
-
-#include "../DijetInitialSkim/cfmDiJetIniSkim.h"
+#include "enumFile.h"
 
 //Current # of correction histograms
 
@@ -270,13 +268,6 @@ Float_t getFakeCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Float_t
 
   return fakeCorr;
 }
-
-
-Float_t getSecondCorr(Float_t pt, Float_t eta)
-{
-  return SecondCaloptEta_p->GetBinContent(SecondCaloptEta_p->FindBin(pt, eta));
-}
-
 
 //Feed variables and the histograms along w/ the appropriate rmincut (currently rmin only defined to 3 for PuPF and 5 for calo)
 
