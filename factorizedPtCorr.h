@@ -22,7 +22,7 @@ enum sample{
 const Int_t nHistPbPb = 29;
 const Int_t nHistPP = 4;
 
-//Vs Calo File and Hist array
+//HI Vs Calo
 
 TFile* VsCaloFile_p[nHistPbPb];
 TProfile* VsCalocent_p[nHistPbPb];
@@ -30,14 +30,27 @@ TProfile2D* VsCalophiEta_p[nHistPbPb];
 TProfile* VsCalopt_p[nHistPbPb];
 TProfile* VsCalodelR_p[nHistPbPb];
 
-
-//Fake Vs Calo File and Hist array
-
 TFile* FakeVsCaloFile_p[nHistPbPb];
 TProfile* FakeVsCalocent_p[nHistPbPb];
 TProfile2D* FakeVsCalophiEta_p[nHistPbPb];
 TProfile* FakeVsCalopt_p[nHistPbPb];
 TProfile* FakeVsCalodelR_p[nHistPbPb];
+
+//PP Vs Calo
+
+TFile* CaloFile_p[nHistPP];
+TProfile2D* CalophiEta_p[nHistPP];
+TProfile* Calopt_p[nHistPP];
+TProfile* CalodelR_p[nHistPP];
+
+TFile* FakeCaloFile_p[nHistPP];
+TProfile2D* FakeCalophiEta_p[nHistPP];
+TProfile* FakeCalopt_p[nHistPP];
+TProfile* FakeCalodelR_p[nHistPP];
+
+TFile* SecondCaloFile_p;
+TH2D* SecondCaloptEta_p;
+
 
 void InitCorrFiles(sample sType = kHIDATA)
 {
@@ -117,7 +130,17 @@ void InitCorrFiles(sample sType = kHIDATA)
     FakeVsCaloFile_p[28] = new TFile("fake_pt800_30000_cent0_100.root", "READ");
   }
   else if(sType == kPPDATA || sType == kHIMC){
-    return;
+    CaloFile_p[0] = new TFile("eff_pt0_1_ak3Calo_dogenjet0.root", "READ");
+    CaloFile_p[1] = new TFile("eff_pt1_3_ak3Calo_dogenjet0.root", "READ");
+    CaloFile_p[2] = new TFile("eff_pt3_8_ak3Calo_dogenjet0.root", "READ");
+    CaloFile_p[3] = new TFile("eff_pt8_300_ak3Calo_dogenjet0.root", "READ");
+
+    FakeCaloFile_p[0] = new TFile("fake_pt0_1_ak3Calo_dogenjet0.root", "READ");
+    FakeCaloFile_p[1] = new TFile("fake_pt1_3_ak3Calo_dogenjet0.root", "READ");
+    FakeCaloFile_p[2] = new TFile("fake_pt3_8_ak3Calo_dogenjet0.root", "READ");
+    FakeCaloFile_p[3] = new TFile("fake_pt8_300_ak3Calo_dogenjet0.root", "READ");
+
+    SecondCaloFile_p = new TFile("secondary_pp.root", "READ");
   }
 
   return;
@@ -140,7 +163,17 @@ void InitCorrHists(sample sType = kHIDATA)
     }    
   }
   else if(sType == kPPDATA || sType == kPPMC){
-    return;
+    for(Int_t hIter = 0; hIter < nHistPP; hIter++){
+      CalophiEta_p[hIter] = (TProfile2D*)CaloFile_p[hIter]->Get("p_eff_acceptance");
+      Calopt_p[hIter] = (TProfile*)CaloFile_p[hIter]->Get("p_eff_pt");
+      CalodelR_p[hIter] = (TProfile*)CaloFile_p[hIter]->Get("p_eff_rmin");
+
+      FakeCalophiEta_p[hIter] = (TProfile2D*)FakeCaloFile_p[hIter]->Get("p_fake_acceptance");
+      FakeCalopt_p[hIter] = (TProfile*)FakeCaloFile_p[hIter]->Get("p_fake_pt");
+      FakeCalodelR_p[hIter] = (TProfile*)FakeCaloFile_p[hIter]->Get("p_fake_rmin");
+    }
+
+    SecondCaloptEta_p = (TH2D*)SecondCaloFile_p->Get("hpt_eta");
   }
 
   return;
@@ -213,45 +246,3 @@ Float_t factorizedPtCorr(Int_t hiBin, Float_t pt, Float_t phi, Float_t eta, Floa
 
   return corrFactor;
 }
-
-
-
-/*
-Above implemented in code as follows:
-
- for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
-      trkRMinPuPF_[trkEntry] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], AlgJtCollection[0]);
-      trkRMinPuCalo_[trkEntry] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], AlgJtCollection[1]);
-      trkRMinVsPF_[trkEntry] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], AlgJtCollection[2]);
-      trkRMinVsCalo_[trkEntry] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], AlgJtCollection[3]);
-    }
-
-    if(montecarlo){
-      for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
-        trkRMinT_[trkEntry] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], AlgJtCollection[3], true);
-      }
-    }
-
-    Int_t hiBinDiv[5] = {20, 40, 60, 100, 200};
-    Int_t hiSetEff[15] = {0, 5, 10, 1, 6, 11, 2, 7, 12, 3, 8, 12, 4, 9, 12};
-
-    for(Int_t hiBinIter = 0; hiBinIter < 5; hiBinIter++){
-      if(hiBin_ < hiBinDiv[hiBinIter]){
-        for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
-          Int_t ptPos = getPtBin(trkPt_[trkEntry], hiSetEff[hiBinIter*3], hiSetEff[hiBinIter*3 + 1], hiSetEff[hiBinIter*3 + 2], 13);
-
-          trkPtFactPuPF_[trkEntry] = factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinPuPF_[trkEntry], PuPFcent_p[ptPos], PuPFphiEta_p[ptPos], PuPFpt_p[ptPos], PuPFdelR_p[ptPos], 3);
-          trkPtCorrPuPF_[trkEntry] = trkPt_[trkEntry]/trkPtFactPuPF_[trkEntry];
-
-          trkPtFactPuCalo_[trkEntry] = factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinPuCalo_[trkEntry], PuCalocent_p[ptPos], PuCalophiEta_p[ptPos], PuCalopt_p[ptPos], PuCalodelR_p[ptPos], 5);
-          trkPtCorrPuCalo_[trkEntry] = trkPt_[trkEntry]*(1 - factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinPuCalo_[trkEntry], FakePuCalocent_p[ptPos], FakePuCalophiEta_p[ptPos], FakePuCalopt_p[ptPos], FakePuCalodelR_p[ptPos], 5, false))/trkPtFactPuCalo_[trkEntry];
-
-          trkPtFactVsCalo_[trkEntry] = factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinVsCalo_[trkEntry], VsCalocent_p[ptPos], VsCalophiEta_p[ptPos], VsCalopt_p[ptPos], VsCalodelR_p[ptPos], 5);
-          trkPtCorrVsCalo_[trkEntry] = trkPt_[trkEntry]*(1 - factorizedPtCorr(hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], trkRMinVsCalo_[trkEntry], FakeVsCalocent_p[ptPos], FakeVsCalophiEta_p[ptPos], FakeVsCalopt_p[ptPos], FakeVsCalodelR_p[ptPos], 5, false))/trkPtFactVsCalo_[trkEntry];
-
-
-	}
-	break;
-      }
-    }
-*/
