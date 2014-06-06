@@ -285,7 +285,7 @@ Float_t factorizedPtCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Fl
 
   corrFactor = (1 - getFakeCorr(corrBin, hiBin, pt, phi, eta, rmin, sType))/(getEffCorr(corrBin, hiBin, pt, phi, eta, rmin, sType));
 
-  if(sType = kPPDATA || sType == kPPMC){
+  if(sType == kPPDATA || sType == kPPMC){
     corrFactor = corrFactor*(1 - SecondCaloptEta_p->GetBinContent(SecondCaloptEta_p->FindBin(pt, eta)));
   }
 
