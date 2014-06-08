@@ -67,7 +67,8 @@ const char* DataF_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4-merg
 const char* DataG_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMSKIM_20140508_jtCutDown_0.root";
 
 
-const char* TEST = "HiForest_pp_Jet80_v8_PP2013_HiForest_PromptReco_JsonPP_Jet80_PPReco_merged_forest_0_CFMANASKIM_20140606_0.root";
+const char* TESTPbPb = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMANASKIM_20140606_0.root";
+const char* TESTPP = "HiForest_pp_Jet80_v8_PP2013_HiForest_PromptReco_JsonPP_Jet80_PPReco_merged_forest_0_CFMANASKIM_20140608_0.root";
 
 void setFileTag(const char* inName)
 {
@@ -195,9 +196,13 @@ void setFileTag(const char* inName)
     std::cout << DataG_JtCutDown << std::endl;
     fileTag = "DataG_JtCutDown";
   }
-  else if(!strcmp(inName, TEST)){
-    std::cout << TEST << std::endl;
-    fileTag = "TEST";
+  else if(!strcmp(inName, TESTPbPb)){
+    std::cout << TESTPbPb << std::endl;
+    fileTag = "TESTPbPb";
+  }
+  else if(!strcmp(inName, TESTPP)){
+    std::cout << TESTPP << std::endl;
+    fileTag = "TESTPP";
   }
 
   std::cout << "fileTag is: " << fileTag << std::endl;
