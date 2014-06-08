@@ -89,7 +89,7 @@ void claverCanvasSaving(TCanvas* c, TString s,TString format="gif")
 }
 
 
-void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows, const Float_t leftOffset, const Float_t bottomOffset, const Float_t leftMargin, const Float_t bottomMargin, const Float_t edge, const char* CNC = ""){
+void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows, const Float_t leftOffset, const Float_t bottomOffset, const Float_t leftMargin, const Float_t bottomMargin, const Float_t edge, const char* CNCR = ""){
   if(canv==0){
     Error("makeMultiPanelCanvas","Got null canvas.");
     return;
@@ -135,13 +135,13 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
         pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j],Xup[i]*0.890,Yup[j]*0.935);
       }
       else if(i==0 && j==0){
-        if(strcmp(CNC, "") ==0)
+        if(strcmp(CNCR, "") ==0)
           pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j]*0.933,Xup[i],Yup[j]);
         else
           pad[i][j] = new TPad(padName.Data(),padName.Data(),Xlow[i],Ylow[j]*0.934,Xup[i],Yup[j]*.9985);
       }
       else if(i==1 && j==1){
-        if(strcmp(CNC, "") == 0)
+        if(strcmp(CNCR, "") == 0)
           pad[i][j] = new TPad(padName.Data(),padName.Data(),0.815*Xlow[i],Ylow[j],Xup[i],Yup[j]*.995);
         else
           pad[i][j] = new TPad(padName.Data(),padName.Data(),0.80*Xlow[i],Ylow[j],Xup[i],Yup[j]*.995);
@@ -158,7 +158,7 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
           pad[i][j]->SetLeftMargin(leftMargin);
       }
       else if(i==1 && j==1){
-        if(strcmp(CNC, "") == 0)
+        if(strcmp(CNCR, "") == 0)
           pad[i][j]->SetLeftMargin(PadWidth);
         else
           pad[i][j]->SetLeftMargin(PadWidth*.65);
@@ -315,7 +315,7 @@ void makeSysError(Float_t sysArr[4], TH1F* hist_p)
 }
 
 
-void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNC = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "")
+void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "")
 {
   TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
   TFile* histPPFile_p;
@@ -347,17 +347,17 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   for(Int_t histIter = 0; histIter < 6; histIter++){
     if(strcmp(fileTagPP, "") != 0)
-      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPP));
+      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPP));
 
-    if(!strcmp(CNC, "")){
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_50100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_3050_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_1030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_010_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
+    if(!strcmp(CNCR, "")){
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_50100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_3050_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_1030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_010_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
     else{
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_30100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_30100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
   }
 
@@ -367,14 +367,14 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   TCanvas* profPanel_p;
 
-  if(!strcmp(CNC, "")){
-    profPanel_p = new TCanvas(Form("%s%sImbAsymm%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNC, Corr, Tight, fileTagPbPb), Form("%s%sImbAsymm%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNC, Corr, Tight, fileTagPbPb), 5*300, 700);
+  if(!strcmp(CNCR, "")){
+    profPanel_p = new TCanvas(Form("%s%sImbAsymm%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), Form("%s%sImbAsymm%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), 5*300, 700);
     makeMultiPanelCanvas(profPanel_p, 5, 2, 0.0, 0.0, 0.2, 0.2, 0.05);
     std::cout << "FivePanel Init" << std::endl;
   }
   else{
-    profPanel_p = new TCanvas(Form("%s%sImbAsymm%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNC, Corr, Tight, fileTagPbPb), Form("%s%sImbAsymm%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNC, Corr, Tight, fileTagPbPb), 300*3, 700);
-    makeMultiPanelCanvas(profPanel_p, 3, 2, 0.0, 0.0, 0.2, 0.2, 0.01, CNC);
+    profPanel_p = new TCanvas(Form("%s%sImbAsymm%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), Form("%s%sImbAsymm%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), 300*3, 700);
+    makeMultiPanelCanvas(profPanel_p, 3, 2, 0.0, 0.0, 0.2, 0.2, 0.01, CNCR);
     std::cout << "ThreePanel Init" << std::endl;
   }
 
@@ -402,7 +402,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   drawFullStack(histPP_p, 0, 25, legA_p);
 
   Float_t sysAPP[4] = {2.2, 3.3, 4.4, 5.5};
-  if(!montecarlo && !strcmp(CNC, "") && !strcmp(Tight, "")) makeSysError(sysAPP, histPP_p[5]);
+  if(!montecarlo && !strcmp(CNCR, "") && !strcmp(Tight, "")) makeSysError(sysAPP, histPP_p[5]);
 
   TLine* zeroLine_p = new TLine(0., 0., 0.5, 0.);
   zeroLine_p->SetLineColor(1);
@@ -426,19 +426,19 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   drawFullStack(hist1_p, 0, 28);
 
   Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
-  if(!montecarlo && !strcmp("", CNC) && !strcmp(Tight, "")) makeSysError(sysA50100, hist1_p[5]);
+  if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA50100, hist1_p[5]);
 
   zeroLine_p->Draw();
 
   label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[1]));
-  if(strcmp("", CNC) == 0)
+  if(strcmp("", CNCR) == 0)
     label1_p->DrawLatex(.05, overCoord[1], "50-100%");
   else
     label1_p->DrawLatex(.05, overCoord[1], "30-100%");
 
   label1_p->DrawLatex(.05, .05, "#sqrt{s_{NN}} = 2.76 TeV");
 
-  if(!strcmp(CNC, ""))
+  if(!strcmp(CNCR, ""))
     profPanel_p->cd(6);
   else
     profPanel_p->cd(4);
@@ -461,19 +461,19 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   drawFullStack(hist2_p, 0, 28);
 
   Float_t sysA3050[4] = {3.8, 4.4, 5.8, 6.5};
-  if(!montecarlo && !strcmp("", CNC) && !strcmp(Tight, "")) makeSysError(sysA3050, hist2_p[5]);
+  if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA3050, hist2_p[5]);
 
   zeroLine_p->Draw();
 
   label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[2]));
-  if(!strcmp("", CNC))
+  if(!strcmp("", CNCR))
     label1_p->DrawLatex(.05, overCoord[1], "30-50%");
   else
     label1_p->DrawLatex(.05, overCoord[1], "0-30%");
 
   //Draw third and fourth PbPb panels, if applicable
 
-  if(!strcmp(CNC, "")){
+  if(!strcmp(CNCR, "")){
     profPanel_p->cd(4);
 
     makeHistForPtStack(hist3_p, 4, Tight);
@@ -481,7 +481,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     drawFullStack(hist3_p, 0, 28);
 
     Float_t sysA1030[4] = {2.3, 2.9, 3.7, 4.3};
-    if(!montecarlo && !strcmp("", CNC) && !strcmp(Tight, "")) makeSysError(sysA1030, hist3_p[5]);
+    if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA1030, hist3_p[5]);
 
     zeroLine_p->Draw();
 
@@ -495,7 +495,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     drawFullStack(hist4_p, 0, 28);
 
     Float_t sysA010[4] = {3.1, 3.5, 4.2, 5.5};
-    if(!montecarlo && !strcmp("", CNC) && !strcmp(Tight, "")) makeSysError(sysA010, hist4_p[5]);
+    if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA010, hist4_p[5]);
 
     zeroLine_p->Draw();
 
@@ -505,20 +505,20 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   for(Int_t histIter = 0; histIter < 6; histIter++){
     if(strcmp(fileTagPP, "") != 0)
-      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPP));
+      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPP));
 
-    if(!strcmp(CNC, "")){
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_50100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_3050_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_1030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_010_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
+    if(!strcmp(CNCR, "")){
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_50100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_3050_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_1030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_010_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
 
       hist3_p[histIter]->Add(histPP_p[histIter], -1);
       hist4_p[histIter]->Add(histPP_p[histIter], -1);
     }
     else{
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_30100_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_030_%s_h", gorr, algType[setNum], CNC, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_30100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbAsymmProjA%s%s%s%s_030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
 
     hist1_p[histIter]->Add(histPP_p[histIter], -1);
@@ -529,7 +529,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   Int_t ppStart;
   const char* ppChar[2];
 
-  if(!strcmp(CNC, "")){
+  if(!strcmp(CNCR, "")){
     panels = 10;
     ppStart = 7;
     ppChar[0] = "50-100%";
@@ -564,7 +564,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   legB_p->AddEntry(hist2_p[5], "PbPb - pp", "p");
 
-  if(!strcmp(CNC, "")){
+  if(!strcmp(CNCR, "")){
     profPanel_p->cd(9);
     makeHistForPtStack(hist3_p, 9, Tight);
     drawFullStack(hist3_p, 0, 24, 0, true);
@@ -589,7 +589,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   TFile* outFile_p = new TFile(outName, "UPDATE");
   profPanel_p->Write();
-  claverCanvasSaving(profPanel_p, Form("pdfDir/%s%sImbAsymmProjA%s%s%sPTStack_%s", gorr, algType[setNum], CNC, Corr, Tight, fileTagPbPb), "pdf");
+  claverCanvasSaving(profPanel_p, Form("pdfDir/%s%sImbAsymmProjA%s%s%sPTStack_%s", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), "pdf");
   outFile_p->Close();
 
   delete outFile_p;
@@ -617,17 +617,17 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
     jetAlgMax = 3;
   
   const char* corr[2] = {"", "Corr"};
-  const char* CNC[3] = {"", "C", "NC"};
+  const char* CNCR[3] = {"", "C", "NC"};
   const char* Tight[2] = {"", "Tight"};
 
   for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
     for(Int_t tightIter = 0; tightIter < 2; tightIter++){
       for(Int_t corrIter = 0; corrIter < 2; corrIter++){
-	for(Int_t CNCIter = 0; CNCIter < 3; CNCIter++){
-	  makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNC[CNCIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
+	for(Int_t CNCRIter = 0; CNCRIter < 3; CNCRIter++){
+	  makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
 	  
 	  if(montecarlo && corrIter > 0)
-	    makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNC[CNCIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
+	    makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
 	}
       }
     }

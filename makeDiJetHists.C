@@ -19,7 +19,7 @@ Int_t subLeadJtCut = 50;
 
 const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
-void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNC, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA)
+void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA)
 {
   inFile_p->cd();
 
@@ -34,9 +34,9 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
   const char* title;
 
   if(sType == kHIDATA || sType == kHIMC)
-    title = Form("%s%sImbAsymmProjA%s%s%s%s_%d%d_%s_h", gorr, algType[setNum], CNC, FPT[FPTNum], Corr, Tight, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
+    title = Form("%s%sImbAsymmProjA%s%s%s%s_%d%d_%s_h", gorr, algType[setNum], CNCR, FPT[FPTNum], Corr, Tight, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
   else
-    title = Form("%s%sImbAsymmProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNC, FPT[FPTNum], Corr, Tight, fileTag);
+    title = Form("%s%sImbAsymmProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNCR, FPT[FPTNum], Corr, Tight, fileTag);
 
   Float_t xArr[5] = {.0001, .11, .22, .33, .4999};
   Float_t xArrTight[9] = {.0001, .055, .110, .165, .220, .275, .33, .415, .4999};
@@ -53,7 +53,7 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 
   TH1F* getHist_p;
 
-  TString var = Form("%sAlgImbProjA%s[%d][%d]", gorr, CNC, setCorrNum, FPTNum);
+  TString var = Form("%sAlgImbProjA%s[%d][%d]", gorr, CNCR, setCorrNum, FPTNum);
 
   TCut setCut = makeSetCut(setNum);
   TCut centCut = "";
@@ -105,6 +105,13 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 }
 
 
+void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA)
+{
+
+  return;
+}
+
+
 void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA)
 {
   TH1::SetDefaultSumw2();
@@ -127,7 +134,7 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
   }
 
   const char* corr[2] = {"", "Corr"};
-  const char* CNC[3] = {"", "C", "NC"};
+  const char* CNCR[3] = {"", "C", "NC"};
   const char* Tight[2] = {"", "Tight"};
 
   Int_t centBins = 6;
@@ -141,15 +148,15 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 
     for(Int_t tightIter = 0; tightIter < 2; tightIter++){
       for(Int_t corrIter = 0; corrIter < 2; corrIter++){
-	for(Int_t CNCIter = 0; CNCIter < 3; CNCIter++){
+	for(Int_t CNCRIter = 0; CNCRIter < 3; CNCRIter++){
 	  for(Int_t centIter = 0; centIter < centBins; centIter++){
 	    for(Int_t FPTIter = 0; FPTIter < 6; FPTIter++){
 	      
-	      if((CNCIter == 0 && centIter < 4) || (CNCIter != 0 && centIter >= 4) || sType == kPPMC || sType == kPPDATA){
-		makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNC[CNCIter], FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], Tight[tightIter], sType);
+	      if((CNCRIter == 0 && centIter < 4) || (CNCRIter != 0 && centIter >= 4) || sType == kPPMC || sType == kPPDATA){
+		makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], Tight[tightIter], sType);
 		
 		if(montecarlo && corrIter == 0)
-		  makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNC[CNCIter], FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], Tight[tightIter], sType);
+		  makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], Tight[tightIter], sType);
 	      }
 	      
 	    }
