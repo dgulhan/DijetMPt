@@ -294,11 +294,8 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, B
 }
 
 
-void makeSysError(Float_t sysArr[4], TH1F* hist_p, const char* Tight = "")
+void makeSysError(Float_t sysArr[4], TH1F* hist_p)
 {
-  if(!strcmp(Tight, ""))
-    return;
-
   for(Int_t iter = 0; iter < hist_p->GetNbinsX(); iter++){
     Float_t yVal = hist_p->GetBinContent(iter+1);
     Float_t sys = sysArr[iter];
@@ -405,7 +402,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   drawFullStack(histPP_p, 0, 25, legA_p);
 
   Float_t sysAPP[4] = {2.2, 3.3, 4.4, 5.5};
-  if(!montecarlo && !strcmp(CNC, "")) makeSysError(sysAPP, histPP_p[5]);
+  if(!montecarlo && !strcmp(CNC, "") && !strcmp(Tight, "")) makeSysError(sysAPP, histPP_p[5]);
 
   TLine* zeroLine_p = new TLine(0., 0., 0.5, 0.);
   zeroLine_p->SetLineColor(1);
@@ -429,7 +426,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   drawFullStack(hist1_p, 0, 28);
 
   Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
-  if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA50100, hist1_p[5]);
+  if(!montecarlo && !strcmp("", CNC) && !strcmp(Tight, "")) makeSysError(sysA50100, hist1_p[5]);
 
   zeroLine_p->Draw();
 
@@ -464,7 +461,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   drawFullStack(hist2_p, 0, 28);
 
   Float_t sysA3050[4] = {3.8, 4.4, 5.8, 6.5};
-  if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA3050, hist2_p[5]);
+  if(!montecarlo && !strcmp("", CNC) && !strcmp(Tight, "")) makeSysError(sysA3050, hist2_p[5]);
 
   zeroLine_p->Draw();
 
@@ -484,7 +481,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     drawFullStack(hist3_p, 0, 28);
 
     Float_t sysA1030[4] = {2.3, 2.9, 3.7, 4.3};
-    if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA1030, hist3_p[5]);
+    if(!montecarlo && !strcmp("", CNC) && !strcmp(Tight, "")) makeSysError(sysA1030, hist3_p[5]);
 
     zeroLine_p->Draw();
 
@@ -498,7 +495,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     drawFullStack(hist4_p, 0, 28);
 
     Float_t sysA010[4] = {3.1, 3.5, 4.2, 5.5};
-    if(!montecarlo && !strcmp("", CNC)) makeSysError(sysA010, hist4_p[5]);
+    if(!montecarlo && !strcmp("", CNC) && !strcmp(Tight, "")) makeSysError(sysA010, hist4_p[5]);
 
     zeroLine_p->Draw();
 
