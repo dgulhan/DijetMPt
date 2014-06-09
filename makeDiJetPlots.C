@@ -72,7 +72,7 @@ void handsomeTH1N( TH1 *a=0, Int_t col =1)
 
 void niceTH1(TH1F* uglyTH1, float max , float min, float ndivX, float ndivY)
 {
-  handsomeTH1N(uglyTH1);
+  handsomeTH1(uglyTH1);
   uglyTH1->SetMaximum(max);
   uglyTH1->SetMinimum(min);
   uglyTH1->SetNdivisions(ndivX);
@@ -214,7 +214,8 @@ Double_t sumYForPTStack(Double_t dIn = 0, Double_t comp1 = 0, Double_t comp2 = 0
 void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", const char* CNCR = "")
 {
   Int_t nBins = 4;
-  if(!strcmp(CNCR, "R"))
+
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
     nBins = 10;
   else if(strcmp(Tight, "") != 0)
     nBins = 8;
@@ -227,16 +228,21 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
     h_p[2]->SetBinContent(iter + 1, sumYForPTStack(h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
 
     h_p[3]->SetBinContent(iter + 1, sumYForPTStack(h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
-
   }
 
+  const char* xTitle;
 
-  h_p[4]->SetXTitle("A_{J}");
-  h_p[3]->SetXTitle("A_{J}");
-  h_p[2]->SetXTitle("A_{J}");
-  h_p[1]->SetXTitle("A_{J}");
-  h_p[0]->SetXTitle("A_{J}");
-  h_p[5]->SetXTitle("A_{J}");
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
+    xTitle = "#DeltaR";
+  else
+    xTitle = "A_{J}";
+
+  h_p[4]->SetXTitle(xTitle);
+  h_p[3]->SetXTitle(xTitle);
+  h_p[2]->SetXTitle(xTitle);
+  h_p[1]->SetXTitle(xTitle);
+  h_p[0]->SetXTitle(xTitle);
+  h_p[5]->SetXTitle(xTitle);
 
   if(pos == 1){
     h_p[4]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
@@ -253,13 +259,15 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_t isSub = false, const char* CNCR = "")
 {
   if(isSub){
-    if(!strcmp(CNCR, "R")){
-      drawHist_p->SetMaximum(4.999);
-      drawHist_p->SetMinimum(-9.999);
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU")){
+      //      drawHist_p->SetMaximum(4.999);
+      //      drawHist_p->SetMinimum(-9.999);
+      niceTH1(drawHist_p, 4.999, -10., 505, 503);
     }
     else{
-      drawHist_p->SetMaximum(59.999);
-      drawHist_p->SetMinimum(-59.999);
+      niceTH1(drawHist_p, 59.999, -60., 505, 406);
+      //      drawHist_p->SetMaximum(59.999);
+      //      drawHist_p->SetMinimum(-59.999);
     }
   }
 
@@ -281,13 +289,16 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, B
   drawHistToPTStack(h_p[4], kRed + 1, "E1 HIST SAME", isSub, CNCR);
 
   if(isSub){
-    if(!strcmp(CNCR, "R")){
-      h_p[5]->SetMaximum(4.999);
-      h_p[5]->SetMinimum(-9.999);
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU")){
+
+      niceTH1(h_p[5], 4.999, -10., 403, 505);
+      //      h_p[5]->SetMaximum(4.999);
+      //      h_p[5]->SetMinimum(-9.999);
     }
     else{
-      h_p[5]->SetMaximum(59.999);
-      h_p[5]->SetMinimum(-59.999);
+      //      h_p[5]->SetMaximum(59.999);
+      //      h_p[5]->SetMinimum(-59.999);
+      niceTH1(h_p[5], 59.999, -60., 406, 505);
     }
   }
 
@@ -341,6 +352,12 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   const char* overLabel[4];
   Float_t overCoord[4] = {.84, .76, .90, .82};
+
+  if(strcmp(CNCR, "") != 0){
+    for(Int_t coordIter = 0; coordIter < 4; coordIter++){
+      overCoord[coordIter] += .04;
+    }
+  }
 
   for(Int_t iter = 0; iter < 4; iter++){
     if(montecarlo)
@@ -556,6 +573,12 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     ppChar[1] = "0-30%";
   }
 
+  if(strcmp(CNCR, "") != 0){
+    for(Int_t coordIter = 0; coordIter < 4; coordIter++){
+      overCoord[coordIter] -= .04;
+    }
+  }
+
   profPanel_p->cd(ppStart);
   makeHistForPtStack(hist1_p, ppStart, Tight, CNCR);
   drawFullStack(hist1_p, 0, 24, 0, true, CNCR);
@@ -571,7 +594,12 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   drawFullStack(hist2_p, 0, 24, 0, true, CNCR);
   label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
   label1_p->DrawLatex(.05, overCoord[3], ppChar[1]);
-  label1_p->DrawLatex(.05, .38, "|#eta|_{1},|#eta|_{2}<1.6");
+
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
+    label1_p->DrawLatex(.05, .38, "|#eta|_{1},|#eta|_{2}<0.5");
+  else
+    label1_p->DrawLatex(.05, .38, "|#eta|_{1},|#eta|_{2}<1.6");
+
   label1_p->DrawLatex(.05, .28, "#Delta#phi_{1,2}>5#pi/6");
 
   zeroLine_p->Draw();
@@ -631,18 +659,18 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
     jetAlgMax = 3;
   
   const char* corr[2] = {"", "Corr"};
-  const char* CNCR[4] = {"", "C", "NC", "R"};
+  const char* CNCR[6] = {"", "C", "NC", "R", "RD", "RU"};
   const char* Tight[2] = {"", "Tight"};
 
   for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
     for(Int_t tightIter = 0; tightIter < 2; tightIter++){
       for(Int_t corrIter = 0; corrIter < 2; corrIter++){
-	for(Int_t CNCRIter = 0; CNCRIter < 4; CNCRIter++){
-	  if(CNCRIter == 3 && tightIter == 1)
+	for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){
+	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1)
 	    continue;
 
 	  makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
-	  
+
 	  if(montecarlo && corrIter > 0)
 	    makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
 	}
