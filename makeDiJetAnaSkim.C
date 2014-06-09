@@ -282,6 +282,8 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
     //Switch below to iterated OR EDIT HERE
 
+    Float_t rBounds[10] = {.20, .40, .60, .80, 1.00, 1.20, 1.40, 1.60, 1.80, 100000};
+
     for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
           
       //Grab proj. Pt Spectra For Tracks in each Event Subset
@@ -308,7 +310,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	    }
 
 	    for(Int_t rIter = 0; rIter < 10; rIter++){
-	      if(tempLeadDelR < ((Float_t)(rIter+1))/5 || tempSubLeadDelR < ((Float_t)(rIter+1))/5){
+	      if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
 		rAlgImbProjAR_[jtIter][5][rIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
 		rAlgImbProjAR_[jtIter][ptIter][rIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
 		break;
@@ -361,7 +363,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	    }
 	    
 	    for(Int_t rIter = 0; rIter < 10; rIter++){
-	      if(tempLeadR < ((Float_t)(rIter+1))/5 || tempSubLeadR < ((Float_t)(rIter+1))/5){
+	      if(tempLeadR < rBounds[rIter] || tempSubLeadR < rBounds[rIter]){
 		rAlgImbProjAR_[setIter + 3][5][rIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
 		rAlgImbProjAR_[setIter + 3][ptIter][rIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
 		break;
@@ -402,7 +404,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	      }
 	      
 	      for(Int_t rIter = 0; rIter < 10; rIter++){
-		if(tempLeadDelR < ((Float_t)(rIter+1))/5 || tempSubLeadDelR < ((Float_t)(rIter+1))/5){
+		if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
 		  gAlgImbProjAR_[setIter][5][rIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
 		  gAlgImbProjAR_[setIter][ptIter][rIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
 		  break;

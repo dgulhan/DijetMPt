@@ -120,11 +120,11 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
   const char* title;
 
   if(sType == kHIDATA || sType == kHIMC)
-    title = Form("%s%sImbProjAR%s%s_%d%d_%s_h", gorr, algType[setNum], FPT[FPTNum], Corr, (Int_t)(centLow*.5), (Int_t)((centHi)*.5), fileTag);
+    title = Form("%s%sImbProjAR%s%s_%d%d_%s_h", gorr, algType[setNum], FPT[FPTNum], Corr, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
   else
     title = Form("%s%sImbProjAR%s%s_PP_%s_h", gorr, algType[setNum], FPT[FPTNum], Corr, fileTag);
 
-  Float_t xArr[11] = {0.00, 0.20, 0.40, 0.60, 0.80, 1.00, 1.20, 1.40, 1.60, 1.80, 2.00};
+  Float_t xArr[11] = {0.00, 0.20, 0.40, 0.60, 0.80, 1.00, 1.20, 1.40, 1.60, 1.80, 1.999};
 
   //edit here
 
@@ -227,10 +227,12 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 	    }
 	  }
 
-	  makeImbDelRHist(anaTree_p, outName, "r", algIter, FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], sType);
+	  if(centIter >= 4 || sType == kPPMC || sType == kPPDATA){
+	    makeImbDelRHist(anaTree_p, outName, "r", algIter, FPTIter, centLow[centIter], centHi[centIter], -39.999, 19.999, corr[corrIter], sType);
 
-	  if(montecarlo && corrIter == 0)
-	    makeImbDelRHist(anaTree_p, outName, "r", algIter, FPTIter, centLow[centIter], centHi[centIter], -59.999, 59.999, corr[corrIter], sType);
+	    if(montecarlo && corrIter == 0)
+	      makeImbDelRHist(anaTree_p, outName, "r", algIter, FPTIter, centLow[centIter], centHi[centIter], -39.999, 19.999, corr[corrIter], sType);
+	  }	    
 
 	}
       }

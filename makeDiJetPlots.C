@@ -211,10 +211,12 @@ Double_t sumYForPTStack(Double_t dIn = 0, Double_t comp1 = 0, Double_t comp2 = 0
 }
 
 
-void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "")
+void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", const char* CNCR = "")
 {
   Int_t nBins = 4;
-  if(strcmp(Tight, "") != 0)
+  if(!strcmp(CNCR, "R"))
+    nBins = 10;
+  else if(strcmp(Tight, "") != 0)
     nBins = 8;
 
   for(Int_t iter = 0; iter < nBins; iter++){
@@ -248,11 +250,17 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "")
   return;
 }
 
-void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_t isSub = false)
+void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_t isSub = false, const char* CNCR = "")
 {
   if(isSub){
-    drawHist_p->SetMaximum(59.999);
-    drawHist_p->SetMinimum(-59.999);
+    if(!strcmp(CNCR, "R")){
+      drawHist_p->SetMaximum(4.999);
+      drawHist_p->SetMinimum(-9.999);
+    }
+    else{
+      drawHist_p->SetMaximum(59.999);
+      drawHist_p->SetMinimum(-59.999);
+    }
   }
 
   drawHist_p->SetFillColor(color);
@@ -264,17 +272,23 @@ void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_
   return;
 }
 
-void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, Bool_t isSub = false)
+void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, Bool_t isSub = false, const char* CNCR = "")
 {
-  drawHistToPTStack(h_p[0], kBlue - 9, "E1 HIST", isSub);
-  drawHistToPTStack(h_p[1], kYellow - 9, "E1 HIST SAME", isSub);
-  drawHistToPTStack(h_p[2], kOrange + 1, "E1 HIST SAME", isSub);
-  drawHistToPTStack(h_p[3], kGreen + 3, "E1 HIST SAME", isSub);
-  drawHistToPTStack(h_p[4], kRed + 1, "E1 HIST SAME", isSub);
+  drawHistToPTStack(h_p[0], kBlue - 9, "E1 HIST", isSub, CNCR);
+  drawHistToPTStack(h_p[1], kYellow - 9, "E1 HIST SAME", isSub, CNCR);
+  drawHistToPTStack(h_p[2], kOrange + 1, "E1 HIST SAME", isSub, CNCR);
+  drawHistToPTStack(h_p[3], kGreen + 3, "E1 HIST SAME", isSub, CNCR);
+  drawHistToPTStack(h_p[4], kRed + 1, "E1 HIST SAME", isSub, CNCR);
 
   if(isSub){
-    h_p[5]->SetMaximum(59.999);
-    h_p[5]->SetMinimum(-59.999);
+    if(!strcmp(CNCR, "R")){
+      h_p[5]->SetMaximum(4.999);
+      h_p[5]->SetMinimum(-9.999);
+    }
+    else{
+      h_p[5]->SetMaximum(59.999);
+      h_p[5]->SetMinimum(-59.999);
+    }
   }
 
   h_p[5]->SetFillColor(color);
@@ -363,7 +377,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   //Draw first PP panel
 
-  makeHistForPtStack(histPP_p, 1, Tight);
+  makeHistForPtStack(histPP_p, 1, Tight, CNCR);
 
   TCanvas* profPanel_p;
 
@@ -421,7 +435,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   profPanel_p->cd(2);
 
-  makeHistForPtStack(hist1_p, 2, Tight);
+  makeHistForPtStack(hist1_p, 2, Tight, CNCR);
 
   drawFullStack(hist1_p, 0, 28);
 
@@ -456,7 +470,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   //Draw second PbPb hist
 
-  makeHistForPtStack(hist2_p, 3, Tight);
+  makeHistForPtStack(hist2_p, 3, Tight, CNCR);
 
   drawFullStack(hist2_p, 0, 28);
 
@@ -476,7 +490,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   if(!strcmp(CNCR, "")){
     profPanel_p->cd(4);
 
-    makeHistForPtStack(hist3_p, 4, Tight);
+    makeHistForPtStack(hist3_p, 4, Tight, CNCR);
 
     drawFullStack(hist3_p, 0, 28);
 
@@ -490,7 +504,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
     profPanel_p->cd(5);
 
-    makeHistForPtStack(hist4_p, 5, Tight);
+    makeHistForPtStack(hist4_p, 5, Tight, CNCR);
 
     drawFullStack(hist4_p, 0, 28);
 
@@ -543,8 +557,8 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   }
 
   profPanel_p->cd(ppStart);
-  makeHistForPtStack(hist1_p, ppStart, Tight);
-  drawFullStack(hist1_p, 0, 24, 0, true);
+  makeHistForPtStack(hist1_p, ppStart, Tight, CNCR);
+  drawFullStack(hist1_p, 0, 24, 0, true, CNCR);
   label1_p->DrawLatex(.22, overCoord[2], overLabel[3]);
   label1_p->DrawLatex(.22, overCoord[3], ppChar[0]);
   label1_p->DrawLatex(.24, .38, "p_{T,1}>120 GeV/c");
@@ -553,8 +567,8 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   zeroLine_p->Draw();
 
   profPanel_p->cd(ppStart+1);
-  makeHistForPtStack(hist2_p, ppStart+1, Tight);
-  drawFullStack(hist2_p, 0, 24, 0, true);
+  makeHistForPtStack(hist2_p, ppStart+1, Tight, CNCR);
+  drawFullStack(hist2_p, 0, 24, 0, true, CNCR);
   label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
   label1_p->DrawLatex(.05, overCoord[3], ppChar[1]);
   label1_p->DrawLatex(.05, .38, "|#eta|_{1},|#eta|_{2}<1.6");
@@ -566,8 +580,8 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   if(!strcmp(CNCR, "")){
     profPanel_p->cd(9);
-    makeHistForPtStack(hist3_p, 9, Tight);
-    drawFullStack(hist3_p, 0, 24, 0, true);
+    makeHistForPtStack(hist3_p, 9, Tight, CNCR);
+    drawFullStack(hist3_p, 0, 24, 0, true, CNCR);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "10-30%");
     label1_p->DrawLatex(.05, .38, "anti-k_{T} Calo R = 0.3");
@@ -575,8 +589,8 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     zeroLine_p->Draw();
 
     profPanel_p->cd(10);
-    makeHistForPtStack(hist4_p, 10, Tight);
-    drawFullStack(hist4_p, 0, 24, 0, true);
+    makeHistForPtStack(hist4_p, 10, Tight, CNCR);
+    drawFullStack(hist4_p, 0, 24, 0, true, CNCR);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "0-10%");
 
@@ -617,13 +631,16 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
     jetAlgMax = 3;
   
   const char* corr[2] = {"", "Corr"};
-  const char* CNCR[3] = {"", "C", "NC"};
+  const char* CNCR[4] = {"", "C", "NC", "R"};
   const char* Tight[2] = {"", "Tight"};
 
   for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
     for(Int_t tightIter = 0; tightIter < 2; tightIter++){
       for(Int_t corrIter = 0; corrIter < 2; corrIter++){
-	for(Int_t CNCRIter = 0; CNCRIter < 3; CNCRIter++){
+	for(Int_t CNCRIter = 0; CNCRIter < 4; CNCRIter++){
+	  if(CNCRIter == 3 && tightIter == 1)
+	    continue;
+
 	  makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
 	  
 	  if(montecarlo && corrIter > 0)
