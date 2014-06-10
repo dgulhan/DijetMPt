@@ -294,3 +294,29 @@ Float_t factorizedPtCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Fl
 
   return corrFactor;
 }
+
+
+/*
+Example use:
+
+In a directory with correction files open
+
+  InitCorrFiles(sType); // Initializes files
+  InitCorrHists(sType); // Initializes histograms
+
+  // Start looping over events
+
+  for(Int_t jentry = 0; jentry < nentries; jentry++){
+     tree->GetEntry(jentry);
+
+     InitPosArrPbPb(hiBin); // Initializes array with correct histogram position stored based on hiBin
+
+     // Now loop over tracks and grab corrections
+     
+     for(Int_t trkIter = 0; trkIter < nTrk; trkIter++){
+       // call function to get correct array position (first arg) withing function grabbing correction
+       Float_t trkCorr = factorizedPtCorr(getPtBin(trkPt[trkIter], sType), hiBin, trkPt[trkIter], trkPhi[trkIter], trkEta[trkIter], trkRMin[trkIter], sType);
+     }
+  }
+
+*/
