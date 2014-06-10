@@ -211,7 +211,7 @@ Double_t sumYForPTStack(Double_t dIn = 0, Double_t comp1 = 0, Double_t comp2 = 0
 }
 
 
-void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", const char* CNCR = "")
+void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", const char* CNCR = "", Bool_t isPercent = false)
 {
   Int_t nBins = 4;
 
@@ -234,8 +234,12 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 
   if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
     xTitle = "#DeltaR";
-  else
-    xTitle = "A_{J}";
+  else{
+    if(!isPercent)
+      xTitle = "A_{J}";
+    else
+      xTitle = "A_{J}%";
+  }
 
   h_p[4]->SetXTitle(xTitle);
   h_p[3]->SetXTitle(xTitle);
@@ -256,18 +260,16 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
   return;
 }
 
-void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_t isSub = false, const char* CNCR = "")
+void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_t isSub = false, const char* CNCR = "", Bool_t isPercent = false)
 {
   if(isSub){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU")){
-      //      drawHist_p->SetMaximum(4.999);
-      //      drawHist_p->SetMinimum(-9.999);
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
       niceTH1(drawHist_p, 4.999, -10., 505, 503);
-    }
     else{
-      niceTH1(drawHist_p, 59.999, -60., 505, 406);
-      //      drawHist_p->SetMaximum(59.999);
-      //      drawHist_p->SetMinimum(-59.999);
+      if(!isPercent)
+	niceTH1(drawHist_p, 59.999, -60., 505, 406);
+      else
+	niceTH1(drawHist_p, 59.999, -60., 504, 406);
     }
   }
 
@@ -280,25 +282,22 @@ void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_
   return;
 }
 
-void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, Bool_t isSub = false, const char* CNCR = "")
+void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, Bool_t isSub = false, const char* CNCR = "", Bool_t isPercent = false)
 {
-  drawHistToPTStack(h_p[0], kBlue - 9, "E1 HIST", isSub, CNCR);
-  drawHistToPTStack(h_p[1], kYellow - 9, "E1 HIST SAME", isSub, CNCR);
-  drawHistToPTStack(h_p[2], kOrange + 1, "E1 HIST SAME", isSub, CNCR);
-  drawHistToPTStack(h_p[3], kGreen + 3, "E1 HIST SAME", isSub, CNCR);
-  drawHistToPTStack(h_p[4], kRed + 1, "E1 HIST SAME", isSub, CNCR);
+  drawHistToPTStack(h_p[0], kBlue - 9, "E1 HIST", isSub, CNCR, isPercent);
+  drawHistToPTStack(h_p[1], kYellow - 9, "E1 HIST SAME", isSub, CNCR, isPercent);
+  drawHistToPTStack(h_p[2], kOrange + 1, "E1 HIST SAME", isSub, CNCR, isPercent);
+  drawHistToPTStack(h_p[3], kGreen + 3, "E1 HIST SAME", isSub, CNCR, isPercent);
+  drawHistToPTStack(h_p[4], kRed + 1, "E1 HIST SAME", isSub, CNCR, isPercent);
 
   if(isSub){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU")){
-
-      niceTH1(h_p[5], 4.999, -10., 403, 505);
-      //      h_p[5]->SetMaximum(4.999);
-      //      h_p[5]->SetMinimum(-9.999);
-    }
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
+      niceTH1(h_p[5], 4.999, -10., 505, 403);
     else{
-      //      h_p[5]->SetMaximum(59.999);
-      //      h_p[5]->SetMinimum(-59.999);
-      niceTH1(h_p[5], 59.999, -60., 406, 505);
+      if(!isPercent)
+	niceTH1(h_p[5], 59.999, -60., 505, 406);
+      else 
+	niceTH1(h_p[5], 59.999, -60., 504, 406);
     }
   }
 
@@ -340,7 +339,7 @@ void makeSysError(Float_t sysArr[4], TH1F* hist_p)
 }
 
 
-void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "")
+ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "", Bool_t isPercent = false)
 {
   TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
   TFile* histPPFile_p;
@@ -394,7 +393,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   //Draw first PP panel
 
-  makeHistForPtStack(histPP_p, 1, Tight, CNCR);
+  makeHistForPtStack(histPP_p, 1, Tight, CNCR, isPercent);
 
   TCanvas* profPanel_p;
 
@@ -430,12 +429,15 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   histPP_p[0]->GetYaxis()->SetTitleOffset(2.2);
 
-  drawFullStack(histPP_p, 0, 25, legA_p);
+  drawFullStack(histPP_p, 0, 25, legA_p, false, CNCR, isPercent);
 
   Float_t sysAPP[4] = {2.2, 3.3, 4.4, 5.5};
   if(!montecarlo && !strcmp(CNCR, "") && !strcmp(Tight, "")) makeSysError(sysAPP, histPP_p[5]);
 
-  TLine* zeroLine_p = new TLine(0., 0., 0.5, 0.);
+  TLine* zeroLine_p;
+  if(!isPercent)  zeroLine_p = new TLine(0., 0., 0.5, 0.);
+  else zeroLine_p = new TLine(0., 0., 100.00, 0.);
+
   zeroLine_p->SetLineColor(1);
   zeroLine_p->SetLineStyle(1);
   zeroLine_p->Draw();
@@ -452,9 +454,9 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   profPanel_p->cd(2);
 
-  makeHistForPtStack(hist1_p, 2, Tight, CNCR);
+  makeHistForPtStack(hist1_p, 2, Tight, CNCR, isPercent);
 
-  drawFullStack(hist1_p, 0, 28);
+  drawFullStack(hist1_p, 0, 28, 0, false, CNCR, isPercent);
 
   Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
   if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA50100, hist1_p[5]);
@@ -487,9 +489,9 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   //Draw second PbPb hist
 
-  makeHistForPtStack(hist2_p, 3, Tight, CNCR);
+  makeHistForPtStack(hist2_p, 3, Tight, CNCR, isPercent);
 
-  drawFullStack(hist2_p, 0, 28);
+  drawFullStack(hist2_p, 0, 28, 0, false, CNCR, isPercent);
 
   Float_t sysA3050[4] = {3.8, 4.4, 5.8, 6.5};
   if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA3050, hist2_p[5]);
@@ -507,9 +509,9 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   if(!strcmp(CNCR, "")){
     profPanel_p->cd(4);
 
-    makeHistForPtStack(hist3_p, 4, Tight, CNCR);
+    makeHistForPtStack(hist3_p, 4, Tight, CNCR, isPercent);
 
-    drawFullStack(hist3_p, 0, 28);
+    drawFullStack(hist3_p, 0, 28, 0, false, CNCR, isPercent);
 
     Float_t sysA1030[4] = {2.3, 2.9, 3.7, 4.3};
     if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA1030, hist3_p[5]);
@@ -521,9 +523,9 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
     profPanel_p->cd(5);
 
-    makeHistForPtStack(hist4_p, 5, Tight, CNCR);
+    makeHistForPtStack(hist4_p, 5, Tight, CNCR, isPercent);
 
-    drawFullStack(hist4_p, 0, 28);
+    drawFullStack(hist4_p, 0, 28, 0, false, CNCR, isPercent);
 
     Float_t sysA010[4] = {3.1, 3.5, 4.2, 5.5};
     if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA010, hist4_p[5]);
@@ -580,8 +582,8 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   }
 
   profPanel_p->cd(ppStart);
-  makeHistForPtStack(hist1_p, ppStart, Tight, CNCR);
-  drawFullStack(hist1_p, 0, 24, 0, true, CNCR);
+  makeHistForPtStack(hist1_p, ppStart, Tight, CNCR, isPercent);
+  drawFullStack(hist1_p, 0, 24, 0, true, CNCR, isPercent);
   label1_p->DrawLatex(.22, overCoord[2], overLabel[3]);
   label1_p->DrawLatex(.22, overCoord[3], ppChar[0]);
   label1_p->DrawLatex(.24, .38, "p_{T,1}>120 GeV/c");
@@ -590,8 +592,8 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
   zeroLine_p->Draw();
 
   profPanel_p->cd(ppStart+1);
-  makeHistForPtStack(hist2_p, ppStart+1, Tight, CNCR);
-  drawFullStack(hist2_p, 0, 24, 0, true, CNCR);
+  makeHistForPtStack(hist2_p, ppStart+1, Tight, CNCR, isPercent);
+  drawFullStack(hist2_p, 0, 24, 0, true, CNCR, isPercent);
   label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
   label1_p->DrawLatex(.05, overCoord[3], ppChar[1]);
 
@@ -608,8 +610,8 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 
   if(!strcmp(CNCR, "")){
     profPanel_p->cd(9);
-    makeHistForPtStack(hist3_p, 9, Tight, CNCR);
-    drawFullStack(hist3_p, 0, 24, 0, true, CNCR);
+    makeHistForPtStack(hist3_p, 9, Tight, CNCR, isPercent);
+    drawFullStack(hist3_p, 0, 24, 0, true, CNCR, isPercent);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "10-30%");
     label1_p->DrawLatex(.05, .38, "anti-k_{T} Calo R = 0.3");
@@ -617,8 +619,8 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
     zeroLine_p->Draw();
 
     profPanel_p->cd(10);
-    makeHistForPtStack(hist4_p, 10, Tight, CNCR);
-    drawFullStack(hist4_p, 0, 24, 0, true, CNCR);
+    makeHistForPtStack(hist4_p, 10, Tight, CNCR, isPercent);
+    drawFullStack(hist4_p, 0, 24, 0, true, CNCR, isPercent);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "0-10%");
 
@@ -649,7 +651,7 @@ void makeImbAsymmPtStack(const char* filePbPbName, const char* fileTagPbPb, cons
 }
 
 
-void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "")
+void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", Bool_t isPercent = false)
 {
   TH1::SetDefaultSumw2();
 
@@ -669,10 +671,10 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1)
 	    continue;
 
-	  makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
+	  makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isPercent);
 
 	  if(montecarlo && corrIter > 0)
-	    makeImbAsymmPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter]);
+	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isPercent);
 	}
       }
     }

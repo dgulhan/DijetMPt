@@ -1,6 +1,7 @@
 #ifndef diJetFileTag_h
 #define diJetFileTag_h
 
+#include "TMath.h"
 #include "iostream"
 #include "TH1F.h"
 #include "TCut.h"
@@ -237,9 +238,21 @@ Bool_t sameSign(Double_t num1, Double_t num2){
   return false;
 }
 
+void handsomeTH1(TH1 *a = 0, Int_t col = 1, Float_t size = 1, Int_t markerstyle = 20)
+{
+  a->SetMarkerColor(col);
+  a->SetMarkerSize(size);
+  a->SetMarkerStyle(markerstyle);
+  a->SetLineColor(col);
+  a->GetYaxis()->SetTitleOffset(1.25);
+  a->GetXaxis()->CenterTitle();
+  a->GetYaxis()->CenterTitle();
+}
+
+
 void niceTH1(TH1F* uglyTH1, float max , float min, float ndivX, float ndivY)
 {
-  handsomeTH1N(uglyTH1);
+  handsomeTH1(uglyTH1);
   uglyTH1->SetMaximum(max);
   uglyTH1->SetMinimum(min);
   uglyTH1->SetNdivisions(ndivX);
@@ -258,6 +271,15 @@ Bool_t checkSetRange(Int_t setNum)
 }
 
 
+Bool_t checkCentRange(Int_t centLow, Int_t centHi){
+  if(centLow >= 0 && centHi >= centLow && centHi <= 199) return true;
+  else{
+    std::cout << "checkCentRange: centLow/centHi incorrectly specified, empty cut returned" << std::endl;
+    return false;
+  }
+}
+
+
 TCut makeSetCut(Int_t setNum)
 {
   if(!checkSetRange(setNum))
@@ -269,11 +291,10 @@ TCut makeSetCut(Int_t setNum)
 
 TCut makeCentCut(Int_t centLow, Int_t centHi)
 {
-  if(centLow >= 0 && centHi >= centLow && centHi <= 199)
+  if(checkCentRange(centLow, centHi))
     return Form("hiBin >= %d && hiBin <= %d", centLow, centHi);
   else{
-    std::cout << "makeCentCut: centLow/centHi incorrectly specified, empty cut returned" << std\
-      ::endl;
+    std::cout << "makeCentCut: centLow/centHi incorrectly specified, empty cut returned" << std::endl;
     return "";
   }
 }
@@ -289,10 +310,52 @@ TCut makeAsymmCut(Int_t setNum, Float_t asymmLow, Float_t asymmHi)
   if(asymmLow >= .00 && asymmHi >= asymmLow && asymmHi <= 1.)
     return Form("%s > %f && %s < %f ", cutVar, asymmLow, cutVar, asymmHi);
   else{
-    std::cout << "makeAsymmCut: asymmLow/asymmHi incorrectly specified, empty cut returned" << \
-      std::endl;
+    std::cout << "makeAsymmCut: asymmLow/asymmHi incorrectly specified, empty cut returned" << std::endl;
     return "";
   }
+}
+
+
+void setAsymmPercBins(Float_t asymmArr[], Int_t centLow, Int_t centHi, sampleType sType = kHIDATA, const char* Tight = "")
+{
+  if(!checkCentRange(centLow, centHi))
+    return;
+
+  Float_t AjTightPP[7] = {.0408, .0790, .1183, .1609, .2097, .2662, .3403};
+  Float_t AjTight010[7] = {.0566, .1078, .1582, .2083, .2626, .3223, .3888};
+  Float_t AjTight1030[7] = {.0527, .1012, .1460, .1954, .2494, .3089, .3817};
+  Float_t AjTight3050[7] = {.0487, .0911, .1354, .1808, .2317, .2916, .3635};
+  Float_t AjTight50100[7] = {.0463, .0854, .1228, .1644, .2173, .2772, .3509};
+  Float_t AjTight030[7] = {.0543, .1042, .1514, .2011, .2554, .3149, .3848};
+  Float_t AjTight30100[7] = {.0480, .0893, .1311, .1757, .2278, .2891, .3611};
+
+  Int_t AjBins = 3;
+
+  if(!strcmp(Tight, "Tight"))
+    AjBins = 7;
+
+  for(Int_t AjIter = 0; AjIter < AjBins; AjIter++){
+    Int_t AjIter2 = AjIter;
+    if(!strcmp(Tight, ""))
+      AjIter2 = AjIter*2 + 1;
+
+    if(sType == kPPDATA || sType == kPPMC)
+      asymmArr[AjIter+1] = AjTightPP[AjIter2];
+    else if(centLow == 0 && centHi == 19)
+      asymmArr[AjIter+1] = AjTight010[AjIter2];
+    else if(centLow == 20 && centHi == 59)
+      asymmArr[AjIter+1] = AjTight1030[AjIter2];
+    else if(centLow == 60 && centHi == 99)
+      asymmArr[AjIter+1] = AjTight3050[AjIter2];
+    else if(centLow == 100 && centHi == 199)
+      asymmArr[AjIter+1] = AjTight50100[AjIter2];
+    else if(centLow == 0 && centHi == 59)
+      asymmArr[AjIter+1] = AjTight030[AjIter2];
+    else if(centLow == 60 && centHi == 199)
+      asymmArr[AjIter+1] = AjTight30100[AjIter2];
+  }
+
+  return;
 }
 
 

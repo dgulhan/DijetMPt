@@ -5,7 +5,6 @@
 //                                                                                             
 //=============================================     
 
-#include "commonUtility.h"
 #include "TTree.h"
 #include "TDatime.h"
 #include "TFile.h"
@@ -19,7 +18,7 @@ Int_t subLeadJtCut = 50;
 
 const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
-void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA)
+void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isPercent = false)
 {
   inFile_p->cd();
 
@@ -39,16 +38,32 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
     title = Form("%s%sImbProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNCR, FPT[FPTNum], Corr, Tight, fileTag);
 
   Float_t xArr[5] = {.0001, .11, .22, .33, .4999};
+  Float_t xArrPerc[5] = {.0001, 25., 50., 75., 99.9999};
   Float_t xArrTight[9] = {.0001, .055, .110, .165, .220, .275, .33, .415, .4999};
+  Float_t xArrTightPerc[9] = {.0001, 12.5, 25., 37.5, 50., 62.5, 75., 87.5, 99.9999};
 
   TH1F* imbAsymmHist_p;
-  if(!strcmp("", Tight))
-    imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 4, xArr);
-  else
-    imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 8, xArrTight);
+  if(!isPercent){
+    if(!strcmp(Tight, ""))
+      imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 4, xArr);
+    else
+      imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 8, xArrTight);
+  }
+  else{
+    if(!strcmp(Tight, ""))
+      imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 4, xArrPerc);
+    else
+      imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 8, xArrTightPerc);
+  }
 
-  imbAsymmHist_p->GetXaxis()->SetLimits(0.00, 0.50);
-  niceTH1(imbAsymmHist_p, histHi, histLow, 505, 406);
+  if(!isPercent){
+    imbAsymmHist_p->GetXaxis()->SetLimits(0.00, 0.50);
+    niceTH1(imbAsymmHist_p, histHi, histLow, 505, 406);
+  }
+  else{
+    imbAsymmHist_p->GetXaxis()->SetLimits(0.00, 100.00);
+    niceTH1(imbAsymmHist_p, histHi, histLow, 504, 406);
+  }
 
   TH1F* getHist_p;
 
@@ -69,6 +84,13 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 
   Float_t asymmBins[5] = {.00, .11, .22, .33, 1.00};
   Float_t asymmBinsTight[9] = {.00, .055, .11, .165, .22, .275, .33, .415, 1.00};
+
+  if(isPercent){
+    if(!strcmp(Tight, ""))
+      setAsymmPercBins(asymmBins, centLow, centHi, sType, Tight);
+    else
+      setAsymmPercBins(asymmBinsTight, centLow, centHi, sType, Tight);
+  }
 
   Int_t nBins = 4;
   if(strcmp(Tight, "") != 0)
@@ -104,7 +126,7 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 }
 
 
-void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", sampleType sType = kHIDATA)
+void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", sampleType sType = kHIDATA, Bool_t isPercent = false)
 {
   inFile_p->cd();
 
@@ -143,10 +165,22 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
   TCut etaCut = makeEtaCut(setNum, 0.5);
   TCut phiCut = makeDelPhiCut(setNum, 5*TMath::Pi()/6);
   TCut asymmCut = makeAsymmCut(setNum, 0.0, 1.0);
-  if(!strcmp(CNCR, "RU"))
+  if(!strcmp(CNCR, "RU")){
     asymmCut = makeAsymmCut(setNum, 0.22, 1.0);
-  else if(!strcmp(CNCR, "RD"))
+    if(isPercent){
+      Float_t dummArr[5] = {0, 0, 0, 0, 0};
+      setAsymmPercBins(dummArr, centLow, centHi, sType);
+      asymmCut = makeAsymmCut(setNum, dummArr[2], 1.0);
+    }
+  }
+  else if(!strcmp(CNCR, "RD")){
     asymmCut = makeAsymmCut(setNum, 0.0, 0.22);
+    if(isPercent){
+      Float_t dummArr[5] = {0, 0, 0, 0, 0};
+      setAsymmPercBins(dummArr, centLow, centHi, sType);
+      asymmCut = makeAsymmCut(setNum, 0.0, dummArr[2]);
+    }
+  }
 
   TCut jetLCut = Form("AlgJtPt[%d][0] > %d", setNum, leadJtCut);
   TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
@@ -180,7 +214,7 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
 }
 
 
-void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA)
+void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isPercent = false)
 {
   TH1::SetDefaultSumw2();
 
@@ -224,19 +258,19 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 	      for(Int_t tightIter = 0; tightIter < 2; tightIter++){
 
 		if((CNCRIter == 0 && centIter < 4) || (CNCRIter != 0 && centIter >= 4) || sType == kPPMC || sType == kPPDATA){
-		  makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType);
+		  makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent);
 		  
 		  if(montecarlo && corrIter == 0)
-		    makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType);
+		    makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent);
 		}
 	      }
 	    }
 	    else{
 	      if(centIter >= 4 || sType == kPPMC || sType == kPPDATA){
-		makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType);
+		makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent);
 		
 		if(montecarlo && corrIter == 0)
-		  makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType);
+		  makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent);
 	      }
 	    }
 	  }
