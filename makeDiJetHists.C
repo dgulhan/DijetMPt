@@ -221,6 +221,20 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
   return;
 }
 
+void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNm, Int_t centLow, Int_t centHi, sampleType sType = kHIDATA)
+{
+  inFile_p->cd();
+
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC)
+    montecarlo = true;
+  
+  if(sType == kHIDATA || sType == kHIMC)
+    title = Form("%sMultA%s_%d%d_%s_h", algType[setNum], Corr, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
+  else
+    title = Form("%sMultA%s_PP_%s_h", algType[setNum], Corr, fileTag);
+
+}
 
 void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {

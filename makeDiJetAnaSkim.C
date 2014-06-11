@@ -337,18 +337,30 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
       tempRMin[VsCalo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPhi_, Vs3CaloEta_);
       tempRMin[T] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nT3_, T3Phi_, T3Eta_);
       
-      Float_t tempCorr[3];
+      Float_t tempFact[3] = {0, 0, 0};
+      Float_t tempCorr[3] = {0, 0, 0};
 
-      tempCorr[PuCalo] = trkPt_[trkEntry]*factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[PuCalo], sType);
-      tempCorr[VsCalo] = trkPt_[trkEntry]*factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[VsCalo], sType);
-      if(montecarlo)
-	tempCorr[T] = trkPt_[trkEntry]*factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T], sType);
+      tempFact[PuCalo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[PuCalo], sType);
+      tempCorr[PuCalo] = trkPt_[trkEntry]*tempFact[PuCalo];
+
+      tempFact[VsCalo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[VsCalo], sType);
+      tempCorr[VsCalo] = trkPt_[trkEntry]*tempFact[VsCalo];
+
+      if(montecarlo){
+	tempFact[T] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T], sType);
+	tempCorr[T] = trkPt_[trkEntry]*tempFact[T];
+      }
 
       Int_t ptIter = getPtRange(trkPt_[trkEntry]);
       
       for(Int_t setIter = 0; setIter < 3; setIter++){
 	if(eventSet_[setIter]){
-	  
+
+	  if(getAbsDphi(AlgJtAvePhi_[setIter], trkPhi_[trkEntry]) < TMath::Pi()/2)
+	    AlgJtMult_[setIter][0] += tempFact[setIter];
+	  else
+	    AlgJtMult_[setIter][1] += tempFact[setIter];	  
+
 	  rAlgImbProjA_[setIter + 3][5] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
 	  rAlgImbProjA_[setIter + 3][ptIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
 	  
