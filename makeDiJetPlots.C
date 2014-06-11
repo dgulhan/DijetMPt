@@ -282,7 +282,7 @@ void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_
   return;
 }
 
-void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, Bool_t isSub = false, const char* CNCR = "", Bool_t isPercent = false)
+void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, Int_t pos = 2, Bool_t isSub = false, const char* CNCR = "", Bool_t isPercent = false)
 {
   drawHistToPTStack(h_p[0], kBlue - 9, "E1 HIST", isSub, CNCR, isPercent);
   drawHistToPTStack(h_p[1], kYellow - 9, "E1 HIST SAME", isSub, CNCR, isPercent);
@@ -305,6 +305,18 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, B
   h_p[5]->SetMarkerStyle(style);
 
   h_p[5]->DrawCopy("SAME E1");
+
+  if(isSub == false){
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")){
+      for(Int_t hIter = 0; hIter < 9; hIter++){
+	h_p[5]->SetBinContent(hIter+2, h_p[5]->GetBinContent(hIter+1) + h_p[5]->GetBinContent(hIter+2));
+      }
+      if(pos == 1)
+	h_p[5]->SetLineStyle(2);
+
+      h_p[5]->DrawCopy("SAME HIST C");
+    }
+  }
 
   if(leg_p != 0){
     leg_p->AddEntry(h_p[0], "0.5 - 1.0", "F");
@@ -411,7 +423,10 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   //Make legend
 
   TLegend* legA_p = new TLegend(0.25, 0.18, 0.99, 0.88);
-  TLegend* legB_p = new TLegend(0.25, 0.1, 0.55, 0.40);
+  TLegend* legB_p;
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")) legB_p = new TLegend(0.45, 0.1, 0.75, 0.40);
+  else legB_p = new TLegend(0.25, 0.1, 0.55, 0.40);
+
 
   legA_p->SetFillColor(0);
   legA_p->SetFillStyle(0);
@@ -429,13 +444,16 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   histPP_p[0]->GetYaxis()->SetTitleOffset(2.2);
 
-  drawFullStack(histPP_p, 0, 25, legA_p, false, CNCR, isPercent);
+  drawFullStack(histPP_p, 0, 25, legA_p, 1, false, CNCR, isPercent);
 
   Float_t sysAPP[4] = {2.2, 3.3, 4.4, 5.5};
   if(!montecarlo && !strcmp(CNCR, "") && !strcmp(Tight, "")) makeSysError(sysAPP, histPP_p[5]);
 
   TLine* zeroLine_p;
-  if(!isPercent)  zeroLine_p = new TLine(0., 0., 0.5, 0.);
+  if(!isPercent){
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")) zeroLine_p = new TLine(0., 0., 2.0, 0.);
+    else zeroLine_p = new TLine(0., 0., 0.5, 0.);
+  }
   else zeroLine_p = new TLine(0., 0., 100.00, 0.);
 
   zeroLine_p->SetLineColor(1);
@@ -447,8 +465,14 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   label1_p->SetTextFont(43);
   label1_p->SetTextSizePixels(28);
 
-  label1_p->DrawLatex(.28, overCoord[0], Form("%s", overLabel[0]));
-  label1_p->DrawLatex(.28, overCoord[1], "CMS Preliminary");
+  if(!strcmp(CNCR, "")){
+    label1_p->DrawLatex(.28, overCoord[0], Form("%s", overLabel[0]));
+    label1_p->DrawLatex(.28, overCoord[1], "CMS Preliminary");
+  }
+  else{
+    label1_p->DrawLatex(.62, overCoord[0], Form("%s", overLabel[0]));
+    label1_p->DrawLatex(.40, overCoord[1], "CMS Preliminary");
+  }
 
   legB_p->Draw("SAME");
 
@@ -456,20 +480,28 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   makeHistForPtStack(hist1_p, 2, Tight, CNCR, isPercent);
 
-  drawFullStack(hist1_p, 0, 28, 0, false, CNCR, isPercent);
+  drawFullStack(hist1_p, 0, 28, 0, 2, false, CNCR, isPercent);
+
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")) histPP_p[5]->DrawCopy("SAME HIST C");
 
   Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
   if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA50100, hist1_p[5]);
 
   zeroLine_p->Draw();
 
-  label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[1]));
-  if(strcmp("", CNCR) == 0)
+  if(strcmp("", CNCR) == 0){
+    label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[1]));
     label1_p->DrawLatex(.05, overCoord[1], "50-100%");
-  else
-    label1_p->DrawLatex(.05, overCoord[1], "30-100%");
+  } 
+  else{
+    label1_p->DrawLatex(.35, overCoord[0], Form("%s", overLabel[1]));
+    label1_p->DrawLatex(.50, overCoord[1], "30-100%");
+  }
 
-  label1_p->DrawLatex(.05, .05, "#sqrt{s_{NN}} = 2.76 TeV");
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD"))
+    label1_p->DrawLatex(.25, .05, "#sqrt{s_{NN}} = 2.76 TeV");
+  else
+    label1_p->DrawLatex(.05, .05, "#sqrt{s_{NN}} = 2.76 TeV");
 
   if(!strcmp(CNCR, ""))
     profPanel_p->cd(6);
@@ -491,21 +523,26 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   makeHistForPtStack(hist2_p, 3, Tight, CNCR, isPercent);
 
-  drawFullStack(hist2_p, 0, 28, 0, false, CNCR, isPercent);
+  drawFullStack(hist2_p, 0, 28, 0, 3, false, CNCR, isPercent);
+
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")) histPP_p[5]->DrawCopy("SAME HIST C");
 
   Float_t sysA3050[4] = {3.8, 4.4, 5.8, 6.5};
   if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA3050, hist2_p[5]);
 
   zeroLine_p->Draw();
 
-  label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[2]));
-  if(!strcmp("", CNCR))
+  if(!strcmp("", CNCR)){
+    label1_p->DrawLatex(.05, overCoord[0], Form("%s", overLabel[2]));
     label1_p->DrawLatex(.05, overCoord[1], "30-50%");
-  else
-    label1_p->DrawLatex(.05, overCoord[1], "0-30%");
+  }
+  else{
+    label1_p->DrawLatex(.60, overCoord[1], "0-30%");
+    label1_p->DrawLatex(.60, overCoord[0], Form("%s", overLabel[2]));
+  }
 
-  if(isHightPtTrk)
-    label1_p->DrawLatex(.05, .05, "Require p_{T}^{trk}>8 GeV/c in jet");
+  if(isHighPtTrk)
+    label1_p->DrawLatex(.05, .05, "In jet p_{T}^{trk}>12 GeV/c");
 
   //Draw third and fourth PbPb panels, if applicable
 
@@ -514,7 +551,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
     makeHistForPtStack(hist3_p, 4, Tight, CNCR, isPercent);
 
-    drawFullStack(hist3_p, 0, 28, 0, false, CNCR, isPercent);
+    drawFullStack(hist3_p, 0, 28, 0, 4, false, CNCR, isPercent);
 
     Float_t sysA1030[4] = {2.3, 2.9, 3.7, 4.3};
     if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA1030, hist3_p[5]);
@@ -528,7 +565,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
     makeHistForPtStack(hist4_p, 5, Tight, CNCR, isPercent);
 
-    drawFullStack(hist4_p, 0, 28, 0, false, CNCR, isPercent);
+    drawFullStack(hist4_p, 0, 28, 0, 5, false, CNCR, isPercent);
 
     Float_t sysA010[4] = {3.1, 3.5, 4.2, 5.5};
     if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA010, hist4_p[5]);
@@ -586,26 +623,55 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   profPanel_p->cd(ppStart);
   makeHistForPtStack(hist1_p, ppStart, Tight, CNCR, isPercent);
-  drawFullStack(hist1_p, 0, 24, 0, true, CNCR, isPercent);
-  label1_p->DrawLatex(.22, overCoord[2], overLabel[3]);
-  label1_p->DrawLatex(.22, overCoord[3], ppChar[0]);
-  label1_p->DrawLatex(.24, .38, "p_{T,1}>120 GeV/c");
-  label1_p->DrawLatex(.24, .28, "p_{T,2}>50 GeV/c");
+  drawFullStack(hist1_p, 0, 24, 0, ppStart, true, CNCR, isPercent);
+
+  if(!strcmp(CNCR, "")){
+    label1_p->DrawLatex(.22, overCoord[2], overLabel[3]);
+    label1_p->DrawLatex(.22, overCoord[3], ppChar[0]);
+  }
+  else{
+    label1_p->DrawLatex(.60, overCoord[2], overLabel[3]);
+    label1_p->DrawLatex(.60, overCoord[3], ppChar[0]);
+  }
+
+  if(!strcmp(CNCR, "")){
+    label1_p->DrawLatex(.24, .38, "p_{T,1}>120 GeV/c");
+    label1_p->DrawLatex(.24, .28, "p_{T,2}>50 GeV/c");
+  }
+  else{
+    label1_p->DrawLatex(.44, .38, "p_{T,1}>120 GeV/c");
+    label1_p->DrawLatex(.44, .28, "p_{T,2}>50 GeV/c");
+  }
 
   zeroLine_p->Draw();
 
   profPanel_p->cd(ppStart+1);
   makeHistForPtStack(hist2_p, ppStart+1, Tight, CNCR, isPercent);
-  drawFullStack(hist2_p, 0, 24, 0, true, CNCR, isPercent);
-  label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
-  label1_p->DrawLatex(.05, overCoord[3], ppChar[1]);
+  drawFullStack(hist2_p, 0, 24, 0, ppStart+1, true, CNCR, isPercent);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
-    label1_p->DrawLatex(.05, .38, "|#eta|_{1},|#eta|_{2}<0.5");
-  else
-    label1_p->DrawLatex(.05, .38, "|#eta|_{1},|#eta|_{2}<1.6");
+  if(!strcmp(CNCR, "")){
+    label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
+    label1_p->DrawLatex(.05, overCoord[3], ppChar[1]);
+  }
+  else{
+    label1_p->DrawLatex(.50, overCoord[2], overLabel[3]);
+    label1_p->DrawLatex(.60, overCoord[3], ppChar[1]);
+  }
 
-  label1_p->DrawLatex(.05, .28, "#Delta#phi_{1,2}>5#pi/6");
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU")){
+    label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<0.5");
+    label1_p->DrawLatex(.45, .28, "#Delta#phi_{1,2}>5#pi/6");
+  }
+  else{
+    if(!strcmp(CNCR, "")){
+      label1_p->DrawLatex(.05, .38, "|#eta|_{1},|#eta|_{2}<1.6");
+      label1_p->DrawLatex(.05, .28, "#Delta#phi_{1,2}>5#pi/6");
+    }
+    else{
+      label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<1.6");
+      label1_p->DrawLatex(.45, .28, "#Delta#phi_{1,2}>5#pi/6");
+    }
+  }
 
   zeroLine_p->Draw();
 
@@ -614,7 +680,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   if(!strcmp(CNCR, "")){
     profPanel_p->cd(9);
     makeHistForPtStack(hist3_p, 9, Tight, CNCR, isPercent);
-    drawFullStack(hist3_p, 0, 24, 0, true, CNCR, isPercent);
+    drawFullStack(hist3_p, 0, 24, 0, 9, true, CNCR, isPercent);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "10-30%");
     label1_p->DrawLatex(.05, .38, "anti-k_{T} Calo R = 0.3");
@@ -623,7 +689,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
     profPanel_p->cd(10);
     makeHistForPtStack(hist4_p, 10, Tight, CNCR, isPercent);
-    drawFullStack(hist4_p, 0, 24, 0, true, CNCR, isPercent);
+    drawFullStack(hist4_p, 0, 24, 0, 10, true, CNCR, isPercent);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "0-10%");
 
@@ -667,7 +733,7 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
   const char* CNCR[6] = {"", "C", "NC", "R", "RD", "RU"};
   const char* Tight[2] = {"", "Tight"};
 
-  for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
+  for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
     for(Int_t tightIter = 0; tightIter < 2; tightIter++){
       for(Int_t corrIter = 0; corrIter < 2; corrIter++){
 	for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){

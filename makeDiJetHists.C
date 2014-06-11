@@ -81,7 +81,7 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 
   TCut trkCut = "";
   if(isHighPtTrk)
-    trkCut = Form("AlgJtTrkMax[%d][0] > 8", setNum);
+    trkCut = Form("AlgJtTrkMax[%d][0] > 12 && AlgJtTrkMax[%d][1] > 12", setNum, setNum);
 
   const char* name1[8] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -10000, 10000)"};
   const char* name2[8] = {"0", "1", "2", "3", "4", "5", "6", "7"};
@@ -192,7 +192,7 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
 
   TCut trkCut = "";
   if(isHighPtTrk)
-    trkCut = Form("AlgJtTrkMax[%d][0] > 8", setNum);
+    trkCut = Form("AlgJtTrkMax[%d][0] > 12 && AlgJtTrkMax[%d][1] > 12", setNum, setNum);
 
   const char* name1[10] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -1000, 10000)", "8(10000, -1000, 10000)", "9(10000, -1000, 10000)"};
   const char* name2[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
