@@ -339,7 +339,7 @@ void makeSysError(Float_t sysArr[4], TH1F* hist_p)
 }
 
 
- void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "", Bool_t isPercent = false)
+void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "", Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
   TFile* histPPFile_p;
@@ -504,6 +504,9 @@ void makeSysError(Float_t sysArr[4], TH1F* hist_p)
   else
     label1_p->DrawLatex(.05, overCoord[1], "0-30%");
 
+  if(isHightPtTrk)
+    label1_p->DrawLatex(.05, .05, "Require p_{T}^{trk}>8 GeV/c in jet");
+
   //Draw third and fourth PbPb panels, if applicable
 
   if(!strcmp(CNCR, "")){
@@ -651,7 +654,7 @@ void makeSysError(Float_t sysArr[4], TH1F* hist_p)
 }
 
 
-void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", Bool_t isPercent = false)
+void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   TH1::SetDefaultSumw2();
 
@@ -671,10 +674,10 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1)
 	    continue;
 
-	  makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isPercent);
+	  makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isPercent, isHighPtTrk);
 
 	  if(montecarlo && corrIter > 0)
-	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isPercent);
+	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isPercent, isHighPtTrk);
 	}
       }
     }
