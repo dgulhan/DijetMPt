@@ -97,7 +97,7 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
   }
 
   Int_t nBins = 4;
-  if(strcmp(Tight, "") != 0)
+  if(!strcmp(Tight, "Tight"))
     nBins = 8;
 
   for(Int_t binIter = 0; binIter < nBins; binIter++){
@@ -221,7 +221,7 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
   return;
 }
 
-void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNm, Int_t centLow, Int_t centHi, sampleType sType = kHIDATA)
+void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNm, Int_t centLow, Int_t centHi, sampleType sType = kHIDATA, const char* Tight = "", Bool_t isHighPtTrk = false)
 {
   inFile_p->cd();
 
@@ -234,6 +234,51 @@ void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNm, Int_t 
   else
     title = Form("%sMultA%s_PP_%s_h", algType[setNum], Corr, fileTag);
 
+  Float_t xArr[5] = {.0001, .11, .22, .33, .4999};
+  Float_t xArrTight[9] = {.0001, .055, .11, .165, .22, .275, .33, .415, .4999};
+  TH1F* imbAsymmHist_p;
+
+  if(!strcmp(Tight, ""))
+    imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 4, xArr);
+  else
+    imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 8, xArrTight);
+
+  imbAsymmHist_p->GetXaxis()->SetLimits(0.00, 0.50);
+  niceTH1(imbAsymmHist_p, histHi, histLow, 505, 406);
+
+  TH1F* getHist_p;
+
+  TString var = Form("AlgJtMult[%d][1] - AlgJtMult[%d][0]", setNum, setNum);
+
+  TCut setCut = makeSetCut(setNum);
+  TCut centCut = "";
+  if(sType == kHIDATA || sType == kHIMC) centCut = makeCentCut(centLow, centHi);
+  TCut etaCut = makeEtaCut(setNum, 1.6);
+  TCut phiCut = makeDelPhiCut(setNum, 5*TMath::Pi()/6);
+
+  TCut jetLCut = Form("AlgJtPt[%d][0] > %d", setNum, leadJtCut);
+  TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
+  TCut pthat = "";
+  if(sType == kHIMC || sType == KPPMC) pthat = "pthat > 80";
+
+  TCut trkCut = "";
+  if(isHighPtTrk)
+    trkCut = Form("AlgJtTrkMax[%d][0] > 12 && AlgJtTrkMax[%d][1] > 12", setNum, setNum);
+
+  const char* name1[8] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -10000, 10000)"};
+  const char* name2[8] = {"0", "1", "2", "3", "4", "5", "6", "7"};
+
+  Float_t asymmBins[5] = {.00, .11, .22, .33, 1.00};
+  Float_t asymmBinsTight[9] = {.00, .055, .11, .165, .22, .275, .33, .415, 1.00};
+
+  Int_t nBins = 4;
+  if(!strcmp(Tight, "Tight"))
+    nBins = 8;
+
+  for(Int_t binIter = 0; binIter < nBins; binIter++){
+    TCut asymmCut = "";
+
+  }
 }
 
 void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
