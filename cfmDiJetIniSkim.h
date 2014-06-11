@@ -77,6 +77,7 @@ Int_t nPu3Calo_;
 Float_t Pu3CaloPt_[MAXJETS];
 Float_t Pu3CaloPhi_[MAXJETS];
 Float_t Pu3CaloEta_[MAXJETS];
+Float_t Pu3CaloTrkMax_[MAXJETS];
 Float_t Pu3CaloRefPt_[MAXJETS];
 Float_t Pu3CaloRefPhi_[MAXJETS];
 Float_t Pu3CaloRefEta_[MAXJETS];
@@ -85,6 +86,7 @@ Int_t nVs3Calo_;
 Float_t Vs3CaloPt_[MAXJETS];
 Float_t Vs3CaloPhi_[MAXJETS];
 Float_t Vs3CaloEta_[MAXJETS];
+Float_t Vs3CaloTrkMax_[MAXJETS];
 Float_t Vs3CaloRefPt_[MAXJETS];
 Float_t Vs3CaloRefPhi_[MAXJETS];
 Float_t Vs3CaloRefEta_[MAXJETS];
@@ -137,6 +139,7 @@ void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   jetTreeIni_p->Branch("Pu3CaloPt", &Pu3CaloPt_, "Pu3CaloPt[nPu3Calo]/F");
   jetTreeIni_p->Branch("Pu3CaloPhi", &Pu3CaloPhi_, "Pu3CaloPhi[nPu3Calo]/F");
   jetTreeIni_p->Branch("Pu3CaloEta", &Pu3CaloEta_, "Pu3CaloEta[nPu3Calo]/F");
+  jetTreeIni_p->Branch("Pu3CaloTrkMax", &Pu3CaloTrkMax_, "Pu3CaloTrkMax[nPu3Calo]/F");
 
   if(montecarlo){
     jetTreeIni_p->Branch("Pu3CaloRefPt", &Pu3CaloRefPt_, "Pu3CaloRefPt[nPu3Calo]/F");
@@ -148,6 +151,7 @@ void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   jetTreeIni_p->Branch("Vs3CaloPt", &Vs3CaloPt_, "Vs3CaloPt[nVs3Calo]/F");
   jetTreeIni_p->Branch("Vs3CaloPhi", &Vs3CaloPhi_, "Vs3CaloPhi[nVs3Calo]/F");
   jetTreeIni_p->Branch("Vs3CaloEta", &Vs3CaloEta_, "Vs3CaloEta[nVs3Calo]/F");
+  jetTreeIni_p->Branch("Vs3CaloTrkMax", &Vs3CaloTrkMax_, "Vs3CaloTrkMax[nVs3Calo]/F");
 
   if(montecarlo){
     jetTreeIni_p->Branch("Vs3CaloRefPt", &Vs3CaloRefPt_, "Vs3CaloRefPt[nVs3Calo]/F");
@@ -205,6 +209,7 @@ void GetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   jetTreeIni_p->SetBranchAddress("Pu3CaloPt", Pu3CaloPt_);
   jetTreeIni_p->SetBranchAddress("Pu3CaloPhi", Pu3CaloPhi_);
   jetTreeIni_p->SetBranchAddress("Pu3CaloEta", Pu3CaloEta_);
+  jetTreeIni_p->SetBranchAddress("Pu3CaloTrkMax", Pu3CaloTrkMax_);
 
   if(montecarlo){
     jetTreeIni_p->SetBranchAddress("Pu3CaloRefPt", Pu3CaloRefPt_);
@@ -216,6 +221,7 @@ void GetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   jetTreeIni_p->SetBranchAddress("Vs3CaloPt", Vs3CaloPt_);
   jetTreeIni_p->SetBranchAddress("Vs3CaloPhi", Vs3CaloPhi_);
   jetTreeIni_p->SetBranchAddress("Vs3CaloEta", Vs3CaloEta_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloTrkMax", Vs3CaloTrkMax_);
 
   if(montecarlo){
     jetTreeIni_p->SetBranchAddress("Vs3CaloRefPt", Vs3CaloRefPt_);

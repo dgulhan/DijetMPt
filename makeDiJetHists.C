@@ -18,7 +18,7 @@ Int_t subLeadJtCut = 50;
 
 const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
-void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isPercent = false)
+void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   inFile_p->cd();
 
@@ -79,6 +79,10 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
   TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
   TCut pthat = "pthat > 80";
 
+  TCut trkCut = "";
+  if(isHighPtTrk)
+    trkCut = Form("AlgJtTrkMax[%d][0] > 8", setNum);
+
   const char* name1[8] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -10000, 10000)"};
   const char* name2[8] = {"0", "1", "2", "3", "4", "5", "6", "7"};
 
@@ -105,9 +109,9 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
       asymmCut = makeAsymmCut(setNum, asymmBinsTight[binIter], asymmBinsTight[binIter + 1]);
 
     if(montecarlo)
-      anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat, "");
+      anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
     else
-      anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut, "");
+      anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && trkCut, "");
 
     getHist_p = (TH1F*)inFile_p->Get(name2[binIter]);
 
@@ -126,7 +130,7 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 }
 
 
-void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", sampleType sType = kHIDATA, Bool_t isPercent = false)
+void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   inFile_p->cd();
 
@@ -186,6 +190,10 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
   TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
   TCut pthat = "pthat > 80";
 
+  TCut trkCut = "";
+  if(isHighPtTrk)
+    trkCut = Form("AlgJtTrkMax[%d][0] > 8", setNum);
+
   const char* name1[10] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -1000, 10000)", "8(10000, -1000, 10000)", "9(10000, -1000, 10000)"};
   const char* name2[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
@@ -193,9 +201,9 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
     TString var = Form("%sAlgImbProjAR[%d][%d][%d]", gorr, setCorrNum, FPTNum, rIter);
 
     if(montecarlo)
-      anaTree_p->Project(name1[rIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat, "");
+      anaTree_p->Project(name1[rIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
     else
-      anaTree_p->Project(name1[rIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut, "");
+      anaTree_p->Project(name1[rIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && trkCut, "");
 
     getHist_p = (TH1F*)inFile_p->Get(name2[rIter]);
 
@@ -214,7 +222,7 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
 }
 
 
-void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isPercent = false)
+void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   TH1::SetDefaultSumw2();
 
@@ -245,7 +253,7 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 
   if(sType == kPPMC || sType == kPPDATA) centBins = 1;
 
-  for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
+  for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
     std::cout << "Algorithm: " << algType[algIter] << std::endl;
 
     for(Int_t corrIter = 0; corrIter < 2; corrIter++){
@@ -258,19 +266,19 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 	      for(Int_t tightIter = 0; tightIter < 2; tightIter++){
 
 		if((CNCRIter == 0 && centIter < 4) || (CNCRIter != 0 && centIter >= 4) || sType == kPPMC || sType == kPPDATA){
-		  makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent);
+		  makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent, isHighPtTrk);
 		  
 		  if(montecarlo && corrIter == 0)
-		    makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent);
+		    makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent, isHighPtTrk);
 		}
 	      }
 	    }
 	    else{
 	      if(centIter >= 4 || sType == kPPMC || sType == kPPDATA){
-		makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent);
+		makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent, isHighPtTrk);
 		
 		if(montecarlo && corrIter == 0)
-		  makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent);
+		  makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent, isHighPtTrk);
 	      }
 	    }
 	  }

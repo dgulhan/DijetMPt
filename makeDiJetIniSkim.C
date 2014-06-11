@@ -153,7 +153,12 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     meanVz = .4205 - .6953;
   }
 
-  Long64_t nentries = c->ak3CaloJetTree->GetEntries();
+  Long64_t nentries;
+
+  if(sType == kPPDATA || sType == kPPMC)
+    nentries = c->ak3CaloJetTree->GetEntries();
+  else
+    nentries = c->GetEntries();
 
   std::cout << nentries << std::endl;
 
@@ -295,6 +300,8 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       Pu3CaloPhi_[nPu3Calo_] = AlgJtCollection[0].jtphi[Pu3CaloIter];
       Pu3CaloEta_[nPu3Calo_] = AlgJtCollection[0].jteta[Pu3CaloIter];
 
+      Pu3CaloTrkMax_[nPu3Calo_] = AlgJtCollection[0].trackMax[Pu3CaloIter];
+
       nPu3Calo_++;
     }
 
@@ -307,6 +314,8 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       Vs3CaloPt_[nVs3Calo_] = AlgJtCollection[1].jtpt[Vs3CaloIter];
       Vs3CaloPhi_[nVs3Calo_] = AlgJtCollection[1].jtphi[Vs3CaloIter];
       Vs3CaloEta_[nVs3Calo_] = AlgJtCollection[1].jteta[Vs3CaloIter];
+
+      Vs3CaloTrkMax_[nVs3Calo_] = AlgJtCollection[1].trackMax[Vs3CaloIter];
 
       nVs3Calo_++;
     }

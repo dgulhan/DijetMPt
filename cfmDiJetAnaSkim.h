@@ -63,6 +63,7 @@ Float_t pthatWeight_;
 Float_t AlgJtPt_[3][4];
 Float_t AlgJtPhi_[3][4];
 Float_t AlgJtEta_[3][4];
+Float_t AlgJtTrkMax_[3][4];
 
 Float_t AlgJtAvePhi_[3];
 Float_t AlgJtDelPhi_[3];
@@ -132,6 +133,7 @@ void SetAnaBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   jetTreeAna_p->Branch("AlgJtPt", &AlgJtPt_, "AlgJtPt[3][4]/F");
   jetTreeAna_p->Branch("AlgJtPhi", &AlgJtPhi_, "AlgJtPhi[3][4]/F");
   jetTreeAna_p->Branch("AlgJtEta", &AlgJtEta_, "AlgJtEta[3][4]/F");
+  jetTreeAna_p->Branch("AlgJtTrkMax", &AlgJtTrkMax_, "AlgJtTrkMax[3][4]/F");
 
   jetTreeAna_p->Branch("AlgJtAvePhi", &AlgJtAvePhi_, "AlgJtAvePhi[3]/F");
   jetTreeAna_p->Branch("AlgJtDelPhi", &AlgJtDelPhi_, "AlgJtDelPhi[3]/F");
@@ -201,6 +203,7 @@ void InitJetVar(Bool_t montecarlo = false, sampleType sType = kHIDATA)
       AlgJtPt_[initIter][initIter2] = -10;
       AlgJtPhi_[initIter][initIter2] = -10;
       AlgJtEta_[initIter][initIter2] = -10;
+      AlgJtTrkMax_[initIter][initIter2] = -10;
     }
 
     AlgJtAvePhi_[initIter] = -10;

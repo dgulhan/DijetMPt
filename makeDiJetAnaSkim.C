@@ -71,7 +71,7 @@ Float_t getAvePhi(Float_t inLeadPhi, Float_t inSubLeadPhi)
   return avePhi;
 }
 
-void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float_t refPt[], Float_t refPhi[], Float_t refEta[], Int_t algNum, Bool_t montecarlo = false)
+void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float_t trkMax[], Float_t refPt[], Float_t refPhi[], Float_t refEta[], Int_t algNum, Bool_t montecarlo = false)
 {
   if(nJt == 0 || nJt == 1 || jtPt[0] < leadJtPtCut || jtPt[1] < subLeadJtPtCut)
     return;
@@ -85,6 +85,9 @@ void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float
     AlgJtPt_[algNum][leadIter] = jtPt[leadIter];
     AlgJtPhi_[algNum][leadIter] = jtPhi[leadIter];
     AlgJtEta_[algNum][leadIter] = jtEta[leadIter];
+
+    if(algNum!=2)
+      AlgJtTrkMax_[algNum][leadIter] = trkMax[leadIter];
 
     if(montecarlo && algNum != 2){
       AlgRefPt_[algNum][leadIter] = refPt[leadIter];
@@ -227,10 +230,10 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
     InitJetVar(montecarlo, sType);
 
-    getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, Pu3CaloRefPt_, Pu3CaloRefPhi_, Pu3CaloRefEta_, 0, montecarlo);
-    getJtVar(nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_, Vs3CaloRefPt_, Vs3CaloRefPhi_, Vs3CaloRefEta_, 1, montecarlo);
+    getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, Pu3CaloTrkMax_, Pu3CaloRefPt_, Pu3CaloRefPhi_, Pu3CaloRefEta_, 0, montecarlo);
+    getJtVar(nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_, Vs3CaloTrkMax_, Vs3CaloRefPt_, Vs3CaloRefPhi_, Vs3CaloRefEta_, 1, montecarlo);
     Float_t dummyArray[nT3_];
-    getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray, dummyArray, dummyArray, 2, montecarlo);
+    getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray, dummyArray, dummyArray, dummyArray, 2, montecarlo);
     
     if(eventSet_[PuCalo] == false && eventSet_[VsCalo] == false && eventSet_[T] == false){
       std::cout << "No event pass after IniSkim; Potential bug" << std::endl;
