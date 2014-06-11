@@ -18,7 +18,7 @@ Int_t subLeadJtCut = 50;
 
 const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
-void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
+void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Float_t histLow, Float_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   inFile_p->cd();
 
@@ -130,7 +130,7 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 }
 
 
-void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Int_t histLow, Int_t histHi, const char* Corr = "", sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
+void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Float_t histLow, Float_t histHi, const char* Corr = "", sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   inFile_p->cd();
 
@@ -221,30 +221,32 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
   return;
 }
 
-void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNm, Int_t centLow, Int_t centHi, sampleType sType = kHIDATA, const char* Tight = "", Bool_t isHighPtTrk = false)
+void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t centLow, Int_t centHi, Float_t histLow, Float_t histHi, sampleType sType = kHIDATA, const char* Tight = "", Bool_t isHighPtTrk = false)
 {
   inFile_p->cd();
 
   Bool_t montecarlo = false;
   if(sType == kHIMC || sType == kPPMC || sType == kPAMC)
     montecarlo = true;
+
+  const char* title;
   
   if(sType == kHIDATA || sType == kHIMC)
-    title = Form("%sMultA%s_%d%d_%s_h", algType[setNum], Corr, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
+    title = Form("%sMultA_%d%d_%s_h", algType[setNum], (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
   else
-    title = Form("%sMultA%s_PP_%s_h", algType[setNum], Corr, fileTag);
+    title = Form("%sMultA_PP_%s_h", algType[setNum], fileTag);
 
   Float_t xArr[5] = {.0001, .11, .22, .33, .4999};
   Float_t xArrTight[9] = {.0001, .055, .11, .165, .22, .275, .33, .415, .4999};
-  TH1F* imbAsymmHist_p;
+  TH1F* multHist_p;
 
   if(!strcmp(Tight, ""))
-    imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 4, xArr);
+    multHist_p = new TH1F("multHist_p", "multHist_p", 4, xArr);
   else
-    imbAsymmHist_p = new TH1F("imbAsymmHist_p", "imbAsymmHist_p", 8, xArrTight);
+    multHist_p = new TH1F("multHist_p", "multHist_p", 8, xArrTight);
 
-  imbAsymmHist_p->GetXaxis()->SetLimits(0.00, 0.50);
-  niceTH1(imbAsymmHist_p, histHi, histLow, 505, 406);
+  multHist_p->GetXaxis()->SetLimits(0.00, 0.50);
+  niceTH1(multHist_p, histHi, histLow, 505, 406);
 
   TH1F* getHist_p;
 
@@ -259,7 +261,7 @@ void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNm, Int_t 
   TCut jetLCut = Form("AlgJtPt[%d][0] > %d", setNum, leadJtCut);
   TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
   TCut pthat = "";
-  if(sType == kHIMC || sType == KPPMC) pthat = "pthat > 80";
+  if(sType == kHIMC || sType == kPPMC) pthat = "pthat > 80";
 
   TCut trkCut = "";
   if(isHighPtTrk)
@@ -278,7 +280,27 @@ void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNm, Int_t 
   for(Int_t binIter = 0; binIter < nBins; binIter++){
     TCut asymmCut = "";
 
+    if(!strcmp(Tight, ""))
+      asymmCut = makeAsymmCut(setNum, asymmBins[binIter], asymmBins[binIter + 1]);
+    else
+      asymmCut = makeAsymmCut(setNum, asymmBinsTight[binIter], asymmBinsTight[binIter + 1]);
+
+      anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
+
+      getHist_p = (TH1F*)inFile_p->Get(name2[binIter]);
+
+      multHist_p->SetBinContent(binIter + 1, getHist_p->GetMean());
+      multHist_p->SetBinError(binIter + 1, getHist_p->GetMeanError());
   }
+
+  outFile_p = new TFile(outName, "UPDATE");
+  multHist_p->Write(title);
+  outFile_p->Close();
+
+  delete outFile_p;
+  delete multHist_p;
+
+  return;
 }
 
 void makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
@@ -315,8 +337,8 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
   for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
     std::cout << "Algorithm: " << algType[algIter] << std::endl;
 
-    for(Int_t corrIter = 0; corrIter < 2; corrIter++){
-      for(Int_t centIter = 0; centIter < centBins; centIter++){
+    for(Int_t centIter = 0; centIter < centBins; centIter++){
+      for(Int_t corrIter = 0; corrIter < 2; corrIter++){
 	for(Int_t FPTIter = 0; FPTIter < 6; FPTIter++){
 	  for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){
 
@@ -343,6 +365,9 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 	  }
 	}
       }
+
+      makeMultDiffHist(anaTree_p, outName, algIter, centLow[centIter], centHi[centIter], .0001, 39.9999, sType, "", false);
+      
     }
   }
   
