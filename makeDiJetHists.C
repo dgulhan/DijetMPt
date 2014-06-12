@@ -232,9 +232,9 @@ void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t
   const char* title;
   
   if(sType == kHIDATA || sType == kHIMC)
-    title = Form("%sMultA_%d%d_%s_h", algType[setNum], (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
+    title = Form("%sMultA%s_%d%d_%s_h", algType[setNum], Tight, (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
   else
-    title = Form("%sMultA_PP_%s_h", algType[setNum], fileTag);
+    title = Form("%sMultA%s_PP_%s_h", algType[setNum], Tight, fileTag);
 
   Float_t xArr[5] = {.0001, .11, .22, .33, .4999};
   Float_t xArrTight[9] = {.0001, .055, .11, .165, .22, .275, .33, .415, .4999};
@@ -246,7 +246,7 @@ void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t
     multHist_p = new TH1F("multHist_p", "multHist_p", 8, xArrTight);
 
   multHist_p->GetXaxis()->SetLimits(0.00, 0.50);
-  niceTH1(multHist_p, histHi, histLow, 505, 406);
+  niceTH1(multHist_p, histHi, histLow, 505, 508);
 
   TH1F* getHist_p;
 
@@ -261,7 +261,7 @@ void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t
   TCut jetLCut = Form("AlgJtPt[%d][0] > %d", setNum, leadJtCut);
   TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
   TCut pthat = "";
-  if(sType == kHIMC || sType == kPPMC) pthat = "pthat > 80";
+  if(montecarlo) pthat = "pthat > 80";
 
   TCut trkCut = "";
   if(isHighPtTrk)
@@ -349,6 +349,9 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 		if((CNCRIter == 0 && centIter < 4) || (CNCRIter != 0 && centIter >= 4) || sType == kPPMC || sType == kPPDATA){
 		  makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent, isHighPtTrk);
 		  
+		  if(corrIter == 0 && FPTIter == 0 && CNCRIter == 0)
+		    makeMultDiffHist(anaTree_p, outName, algIter, centLow[centIter], centHi[centIter], .0001, 39.9999, sType, Tight[tightIter], false);      
+
 		  if(montecarlo && corrIter == 0)
 		    makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent, isHighPtTrk);
 		}
@@ -365,9 +368,6 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 	  }
 	}
       }
-
-      makeMultDiffHist(anaTree_p, outName, algIter, centLow[centIter], centHi[centIter], .0001, 39.9999, sType, "", false);
-      
     }
   }
   

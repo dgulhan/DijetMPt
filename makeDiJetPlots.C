@@ -351,6 +351,139 @@ void makeSysError(Float_t sysArr[4], TH1F* hist_p)
 }
 
 
+void makeMultStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Int_t setNum, Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "")
+{
+  TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
+  TFile* histPPFile_p;
+  if(strcmp(fileTagPP, "") != 0)
+    histPPFile_p = new TFile(filePPName, "READ");
+
+  const char* cent[4] = {"50100", "3050", "1030", "010"};
+
+  TH1F* histPbPb_p[4];
+  TH1F* histPP_p;
+
+  if(strcmp(fileTagPP, "") != 0){
+    histPP_p = (TH1F*)histPPFile_p->Get(Form("%sMultA%s_PP_%s_h", algType[setNum], Tight, fileTagPP));
+    histPP_p->SetYTitle("Hemisphere #Delta_{mult}");
+    histPP_p->GetYaxis()->SetTitleOffset(2.2);
+  }
+
+  TCanvas* profPanel_p = new TCanvas(Form("%sMultA%s_Stack_%s_c", algType[setNum], Tight, fileTagPbPb), Form("%sMultA%s_Stack_%s_c", algType[setNum], Tight, fileTagPbPb), 4*300, 700);
+  profPanel_p->Divide(4, 2, 0.0, 0.0);
+  std::cout << "FourPanel Init" << std::endl;
+
+  if(strcmp(fileTagPP, "") != 0){
+    histPP_p->SetFillColor(kBlue);
+    histPP_p->SetLineColor(kBlue);
+    histPP_p->SetMarkerColor(kBlue);
+    histPP_p->SetMarkerStyle(25);
+  }
+
+  TLine* zeroLine_p = new TLine(0., 0., 0.50, 0.);
+  zeroLine_p->SetLineColor(1);
+  zeroLine_p->SetLineStyle(1);
+
+  TLatex* label_p = new TLatex();
+  label_p->SetNDC();
+  label_p->SetTextFont(43);
+  label_p->SetTextSizePixels(28);
+
+  const char* cent2[4] = {"50-100%", "30-50%", "10-30%", "0-10%"};
+  Float_t xCent[4] = {.35, .20, .20, .20};
+
+  for(Int_t panelIter = 0; panelIter < 8; panelIter++){
+    profPanel_p->cd(panelIter+1);
+
+    if(panelIter < 4){
+      if(strcmp(fileTagPP, "") != 0)
+	histPP_p->DrawCopy("E1");
+
+      histPbPb_p[panelIter] = (TH1F*)histPbPbFile_p->Get(Form("%sMultA%s_%s_%s_h", algType[setNum], Tight, cent[panelIter], fileTagPbPb));
+
+      histPbPb_p[panelIter]->SetFillColor(kRed);
+      histPbPb_p[panelIter]->SetLineColor(kRed);
+      histPbPb_p[panelIter]->SetMarkerColor(kRed);
+      histPbPb_p[panelIter]->SetMarkerStyle(28);
+      histPbPb_p[panelIter]->DrawCopy("E1 SAME");
+
+      label_p->DrawLatex(xCent[panelIter], .55, cent2[panelIter]);
+    }
+    else{
+      histPbPb_p[panelIter - 4]->Add(histPP_p, -1);
+
+      niceTH1(histPbPb_p[panelIter - 4], 29.999, -5, 505, 507);
+
+      histPbPb_p[panelIter - 4]->SetMarkerStyle(20);
+      histPbPb_p[panelIter - 4]->SetMarkerColor(1);
+      histPbPb_p[panelIter - 4]->SetFillColor(1);
+      histPbPb_p[panelIter - 4]->SetLineColor(1);
+
+      histPbPb_p[panelIter - 4]->SetYTitle("PbPb - pp");
+      histPbPb_p[panelIter - 4]->GetYaxis()->SetTitleOffset(2.2);
+      histPbPb_p[panelIter - 4]->SetXTitle("A_{J}");
+      histPbPb_p[panelIter - 4]->GetXaxis()->SetTitleOffset(1.6);
+      histPbPb_p[panelIter - 4]->DrawCopy("E1");
+      zeroLine_p->Draw("SAME");
+
+      if(panelIter == 4){
+	label_p->DrawLatex(.35, .85, "p_{T,1}>120 GeV/c");
+	label_p->DrawLatex(.35, .75, "p_{T,2}>50 GeV/c");
+	label_p->DrawLatex(.35, .65, "#Delta#phi_{1,2}>5#pi/6");
+	label_p->DrawLatex(.35, .55, "|#eta_{1}|,|#eta_{2}|<1.6");
+      }
+      else if(panelIter == 5){
+	label_p->DrawLatex(.20, .85, "anti-k_{T} Calo R=0.3");
+	label_p->DrawLatex(.20, .75, "|#eta_{trk}|<2.4");
+	label_p->DrawLatex(.20, .65, "p_{T}^{trk}>0.5 GeV/c");
+      }
+    }
+
+    profPanel_p->cd(panelIter+1)->RedrawAxis();
+  }
+
+  TLegend* legMult_p = new TLegend(0.25, 0.70, 0.55, 0.95);
+  legMult_p->SetFillColor(0);
+  legMult_p->SetFillStyle(0);
+  legMult_p->SetTextFont(43);
+  legMult_p->SetTextSizePixels(28);
+  legMult_p->SetBorderSize(0);
+
+  TH1F* dummHist_p = new TH1F("dummHist_p", "dummHist_p", 10, 0., 1.);
+  dummHist_p->SetMarkerColor(kRed);
+  dummHist_p->SetFillColor(kRed);
+  dummHist_p->SetLineColor(kRed);
+  dummHist_p->SetMarkerStyle(28);
+
+  legMult_p->AddEntry(dummHist_p, "PbPb 150 #mub^{-1}", "P L");
+  legMult_p->AddEntry(histPP_p, "pp 5.3 pb^{-1}", "P L");
+
+  profPanel_p->cd(1);
+
+  legMult_p->Draw("SAME");
+
+  TFile* outFile_p = new TFile(outName, "UPDATE");
+  profPanel_p->Write();
+  claverCanvasSaving(profPanel_p, Form("pdfDir/%sMultA%sStack_%s", algType[setNum], Tight, fileTagPbPb), "pdf");
+  outFile_p->Close();
+
+  delete outFile_p;
+  delete dummHist_p;
+  delete legMult_p;
+  delete label_p;
+  delete zeroLine_p;
+  delete profPanel_p;
+
+  if(strcmp(fileTagPP, "") != 0){
+    histPPFile_p->Close();
+    delete histPPFile_p;
+  }
+
+  histPbPbFile_p->Close();
+  delete histPbPbFile_p;
+}
+
+
 void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "", Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
@@ -747,6 +880,10 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
 	}
       }
     }
+    
+    makeMultStack(filePbPbName, fileTagPbPb, outName, algIter, montecarlo, filePPName, fileTagPP);
+    makeMultStack(filePbPbName, fileTagPbPb, outName, algIter, montecarlo, filePPName, fileTagPP, "Tight");
+
   }
 
   return;
