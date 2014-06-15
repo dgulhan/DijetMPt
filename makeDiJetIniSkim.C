@@ -10,7 +10,6 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/hiForest.h"
-#include "commonUtility.h"
 #include "cfmDiJetIniSkim.h"
 #include "stdlib.h"
 #include <iostream>
@@ -436,6 +435,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   outFile->Close();
 
   delete c;
+  CleanupDiJetIniSkim(montecarlo);
   delete outFile;
 
   printf("Done.\n");
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 {
   if(argc != 5)
     {
-      std::cout << "Usage: sortForest <inputFile> <MCBool> <outputFile> <#>" << std::endl;
+      std::cout << "Usage: makeDiJetIniSkim <inputFile> <MCBool> <outputFile> <#>" << std::endl;
       return 1;
     }
 
