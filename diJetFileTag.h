@@ -7,12 +7,12 @@
 #include "TCut.h"
 
 enum sampleType{
-  kHIDATA, //0                                                                                                                 
-  kHIMC,   //1                                                                                                                  
-  kPPDATA, //2                                                                                                                    
-  kPPMC,   //3                                                                                                                  
-  kPADATA, //4                                                                                                                  
-  kPAMC    //5                                                                                                                   
+  kHIDATA, //0                                                                                                  
+  kHIMC,   //1                                                                                               
+  kPPDATA, //2                                                                                                  
+  kPPMC,   //3                                                                                                
+  kPADATA, //4                                                                                                   
+  kPAMC    //5                                                                                                  
 };
 
 enum AlgoType_PbPb{
@@ -70,6 +70,21 @@ const char* DataG_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9
 
 const char* TESTPbPb = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMANASKIM_20140612_0.root";
 const char* TESTPP = "HiForest_pp_Jet80_v8_PP2013_HiForest_PromptReco_JsonPP_Jet80_PPReco_merged_forest_0_CFMANASKIM_20140612_0.root";
+
+const char* name1[10] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -1000, 10000)", "8(10000, -1000, 10000)", "9(10000, -1000, 10000)"};
+const char* name2[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+Float_t leadJtCut = 120.;
+Float_t subLeadJtCut = 50.;
+
+TCut setCut = "";
+TCut centCut = "";
+TCut etaCut = "";
+TCut phiCut = "";
+TCut jetLCut = "";
+TCut jetSLCut = "";
+TCut pthat = "";
+TCut trkCut = "";
 
 void setFileTag(const char* inName)
 {
@@ -245,18 +260,26 @@ void handsomeTH1(TH1 *a = 0, Int_t col = 1, Float_t size = 1, Int_t markerstyle 
   a->SetMarkerStyle(markerstyle);
   a->SetLineColor(col);
   a->GetYaxis()->SetTitleOffset(1.25);
+  a->GetXaxis()->SetTitleOffset(.75);
   a->GetXaxis()->CenterTitle();
   a->GetYaxis()->CenterTitle();
 }
 
 
-void niceTH1(TH1F* uglyTH1, float max , float min, float ndivX, float ndivY)
+void niceTH1(TH1F* uglyTH1, float max , float min, float ndivX, float ndivY, Int_t col = 1, Float_t size = 1, Int_t style = 20)
 {
-  handsomeTH1(uglyTH1);
+  handsomeTH1(uglyTH1, col, size, style);
   uglyTH1->SetMaximum(max);
   uglyTH1->SetMinimum(min);
   uglyTH1->SetNdivisions(ndivX);
   uglyTH1->SetNdivisions(ndivY, "Y");
+}
+
+
+void niceTH1N(TH1F* uglyTH1, float max, float min, float ndivX, float ndivY, Int_t col = 1, Float_t size = 1, Int_t style = 20)
+{
+  uglyTH1->Scale(1./uglyTH1->Integral());
+  niceTH1(uglyTH1, max, min, ndivX, ndivY, col, size, style);
 }
 
 
@@ -380,5 +403,36 @@ TCut makeDelPhiCut(Int_t setNum, Float_t delPhiLow = 0)
 
   return Form("%s > %f", jtDelPhi, delPhiLow);
 }
+
+
+void InitCuts()
+{
+  setCut = "";
+  centCut = "";
+  etaCut = "";
+  phiCut = "";
+  jetLCut = "";
+  jetSLCut = "";
+  pthat = "";
+  trkCut = "";
+
+  return;
+}
+
+
+void SetCuts(Int_t setNum, sampleType sType = kHIDATA, Int_t centLow = 0, Int_t centHi = 199, Bool_t isHighPtTrk = false, Float_t etaNum = 1.6, Float_t phiNum = 5*TMath::Pi()/6, Float_t LJtNum = 120., Float_t SLJtNum = 50.)
+{
+  setCut = makeSetCut(setNum);
+  if(sType == kHIDATA || sType == kHIMC)  centCut = makeCentCut(centLow, centHi);
+  etaCut = makeEtaCut(setNum, etaNum);
+  phiCut = makeDelPhiCut(setNum, phiNum);
+  jetLCut = Form("AlgJtPt[%d][0] > %f", setNum, LJtNum);
+  jetSLCut = Form("AlgJtPt[%d][1] > %f", setNum, SLJtNum);
+  if(sType == kHIMC || sType == kPPMC) pthat = "pthat > 80";
+  if(isHighPtTrk) trkCut = Form("AlgJtTrkMax[%d][0] > 8 && AlgJtTrkMax[%d][1] > 8", setNum, setNum);
+
+  return;
+}
+
 
 #endif
