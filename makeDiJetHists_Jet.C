@@ -13,12 +13,13 @@
 TFile* inFile_p = 0;
 TFile* outFile_p = 0;
 
-const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
-
-
 void makeAsymmHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t nBins, Float_t histLow, Float_t histHi, Int_t centLow, Int_t centHi, sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
   inFile_p->cd();
+
+  Bool_t montecarlo = false;
+  if(sType == kPPMC || sType == kHIMC)
+    montecarlo = true;
 
   const char* title;
 
@@ -33,13 +34,22 @@ void makeAsymmHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t nB
   InitCuts();
   SetCuts(setNum, sType, centLow, centHi, isHighPtTrk);
 
-  anaTree_p->Project(name, Form("AlgJtAsymm[%d]", setNum), centCut && setCut && etaCut && phiCut && jetLCut && jetSLCut && pthat && trkCut);
+  if(montecarlo && setNum != 2)
+    anaTree_p->Project(name, Form("AlgJtAsymm[%d]", setNum), Form("centWeight_80[%d]", setNum)*(centCut && setCut && etaCut && phiCut && jetLCut && jetSLCut && pthat && trkCut));
+  else
+    anaTree_p->Project(name, Form("AlgJtAsymm[%d]", setNum), centCut && setCut && etaCut && phiCut && jetLCut && jetSLCut && pthat && trkCut);
 
   ajHist_p = (TH1F*)inFile_p->Get(Form("%s_h", title));
   if(sType == kPPMC || sType == kPPDATA)
     niceTH1N(ajHist_p, .2999, 0., 405, 506, kBlue, 1, 25);
-  else
-    niceTH1N(ajHist_p, .2999, 0., 405, 506, kRed, 1, 28);
+  else{
+    if(sType == kHIDATA)
+      niceTH1N(ajHist_p, .2999, 0., 405, 506, kRed, 1, 28);
+    else{
+      niceTH1N(ajHist_p, .2999, 0., 405, 506, 1, 0, 28);
+      ajHist_p->SetFillColor(16);
+    }
+  }
 
   ajHist_p->SetYTitle("Event Fraction");
   ajHist_p->SetXTitle("A_{J}");
@@ -66,14 +76,11 @@ void makeDiJetHists_Jet(const char* inName, const char* outName, sampleType sTyp
 
   inFile_p = new TFile(inName, "READ");
   TTree* anaTree_p = (TTree*)inFile_p->Get("jetTreeAna");
-  anaTree_p->AddFriend("trackTreeAna");
 
   Int_t jetAlgMax = 2;
 
-  if(montecarlo){
-    anaTree_p->AddFriend("genTreeAna");
+  if(montecarlo)
     jetAlgMax = 3;
-  }
 
   Int_t centBins = 4;
   Int_t centLow[4] = {0, 20, 60, 100};

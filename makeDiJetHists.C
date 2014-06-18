@@ -1,7 +1,7 @@
 //=============================================                                                
 // Author: Chris McGinn                                                                        
 //                                                                                             
-// DiJet Histogram Maker                                                              
+// DiJet Histogram Maker, Missing Pt                                                              
 //                                                                                             
 //=============================================     
 
@@ -12,9 +12,6 @@
 
 TFile* inFile_p = 0;
 TFile* outFile_p = 0;
-
-Int_t leadJtCut = 120;
-Int_t subLeadJtCut = 50;
 
 const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
@@ -69,22 +66,8 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
 
   TString var = Form("%sAlgImbProjA%s[%d][%d]", gorr, CNCR, setCorrNum, FPTNum);
 
-  TCut setCut = makeSetCut(setNum);
-  TCut centCut = "";
-  if(sType == kHIDATA || sType == kHIMC) centCut = makeCentCut(centLow, centHi);
-  TCut etaCut = makeEtaCut(setNum, 1.6);
-  TCut phiCut = makeDelPhiCut(setNum, 5*TMath::Pi()/6);
-
-  TCut jetLCut = Form("AlgJtPt[%d][0] > %d", setNum, leadJtCut);
-  TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
-  TCut pthat = "pthat > 80";
-
-  TCut trkCut = "";
-  if(isHighPtTrk)
-    trkCut = Form("AlgJtTrkMax[%d][0] > 12 && AlgJtTrkMax[%d][1] > 12", setNum, setNum);
-
-  const char* name1[8] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -10000, 10000)"};
-  const char* name2[8] = {"0", "1", "2", "3", "4", "5", "6", "7"};
+  InitCuts();
+  SetCuts(setNum, sType, centLow, centHi, isHighPtTrk);
 
   Float_t asymmBins[5] = {.00, .11, .22, .33, 1.00};
   Float_t asymmBinsTight[9] = {.00, .055, .11, .165, .22, .275, .33, .415, 1.00};
@@ -108,10 +91,10 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
     else
       asymmCut = makeAsymmCut(setNum, asymmBinsTight[binIter], asymmBinsTight[binIter + 1]);
 
-    if(montecarlo)
+    if(montecarlo && setNum != 2)
       anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
     else
-      anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && trkCut, "");
+      anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
 
     getHist_p = (TH1F*)inFile_p->Get(name2[binIter]);
 
@@ -163,11 +146,9 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
 
   //Throw dis shit in da loop
 
-  TCut setCut = makeSetCut(setNum);
-  TCut centCut = "";
-  if(sType == kHIDATA || sType == kHIMC) centCut = makeCentCut(centLow, centHi);
-  TCut etaCut = makeEtaCut(setNum, 0.5);
-  TCut phiCut = makeDelPhiCut(setNum, 5*TMath::Pi()/6);
+
+  InitCuts();
+  SetCuts(setNum, sType, centLow, centHi, isHighPtTrk);
   TCut asymmCut = makeAsymmCut(setNum, 0.0, 1.0);
   if(!strcmp(CNCR, "RU")){
     asymmCut = makeAsymmCut(setNum, 0.22, 1.0);
@@ -185,17 +166,6 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
       asymmCut = makeAsymmCut(setNum, 0.0, dummArr[2]);
     }
   }
-
-  TCut jetLCut = Form("AlgJtPt[%d][0] > %d", setNum, leadJtCut);
-  TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
-  TCut pthat = "pthat > 80";
-
-  TCut trkCut = "";
-  if(isHighPtTrk)
-    trkCut = Form("AlgJtTrkMax[%d][0] > 12 && AlgJtTrkMax[%d][1] > 12", setNum, setNum);
-
-  const char* name1[10] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -1000, 10000)", "8(10000, -1000, 10000)", "9(10000, -1000, 10000)"};
-  const char* name2[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
   for(Int_t rIter = 0; rIter < 10; rIter++){
     TString var = Form("%sAlgImbProjAR[%d][%d][%d]", gorr, setCorrNum, FPTNum, rIter);
@@ -252,23 +222,8 @@ void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t
 
   TString var = Form("AlgJtMult[%d][1] - AlgJtMult[%d][0]", setNum, setNum);
 
-  TCut setCut = makeSetCut(setNum);
-  TCut centCut = "";
-  if(sType == kHIDATA || sType == kHIMC) centCut = makeCentCut(centLow, centHi);
-  TCut etaCut = makeEtaCut(setNum, 1.6);
-  TCut phiCut = makeDelPhiCut(setNum, 5*TMath::Pi()/6);
-
-  TCut jetLCut = Form("AlgJtPt[%d][0] > %d", setNum, leadJtCut);
-  TCut jetSLCut = Form("AlgJtPt[%d][1] > %d", setNum, subLeadJtCut);
-  TCut pthat = "";
-  if(montecarlo) pthat = "pthat > 80";
-
-  TCut trkCut = "";
-  if(isHighPtTrk)
-    trkCut = Form("AlgJtTrkMax[%d][0] > 12 && AlgJtTrkMax[%d][1] > 12", setNum, setNum);
-
-  const char* name1[8] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -10000, 10000)"};
-  const char* name2[8] = {"0", "1", "2", "3", "4", "5", "6", "7"};
+  InitCuts();
+  SetCuts(setNum, sType, centLow, centHi, isHighPtTrk);
 
   Float_t asymmBins[5] = {.00, .11, .22, .33, 1.00};
   Float_t asymmBinsTight[9] = {.00, .055, .11, .165, .22, .275, .33, .415, 1.00};

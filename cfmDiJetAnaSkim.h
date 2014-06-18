@@ -9,9 +9,9 @@
 
 #include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_12_patch3/src/DijetInitialSkim/cfmDiJetIniSkim.h"
 
-TTree* trackTreeAna_p;
-TTree* jetTreeAna_p;
-TTree* genTreeAna_p;
+TTree* trackTreeAna_p = 0;
+TTree* jetTreeAna_p = 0;
+TTree* genTreeAna_p = 0;
 
 //Track Tree Variables
 
@@ -45,11 +45,7 @@ Float_t psin_;
 //Event Set Bool array, [0] == PuPF, [1] == PuCalo, .etc according to enum
 
 Bool_t eventSet_[3];
-Float_t centWeight_[3];
-Float_t centWeight_2pi3_[3];
-Float_t centWeight_120_5pi6_[3];
-Float_t centWeight_hatAll_0_[3];
-Float_t centWeight_hatAll_1_[3];
+Float_t centWeight_80_[2];
 
 Float_t fullWeight_[3];
 
@@ -122,13 +118,8 @@ void SetAnaBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 
   jetTreeAna_p->Branch("eventSet", &eventSet_, "eventSet[3]/O");
 
-  if(sType == kHIMC){
-    jetTreeAna_p->Branch("centWeight", &centWeight_, "centWeight[3]/F");
-    jetTreeAna_p->Branch("centWeight_2pi3", &centWeight_2pi3_, "centWeight_2pi3[3]/F");
-    jetTreeAna_p->Branch("centWeight_120_5pi6", &centWeight_120_5pi6_, "centWeight_120_5pi6[3]/F");
-    jetTreeAna_p->Branch("centWeight_hatAll_0", &centWeight_hatAll_0_, "centWeight_hatAll_0[3]/F");
-    jetTreeAna_p->Branch("centWeight_hatAll_1", &centWeight_hatAll_1_, "centWeight_hatAll_1[3]/F");
-  }    
+  if(sType == kHIMC)
+    jetTreeAna_p->Branch("centWeight_80", &centWeight_80_, "centWeight_80[2]/F");
 
   jetTreeAna_p->Branch("fullWeight", &fullWeight_, "fullWeight[3]/F");
 
@@ -188,18 +179,21 @@ void InitDiJetAnaSkim(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 }
 
 
+void CleanupDiJetAnaSkim(Bool_t montecarlo)
+{
+  if(trackTreeAna_p == 0) delete trackTreeAna_p;
+  if(jetTreeAna_p == 0) delete jetTreeAna_p;
+  if(genTreeAna_p == 0 && montecarlo) delete genTreeAna_p;
+}
+
+
 void InitJetVar(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   for(Int_t initIter = 0; initIter < 3; initIter++){
     eventSet_[initIter] = false;
 
-    if(sType == kHIMC){
-      centWeight_[initIter] = 1;
-      centWeight_2pi3_[initIter] = 1;
-      centWeight_120_5pi6_[initIter] = 1;
-      centWeight_hatAll_0_[initIter] = 1;
-      centWeight_hatAll_1_[initIter] = 1;
-    }
+    if(sType == kHIMC && initIter != 2)
+      centWeight_80_[initIter] = 1;    
 
     fullWeight_[initIter] = 1;
 

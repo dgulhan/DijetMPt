@@ -369,7 +369,7 @@ void makeMultStack(const char* filePbPbName, const char* fileTagPbPb, const char
     histPP_p->GetYaxis()->SetTitleOffset(2.2);
   }
 
-  TCanvas* profPanel_p = new TCanvas(Form("%sMultA%s_Stack_%s_c", algType[setNum], Tight, fileTagPbPb), Form("%sMultA%s_Stack_%s_c", algType[setNum], Tight, fileTagPbPb), 4*300, 700);
+  TCanvas* profPanel_p = new TCanvas(Form("%sMultA%s_Stack_%s_c", algType[setNum], Tight, fileTagPbPb), Form("%sMultA%s_Stack_%s_c", algType[setNum], Tight, fileTagPbPb), 4*300, 2*350);
   profPanel_p->Divide(4, 2, 0.0, 0.0);
   std::cout << "FourPanel Init" << std::endl;
 
@@ -442,7 +442,7 @@ void makeMultStack(const char* filePbPbName, const char* fileTagPbPb, const char
     profPanel_p->cd(panelIter+1)->RedrawAxis();
   }
 
-  TLegend* legMult_p = new TLegend(0.25, 0.70, 0.55, 0.95);
+  TLegend* legMult_p = new TLegend(0.45, 0.75, 0.75, 0.95);
   legMult_p->SetFillColor(0);
   legMult_p->SetFillStyle(0);
   legMult_p->SetTextFont(43);
@@ -543,12 +543,12 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   TCanvas* profPanel_p;
 
   if(!strcmp(CNCR, "")){
-    profPanel_p = new TCanvas(Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), 5*300, 700);
+    profPanel_p = new TCanvas(Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), 5*300, 2*350);
     makeMultiPanelCanvas(profPanel_p, 5, 2, 0.0, 0.0, 0.2, 0.2, 0.05);
     std::cout << "FivePanel Init" << std::endl;
   }
   else{
-    profPanel_p = new TCanvas(Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), 300*3, 700);
+    profPanel_p = new TCanvas(Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), 300*3, 2*350);
     makeMultiPanelCanvas(profPanel_p, 3, 2, 0.0, 0.0, 0.2, 0.2, 0.01, CNCR);
     std::cout << "ThreePanel Init" << std::endl;
   }

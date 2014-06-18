@@ -260,6 +260,14 @@ void InitDiJetIniSkim(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 }
 
 
+void CleanupDiJetIniSkim(Bool_t montecarlo)
+{
+  if(trackTreeIni_p == 0) delete trackTreeIni_p;
+  if(jetTreeIni_p == 0) delete jetTreeIni_p;
+  if(genTreeIni_p == 0 && montecarlo) delete genTreeIni_p;
+}
+
+
 void GetDiJetIniSkim(TFile* iniFile_p, Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
   std::cout << "Get DiJet IniSkim" << std::endl;

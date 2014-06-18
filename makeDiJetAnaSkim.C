@@ -183,30 +183,14 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
   InitCorrFiles(sType);
   InitCorrHists(sType);
 
-  TFile *centHistFile_p = new TFile("centHist_eventSelect.root", "READ");
-  TH1F *hist_DataOverMC_p[2];
+  TFile *centHistFile_80_p = new TFile("centHist_eventSet_80.root", "READ");
+  TH1F *hist_DataOverMC_80_p[2];
 
-  TFile *centHistFile_2pi3_p = new TFile("centHist_eventSelect_2pi3.root", "READ");
-  TH1F *hist_DataOverMC_2pi3_p[2];
-
-  TFile *centHistFile_120_5pi6_p = new TFile("centHist_eventSelect_120_5pi6.root", "READ");
-  TH1F *hist_DataOverMC_120_5pi6_p[2];
-
-  TFile *centHistFile_hatAll_0_p = new TFile("centHist_eventSelect_hatAll_0.root", "READ");
-  TH1F *hist_DataOverMC_hatAll_0_p[2];
-
-  TFile *centHistFile_hatAll_1_p = new TFile("centHist_eventSelect_hatAll_1.root", "READ");
-  TH1F *hist_DataOverMC_hatAll_1_p[2];
-
-  if(montecarlo){
+  if(sType == kHIMC){
     for(Int_t algIter = 0; algIter < 2; algIter++){
-      hist_DataOverMC_p[algIter] = (TH1F*)centHistFile_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
-      hist_DataOverMC_2pi3_p[algIter] = (TH1F*)centHistFile_2pi3_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
-      hist_DataOverMC_120_5pi6_p[algIter] = (TH1F*)centHistFile_120_5pi6_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
-      hist_DataOverMC_hatAll_0_p[algIter] = (TH1F*)centHistFile_hatAll_0_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
-      hist_DataOverMC_hatAll_1_p[algIter] = (TH1F*)centHistFile_hatAll_1_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
+      hist_DataOverMC_80_p[algIter] = (TH1F*)centHistFile_80_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
     }
-  }
+  } 
 
   TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
 
@@ -265,17 +249,10 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
       }
     }
 
-    if(montecarlo){
-      for(Int_t algIter = 0; algIter < 3; algIter++){
-	if(sType == kHIMC){
-	  centWeight_[algIter] = hist_DataOverMC_p[algIter]->GetBinContent(hist_DataOverMC_p[algIter]->FindBin(hiBin_));
-	  centWeight_2pi3_[algIter] = hist_DataOverMC_2pi3_p[algIter]->GetBinContent(hist_DataOverMC_2pi3_p[algIter]->FindBin(hiBin_));
-	  centWeight_120_5pi6_[algIter] = hist_DataOverMC_120_5pi6_p[algIter]->GetBinContent(hist_DataOverMC_120_5pi6_p[algIter]->FindBin(hiBin_));
-	  centWeight_hatAll_0_[algIter] = hist_DataOverMC_hatAll_0_p[algIter]->GetBinContent(hist_DataOverMC_hatAll_0_p[algIter]->FindBin(hiBin_));
-	  centWeight_hatAll_1_[algIter] = hist_DataOverMC_hatAll_1_p[algIter]->GetBinContent(hist_DataOverMC_hatAll_1_p[algIter]->FindBin(hiBin_));
-	}	  
-
-	fullWeight_[algIter] = centWeight_hatAll_1_[algIter]*pthatWeight_;
+  
+    if(sType == kHIMC){
+      for(Int_t algIter = 0; algIter < 2; algIter++){
+	centWeight_80_[algIter] = hist_DataOverMC_80_p[algIter]->GetBinContent(hist_DataOverMC_80_p[algIter]->FindBin(hiBin_));
       }
     }
 
@@ -447,9 +424,15 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
     genTreeAna_p->Write();
 
   outFile->Close();
-
   delete outFile;
-  delete centHistFile_p;
+
+  centHistFile_80_p->Close();
+  delete centHistFile_80_p;
+
+  CleanupDiJetAnaSkim(montecarlo);
+
+  iniSkim_p->Close();
+  delete iniSkim_p;
 
   printf("Done.\n");
   return(0);
