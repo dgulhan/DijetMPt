@@ -71,7 +71,7 @@ Float_t getAvePhi(Float_t inLeadPhi, Float_t inSubLeadPhi)
   return avePhi;
 }
 
-void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float_t trkMax[], Float_t refPt[], Float_t refPhi[], Float_t refEta[], Int_t algNum, Bool_t montecarlo = false)
+void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float_t trkMax[], Float_t rawPt[], Float_t refPt[], Float_t refPhi[], Float_t refEta[], Int_t algNum, Bool_t montecarlo = false)
 {
   if(nJt == 0 || nJt == 1 || jtPt[0] < leadJtPtCut || jtPt[1] < subLeadJtPtCut)
     return;
@@ -86,13 +86,15 @@ void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float
     AlgJtPhi_[algNum][leadIter] = jtPhi[leadIter];
     AlgJtEta_[algNum][leadIter] = jtEta[leadIter];
 
-    if(algNum!=2)
+    if(algNum!=2){
       AlgJtTrkMax_[algNum][leadIter] = trkMax[leadIter];
+      AlgJtRawPt_[algNum][leadIter] = rawPt[leadIter];
 
-    if(montecarlo && algNum != 2){
-      AlgRefPt_[algNum][leadIter] = refPt[leadIter];
-      AlgRefPhi_[algNum][leadIter] = refPhi[leadIter];
-      AlgRefEta_[algNum][leadIter] = refEta[leadIter];
+      if(montecarlo){
+	AlgRefPt_[algNum][leadIter] = refPt[leadIter];
+	AlgRefPhi_[algNum][leadIter] = refPhi[leadIter];
+	AlgRefEta_[algNum][leadIter] = refEta[leadIter];
+      }
     }
   }
   
@@ -140,7 +142,7 @@ Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPhi[], F
 }
 
 
-int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_CFMSKIM.root", Int_t num = 0)
+int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETANASKIM.root", Int_t num = 0)
 {
   //Define MC or Data
   Bool_t montecarlo = false;
@@ -184,11 +186,17 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
   InitCorrHists(sType);
 
   TFile *centHistFile_80_p = new TFile("centHist_eventSet_80.root", "READ");
-  TH1F *hist_DataOverMC_80_p[2];
+  TH1F *hist_DataOverMC_80_p[5];
+
+  TFile *centHistFile_Merge_p = new TFile("centHist_eventSet_Merge.root", "READ");
+  TH1F *hist_DataOverMC_Merge_p[5];
 
   if(sType == kHIMC){
-    for(Int_t algIter = 0; algIter < 2; algIter++){
-      hist_DataOverMC_80_p[algIter] = (TH1F*)centHistFile_80_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
+    for(Int_t algIter = 0; algIter < 5; algIter++){
+      if(algIter != 2){
+	hist_DataOverMC_80_p[algIter] = (TH1F*)centHistFile_80_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
+	hist_DataOverMC_Merge_p[algIter] = (TH1F*)centHistFile_Merge_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
+      }
     }
   } 
 
@@ -214,12 +222,14 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
     InitJetVar(montecarlo, sType);
 
-    getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, Pu3CaloTrkMax_, Pu3CaloRefPt_, Pu3CaloRefPhi_, Pu3CaloRefEta_, 0, montecarlo);
-    getJtVar(nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_, Vs3CaloTrkMax_, Vs3CaloRefPt_, Vs3CaloRefPhi_, Vs3CaloRefEta_, 1, montecarlo);
+    getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, Pu3CaloTrkMax_, Pu3CaloRawPt_, Pu3CaloRefPt_, Pu3CaloRefPhi_, Pu3CaloRefEta_, 0, montecarlo);
+    getJtVar(nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_, Vs3CaloTrkMax_, Vs3CaloRawPt_, Vs3CaloRefPt_, Vs3CaloRefPhi_, Vs3CaloRefEta_, 1, montecarlo);
     Float_t dummyArray[nT3_];
-    getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray, dummyArray, dummyArray, dummyArray, 2, montecarlo);
+    getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray, dummyArray, dummyArray, dummyArray, dummyArray, 2, montecarlo);
+    getJtVar(nPu3PF_, Pu3PFPt_, Pu3PFPhi_, Pu3PFEta_, Pu3PFTrkMax_, Pu3PFRawPt_, Pu3PFRefPt_, Pu3PFRefPhi_, Pu3PFRefEta_, 4, montecarlo);
+    getJtVar(nVs3PF_, Vs3PFPt_, Vs3PFPhi_, Vs3PFEta_, Vs3PFTrkMax_, Vs3PFRawPt_, Vs3PFRefPt_, Vs3PFRefPhi_, Vs3PFRefEta_, 5, montecarlo);
     
-    if(eventSet_[PuCalo] == false && eventSet_[VsCalo] == false && eventSet_[T] == false){
+    if(eventSet_[PuCalo] == false && eventSet_[VsCalo] == false && eventSet_[T] == false && eventSet_[PuPF] && eventSet_[VsPF]){
       std::cout << "No event pass after IniSkim; Potential bug" << std::endl;
       continue;
     }
@@ -251,8 +261,11 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   
     if(sType == kHIMC){
-      for(Int_t algIter = 0; algIter < 2; algIter++){
-	centWeight_80_[algIter] = hist_DataOverMC_80_p[algIter]->GetBinContent(hist_DataOverMC_80_p[algIter]->FindBin(hiBin_));
+      for(Int_t algIter = 0; algIter < 5; algIter++){
+	if(algIter != 2){
+	  centWeight_80_[algIter] = hist_DataOverMC_80_p[algIter]->GetBinContent(hist_DataOverMC_80_p[algIter]->FindBin(hiBin_));
+	  centWeight_Merge_[algIter] = hist_DataOverMC_Merge_p[algIter]->GetBinContent(hist_DataOverMC_Merge_p[algIter]->FindBin(hiBin_));
+	}
       }
     }
 
@@ -262,160 +275,161 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
     //Switch below to iterated OR EDIT HERE
 
-    Float_t rBounds[10] = {.20, .40, .60, .80, 1.00, 1.20, 1.40, 1.60, 1.80, 100000};
-
-    for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
-          
-      //Grab proj. Pt Spectra For Tracks in each Event Subset
-
-      Int_t ptIter = getPtRange(trkPt_[trkEntry]);
-    
-      for(Int_t jtIter = 0; jtIter < 3; jtIter++){
-	if(eventSet_[jtIter]){
-
-	  rAlgImbProjA_[jtIter][5] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
-	  rAlgImbProjA_[jtIter][ptIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
-
-	  Float_t tempLeadDelR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgJtEta_[jtIter][0], AlgJtPhi_[jtIter][0]);
-	  Float_t tempSubLeadDelR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgJtEta_[jtIter][1], AlgJtPhi_[jtIter][1]);
-
-	  if(tempLeadDelR > 0 && tempSubLeadDelR > 0){
-	    if(tempLeadDelR < .8 || tempSubLeadDelR < .8){
-	      rAlgImbProjAC_[jtIter][5] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
-	      rAlgImbProjAC_[jtIter][ptIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
-	    }
-     	    else{
-	      rAlgImbProjANC_[jtIter][5] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
-	      rAlgImbProjANC_[jtIter][ptIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
-	    }
-
-	    for(Int_t rIter = 0; rIter < 10; rIter++){
-	      if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-		rAlgImbProjAR_[jtIter][5][rIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
-		rAlgImbProjAR_[jtIter][ptIter][rIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
-		break;
-	      }
-	    }
-	    
-	  }
-	}
-      }
-    }
- 
-    if(sType == kHIDATA || sType == kHIMC)
-      InitPosArrPbPb(hiBin_);
- 
-    for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
-      Int_t ptPos = getPtBin(trkPt_[trkEntry], sType);
-
-      Float_t tempRMin[3];
-
-      tempRMin[PuCalo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nPu3Calo_, Pu3CaloPhi_, Pu3CaloEta_);
-      tempRMin[VsCalo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPhi_, Vs3CaloEta_);
-      tempRMin[T] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nT3_, T3Phi_, T3Eta_);
+    if(eventSet_[PuCalo] || eventSet_[VsCalo] || eventSet_[T]){
       
-      Float_t tempFact[3] = {0, 0, 0};
-      Float_t tempCorr[3] = {0, 0, 0};
-
-      tempFact[PuCalo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[PuCalo], sType);
-      tempCorr[PuCalo] = trkPt_[trkEntry]*tempFact[PuCalo];
-
-      tempFact[VsCalo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[VsCalo], sType);
-      tempCorr[VsCalo] = trkPt_[trkEntry]*tempFact[VsCalo];
-
-      if(montecarlo){
-	tempFact[T] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T], sType);
-	tempCorr[T] = trkPt_[trkEntry]*tempFact[T];
-      }
-
-      Int_t ptIter = getPtRange(trkPt_[trkEntry]);
+      Float_t rBounds[10] = {.20, .40, .60, .80, 1.00, 1.20, 1.40, 1.60, 1.80, 100000};
       
-      for(Int_t setIter = 0; setIter < 3; setIter++){
-	if(eventSet_[setIter]){
-
-	  if(getAbsDphi(AlgJtAvePhi_[setIter], trkPhi_[trkEntry]) < TMath::Pi()/2)
-	    AlgJtMult_[setIter][0] += tempFact[setIter];
-	  else
-	    AlgJtMult_[setIter][1] += tempFact[setIter];	  
-
-	  rAlgImbProjA_[setIter + 3][5] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
-	  rAlgImbProjA_[setIter + 3][ptIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
-	  
-	  Float_t tempLeadR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgJtEta_[setIter][0], AlgJtPhi_[setIter][0]);
-	  Float_t tempSubLeadR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgJtEta_[setIter][1], AlgJtPhi_[setIter][1]);
-	  
-	  if(tempLeadR > 0 && tempSubLeadR > 0){
-	    if(tempLeadR < .8 || tempSubLeadR < .8){
-	      rAlgImbProjAC_[setIter + 3][5] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
-	      rAlgImbProjAC_[setIter + 3][ptIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
-	    }
-	    else{
-	      rAlgImbProjANC_[setIter + 3][5] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
-	      rAlgImbProjANC_[setIter + 3][ptIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
-	    }
+      for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
+        
+	//Grab proj. Pt Spectra For Tracks in each Event Subset
+	
+	Int_t ptIter = getPtRange(trkPt_[trkEntry]);
+	
+	for(Int_t jtIter = 0; jtIter < 3; jtIter++){
+	  if(eventSet_[jtIter]){
 	    
-	    for(Int_t rIter = 0; rIter < 10; rIter++){
-	      if(tempLeadR < rBounds[rIter] || tempSubLeadR < rBounds[rIter]){
-		rAlgImbProjAR_[setIter + 3][5][rIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
-		rAlgImbProjAR_[setIter + 3][ptIter][rIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
-		break;
-	      }
-	    }
+	    rAlgImbProjA_[jtIter][5] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
+	    rAlgImbProjA_[jtIter][ptIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
 	    
-	  }
-	}
-      }  
-    }
-
-    
-    if(montecarlo){
-      //Iterate over truth
-
-      for(Int_t genEntry = 0; genEntry < nGen_; genEntry++){            
-      
-	Int_t ptIter = getPtRange(genPt_[genEntry]);
-
-	for(Int_t setIter = 0; setIter < 3; setIter++){
-	  if(eventSet_[setIter]){
-
-	    gAlgImbProjA_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
-	    gAlgImbProjA_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
-	  
-	    Float_t tempLeadDelR = getDR(genEta_[genEntry], genPhi_[genEntry], AlgJtEta_[setIter][0], AlgJtPhi_[setIter][0]);
-	    Float_t tempSubLeadDelR = getDR(genEta_[genEntry], genPhi_[genEntry], AlgJtEta_[setIter][1], AlgJtPhi_[setIter][1]);
-
+	    Float_t tempLeadDelR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgJtEta_[jtIter][0], AlgJtPhi_[jtIter][0]);
+	    Float_t tempSubLeadDelR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgJtEta_[jtIter][1], AlgJtPhi_[jtIter][1]);
+	    
 	    if(tempLeadDelR > 0 && tempSubLeadDelR > 0){
-
 	      if(tempLeadDelR < .8 || tempSubLeadDelR < .8){
-		gAlgImbProjAC_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
-		gAlgImbProjAC_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		rAlgImbProjAC_[jtIter][5] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
+		rAlgImbProjAC_[jtIter][ptIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
 	      }
 	      else{
-		gAlgImbProjANC_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
-		gAlgImbProjANC_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		rAlgImbProjANC_[jtIter][5] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
+		rAlgImbProjANC_[jtIter][ptIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
 	      }
 	      
 	      for(Int_t rIter = 0; rIter < 10; rIter++){
 		if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-		  gAlgImbProjAR_[setIter][5][rIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
-		  gAlgImbProjAR_[setIter][ptIter][rIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		  rAlgImbProjAR_[jtIter][5][rIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
+		  rAlgImbProjAR_[jtIter][ptIter][rIter] += - trkPt_[trkEntry]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[jtIter]));
 		  break;
 		}
 	      }
-
+	      
 	    }
 	  }
 	}
       }
-    }
+      
+      if(sType == kHIDATA || sType == kHIMC)
+	InitPosArrPbPb(hiBin_);
+      
+      for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
+	Int_t ptPos = getPtBin(trkPt_[trkEntry], sType);
+	
+	Float_t tempRMin[3];
+	
+	tempRMin[PuCalo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nPu3Calo_, Pu3CaloPhi_, Pu3CaloEta_);
+	tempRMin[VsCalo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPhi_, Vs3CaloEta_);
+	tempRMin[T] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nT3_, T3Phi_, T3Eta_);
+	
+	Float_t tempFact[3] = {0, 0, 0};
+	Float_t tempCorr[3] = {0, 0, 0};
+	
+	tempFact[PuCalo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[PuCalo], sType);
+	tempCorr[PuCalo] = trkPt_[trkEntry]*tempFact[PuCalo];
+	
+	tempFact[VsCalo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[VsCalo], sType);
+	tempCorr[VsCalo] = trkPt_[trkEntry]*tempFact[VsCalo];
+	
+	if(montecarlo){
+	  tempFact[T] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T], sType);
+	  tempCorr[T] = trkPt_[trkEntry]*tempFact[T];
+	}
 
+	Int_t ptIter = getPtRange(trkPt_[trkEntry]);
+	
+	for(Int_t setIter = 0; setIter < 3; setIter++){
+	  if(eventSet_[setIter]){
+	    
+	    if(getAbsDphi(AlgJtAvePhi_[setIter], trkPhi_[trkEntry]) < TMath::Pi()/2)
+	      AlgJtMult_[setIter][0] += tempFact[setIter];
+	    else
+	      AlgJtMult_[setIter][1] += tempFact[setIter];	  
+	    
+	    rAlgImbProjA_[setIter + 3][5] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
+	    rAlgImbProjA_[setIter + 3][ptIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
+	    
+	    Float_t tempLeadR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgJtEta_[setIter][0], AlgJtPhi_[setIter][0]);
+	    Float_t tempSubLeadR = getDR(trkEta_[trkEntry], trkPhi_[trkEntry], AlgJtEta_[setIter][1], AlgJtPhi_[setIter][1]);
+	    
+	    if(tempLeadR > 0 && tempSubLeadR > 0){
+	      if(tempLeadR < .8 || tempSubLeadR < .8){
+		rAlgImbProjAC_[setIter + 3][5] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
+		rAlgImbProjAC_[setIter + 3][ptIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
+	      }
+	      else{
+		rAlgImbProjANC_[setIter + 3][5] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
+		rAlgImbProjANC_[setIter + 3][ptIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
+	      }
+	      
+	      for(Int_t rIter = 0; rIter < 10; rIter++){
+		if(tempLeadR < rBounds[rIter] || tempSubLeadR < rBounds[rIter]){
+		  rAlgImbProjAR_[setIter + 3][5][rIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
+		  rAlgImbProjAR_[setIter + 3][ptIter][rIter] += - tempCorr[setIter]*cos(getDPHI(trkPhi_[trkEntry], AlgJtAvePhi_[setIter]));
+		  break;
+		}
+	      }
+	    }
+	  }
+	}  
+      }
+      
+      
+      if(montecarlo){
+	//Iterate over truth
+	
+	for(Int_t genEntry = 0; genEntry < nGen_; genEntry++){            
+	  
+	  Int_t ptIter = getPtRange(genPt_[genEntry]);
+	  
+	  for(Int_t setIter = 0; setIter < 3; setIter++){
+	    if(eventSet_[setIter]){
+	      
+	      gAlgImbProjA_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+	      gAlgImbProjA_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+	      
+	      Float_t tempLeadDelR = getDR(genEta_[genEntry], genPhi_[genEntry], AlgJtEta_[setIter][0], AlgJtPhi_[setIter][0]);
+	      Float_t tempSubLeadDelR = getDR(genEta_[genEntry], genPhi_[genEntry], AlgJtEta_[setIter][1], AlgJtPhi_[setIter][1]);
+	      
+	      if(tempLeadDelR > 0 && tempSubLeadDelR > 0){
+		
+		if(tempLeadDelR < .8 || tempSubLeadDelR < .8){
+		  gAlgImbProjAC_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		  gAlgImbProjAC_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		}
+		else{
+		  gAlgImbProjANC_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		  gAlgImbProjANC_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		}
+		
+		for(Int_t rIter = 0; rIter < 10; rIter++){
+		  if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
+		    gAlgImbProjAR_[setIter][5][rIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		    gAlgImbProjAR_[setIter][ptIter][rIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		    break;
+		  }
+		}	
+	      }
+	    }
+	  }
+	}
+      }
+    }      
+    
     jetTreeAna_p->Fill();
     trackTreeAna_p->Fill();
-
+    
     if(montecarlo)
       genTreeAna_p->Fill();
   }
-
+  
   outFile->cd();
   jetTreeAna_p->Write();
   trackTreeAna_p->Write();
@@ -428,6 +442,9 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   centHistFile_80_p->Close();
   delete centHistFile_80_p;
+
+  centHistFile_Merge_p->Close();
+  delete centHistFile_Merge_p;
 
   CleanupDiJetAnaSkim(montecarlo);
 

@@ -44,36 +44,36 @@ Float_t psin_;
 
 //Event Set Bool array, [0] == PuPF, [1] == PuCalo, .etc according to enum
 
-Bool_t eventSet_[3];
-Float_t centWeight_80_[2];
+Bool_t eventSet_[5];
+Float_t centWeight_80_[5];
+Float_t centWeight_Merge_[5];
 
-Float_t fullWeight_[3];
-
-Bool_t isQuarkJet_[3];
-Bool_t isGluonJet_[3];
+Bool_t isQuarkJet_[5];
+Bool_t isGluonJet_[5];
 
 Float_t pthatWeight_;
 
 //Jet Set, Array by algorithm, according to enum above, 2nd, 0 = lead, 1 =sublead etc.
 
-Float_t AlgJtPt_[3][4];
-Float_t AlgJtPhi_[3][4];
-Float_t AlgJtEta_[3][4];
-Float_t AlgJtTrkMax_[3][4];
+Float_t AlgJtPt_[5][4];
+Float_t AlgJtPhi_[5][4];
+Float_t AlgJtEta_[5][4];
+Float_t AlgJtTrkMax_[5][4];
+Float_t AlgJtRawPt_[5][4];
 
-Float_t AlgJtMult_[3][2];
+Float_t AlgJtMult_[5][2];
 
-Float_t AlgJtAvePhi_[3];
-Float_t AlgJtDelPhi_[3];
-Float_t AlgJtAsymm_[3];
+Float_t AlgJtAvePhi_[5];
+Float_t AlgJtDelPhi_[5];
+Float_t AlgJtAsymm_[5];
 
-Float_t AlgRefPt_[3][4];
-Float_t AlgRefPhi_[3][4];
-Float_t AlgRefEta_[3][4];
+Float_t AlgRefPt_[5][4];
+Float_t AlgRefPhi_[5][4];
+Float_t AlgRefEta_[5][4];
 
-Float_t AlgRefAvePhi_[3];
-Float_t AlgRefDelPhi_[3];
-Float_t AlgRefAsymm_[3];
+Float_t AlgRefAvePhi_[5];
+Float_t AlgRefDelPhi_[5];
+Float_t AlgRefAsymm_[5];
 
 //Gen Tree Variables
 
@@ -116,39 +116,40 @@ void SetAnaBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
     jetTreeAna_p->Branch("psin", &psin_, "psin/F");
   }
 
-  jetTreeAna_p->Branch("eventSet", &eventSet_, "eventSet[3]/O");
+  jetTreeAna_p->Branch("eventSet", &eventSet_, "eventSet[5]/O");
 
-  if(sType == kHIMC)
-    jetTreeAna_p->Branch("centWeight_80", &centWeight_80_, "centWeight_80[2]/F");
+  if(sType == kHIMC){
+    jetTreeAna_p->Branch("centWeight_80", &centWeight_80_, "centWeight_80[5]/F");
+    jetTreeAna_p->Branch("centWeight_Merge", &centWeight_Merge_, "centWeight_Merge[5]/F");
+  }
 
-  jetTreeAna_p->Branch("fullWeight", &fullWeight_, "fullWeight[3]/F");
+  jetTreeAna_p->Branch("AlgJtPt", &AlgJtPt_, "AlgJtPt[5][4]/F");
+  jetTreeAna_p->Branch("AlgJtPhi", &AlgJtPhi_, "AlgJtPhi[5][4]/F");
+  jetTreeAna_p->Branch("AlgJtEta", &AlgJtEta_, "AlgJtEta[5][4]/F");
+  jetTreeAna_p->Branch("AlgJtTrkMax", &AlgJtTrkMax_, "AlgJtTrkMax[5][4]/F");
+  jetTreeAna_p->Branch("AlgJtRawPt", &AlgJtRawPt_, "AlgJtRawPt[5][4]/F");
 
-  jetTreeAna_p->Branch("AlgJtPt", &AlgJtPt_, "AlgJtPt[3][4]/F");
-  jetTreeAna_p->Branch("AlgJtPhi", &AlgJtPhi_, "AlgJtPhi[3][4]/F");
-  jetTreeAna_p->Branch("AlgJtEta", &AlgJtEta_, "AlgJtEta[3][4]/F");
-  jetTreeAna_p->Branch("AlgJtTrkMax", &AlgJtTrkMax_, "AlgJtTrkMax[3][4]/F");
+  jetTreeAna_p->Branch("AlgJtMult", &AlgJtMult_, "AlgJtMult[5][2]/F");
 
-  jetTreeAna_p->Branch("AlgJtMult", &AlgJtMult_, "AlgJtMult[3][2]/F");
-
-  jetTreeAna_p->Branch("AlgJtAvePhi", &AlgJtAvePhi_, "AlgJtAvePhi[3]/F");
-  jetTreeAna_p->Branch("AlgJtDelPhi", &AlgJtDelPhi_, "AlgJtDelPhi[3]/F");
-  jetTreeAna_p->Branch("AlgJtAsymm", &AlgJtAsymm_, "AlgJtAsymm[3]/F");
+  jetTreeAna_p->Branch("AlgJtAvePhi", &AlgJtAvePhi_, "AlgJtAvePhi[5]/F");
+  jetTreeAna_p->Branch("AlgJtDelPhi", &AlgJtDelPhi_, "AlgJtDelPhi[5]/F");
+  jetTreeAna_p->Branch("AlgJtAsymm", &AlgJtAsymm_, "AlgJtAsymm[5]/F");
 
   if(montecarlo){
-    jetTreeAna_p->Branch("isQuarkJet", &isQuarkJet_, "isQuarkJet[3]/O");
-    jetTreeAna_p->Branch("isGluonJet", &isGluonJet_, "isGluonJet[3]/O");
+    jetTreeAna_p->Branch("isQuarkJet", &isQuarkJet_, "isQuarkJet[5]/O");
+    jetTreeAna_p->Branch("isGluonJet", &isGluonJet_, "isGluonJet[5]/O");
 
     jetTreeAna_p->Branch("pthatWeight", &pthatWeight_, "pthatWeight/F");
     jetTreeAna_p->Branch("pthat", &pthat_, "pthat/F");
 
     //refpt for jets immediately above
-    jetTreeAna_p->Branch("AlgRefPt", &AlgRefPt_, "AlgRefPt[3][4]/F");
-    jetTreeAna_p->Branch("AlgRefPhi", &AlgRefPhi_, "AlgRefPhi[3][4]/F");
-    jetTreeAna_p->Branch("AlgRefEta", &AlgRefEta_, "AlgRefEta[3][4]/F");
+    jetTreeAna_p->Branch("AlgRefPt", &AlgRefPt_, "AlgRefPt[5][4]/F");
+    jetTreeAna_p->Branch("AlgRefPhi", &AlgRefPhi_, "AlgRefPhi[5][4]/F");
+    jetTreeAna_p->Branch("AlgRefEta", &AlgRefEta_, "AlgRefEta[5][4]/F");
 
-    jetTreeAna_p->Branch("AlgRefAvePhi", &AlgRefAvePhi_, "AlgRefAvePhi[3]/F");
-    jetTreeAna_p->Branch("AlgRefDelPhi", &AlgRefDelPhi_, "AlgRefDelPhi[3]/F");
-    jetTreeAna_p->Branch("AlgRefAsymm", &AlgRefAsymm_, "AlgRefAsymm[3]/F");
+    jetTreeAna_p->Branch("AlgRefAvePhi", &AlgRefAvePhi_, "AlgRefAvePhi[5]/F");
+    jetTreeAna_p->Branch("AlgRefDelPhi", &AlgRefDelPhi_, "AlgRefDelPhi[5]/F");
+    jetTreeAna_p->Branch("AlgRefAsymm", &AlgRefAsymm_, "AlgRefAsymm[5]/F");
 
 
     //Gen. proj. onto jetAlg, array ordered according to enum
@@ -189,19 +190,20 @@ void CleanupDiJetAnaSkim(Bool_t montecarlo)
 
 void InitJetVar(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 {
-  for(Int_t initIter = 0; initIter < 3; initIter++){
+  for(Int_t initIter = 0; initIter < 5; initIter++){
     eventSet_[initIter] = false;
 
-    if(sType == kHIMC && initIter != 2)
+    if(sType == kHIMC){
       centWeight_80_[initIter] = 1;    
-
-    fullWeight_[initIter] = 1;
+      centWeight_Merge_[initIter] = 1;    
+    }
 
     for(Int_t initIter2 = 0; initIter2 < 4; initIter2++){
       AlgJtPt_[initIter][initIter2] = -10;
       AlgJtPhi_[initIter][initIter2] = -10;
       AlgJtEta_[initIter][initIter2] = -10;
       AlgJtTrkMax_[initIter][initIter2] = -10;
+      AlgJtRawPt_[initIter][initIter2] = -10;
 
       if(initIter2 < 2)
 	AlgJtMult_[initIter][initIter2] = 0;

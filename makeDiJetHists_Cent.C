@@ -24,9 +24,12 @@ void makeCentHist(TTree* anaTree_p, const char* outName, Int_t setNum, sampleTyp
   TString name = Form("%s_h(200, -.5, 199.5)", title);
   
   SetCuts(setNum, sType);
-  
-  anaTree_p->Project(name, "hiBin", setCut && pthat);
-  
+
+  if(sType == kHIDATA)  
+    anaTree_p->Project(name, "hiBin", setCut && pthat);
+  else
+    anaTree_p->Project(name, "hiBin", Form("pthatWeight")*(setCut && pthat));  
+
   centHist_p = (TH1F*)inFile_p->Get(Form("%s_h", title));
 
   centHist_p->Scale(1./centHist_p->Integral());

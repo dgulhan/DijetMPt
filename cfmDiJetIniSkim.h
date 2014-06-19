@@ -12,18 +12,20 @@
 #include "TH1F.h"
 
 enum sampleType{
-  kHIDATA, //0                                                                                                                               
-  kHIMC,   //1                                                                                                                                  
-  kPPDATA, //2                                                                                                                                  
+  kHIDATA, //0                                                                                                                         
+  kHIMC,   //1                                                                                                           
+  kPPDATA, //2                                                                                              
   kPPMC,   //3                                                                                                                          
   kPADATA, //4                                                                                                                              
-  kPAMC    //5                                                                                                                               
+  kPAMC    //5                                                                                                                         
 };
 
 enum AlgoType_PbPb{
-  PuCalo,  //0                                                                                                                                 
-  VsCalo,  //1                                                                                                                                 
-  T        //2                                                                                                                                  
+  PuCalo,  //0                                                                                                           
+  VsCalo,  //1                                                                                                                     
+  T,        //2                                                                                                                      
+  PuPF,
+  VsPF
 };
 
 
@@ -78,6 +80,7 @@ Float_t Pu3CaloPt_[MAXJETS];
 Float_t Pu3CaloPhi_[MAXJETS];
 Float_t Pu3CaloEta_[MAXJETS];
 Float_t Pu3CaloTrkMax_[MAXJETS];
+Float_t Pu3CaloRawPt_[MAXJETS];
 Float_t Pu3CaloRefPt_[MAXJETS];
 Float_t Pu3CaloRefPhi_[MAXJETS];
 Float_t Pu3CaloRefEta_[MAXJETS];
@@ -87,6 +90,7 @@ Float_t Vs3CaloPt_[MAXJETS];
 Float_t Vs3CaloPhi_[MAXJETS];
 Float_t Vs3CaloEta_[MAXJETS];
 Float_t Vs3CaloTrkMax_[MAXJETS];
+Float_t Vs3CaloRawPt_[MAXJETS];
 Float_t Vs3CaloRefPt_[MAXJETS];
 Float_t Vs3CaloRefPhi_[MAXJETS];
 Float_t Vs3CaloRefEta_[MAXJETS];
@@ -95,6 +99,26 @@ Int_t nT3_;
 Float_t T3Pt_[MAXJETS];
 Float_t T3Phi_[MAXJETS];
 Float_t T3Eta_[MAXJETS];
+
+Int_t nPu3PF_;
+Float_t Pu3PFPt_[MAXJETS];
+Float_t Pu3PFPhi_[MAXJETS];
+Float_t Pu3PFEta_[MAXJETS];
+Float_t Pu3PFTrkMax_[MAXJETS];
+Float_t Pu3PFRawPt_[MAXJETS];
+Float_t Pu3PFRefPt_[MAXJETS];
+Float_t Pu3PFRefPhi_[MAXJETS];
+Float_t Pu3PFRefEta_[MAXJETS];
+
+Int_t nVs3PF_;
+Float_t Vs3PFPt_[MAXJETS];
+Float_t Vs3PFPhi_[MAXJETS];
+Float_t Vs3PFEta_[MAXJETS];
+Float_t Vs3PFTrkMax_[MAXJETS];
+Float_t Vs3PFRawPt_[MAXJETS];
+Float_t Vs3PFRefPt_[MAXJETS];
+Float_t Vs3PFRefPhi_[MAXJETS];
+Float_t Vs3PFRefEta_[MAXJETS];
 
 //Gen Tree Variables
 
@@ -140,6 +164,7 @@ void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   jetTreeIni_p->Branch("Pu3CaloPhi", &Pu3CaloPhi_, "Pu3CaloPhi[nPu3Calo]/F");
   jetTreeIni_p->Branch("Pu3CaloEta", &Pu3CaloEta_, "Pu3CaloEta[nPu3Calo]/F");
   jetTreeIni_p->Branch("Pu3CaloTrkMax", &Pu3CaloTrkMax_, "Pu3CaloTrkMax[nPu3Calo]/F");
+  jetTreeIni_p->Branch("Pu3CaloRawPt", &Pu3CaloRawPt_, "Pu3CaloRawPt[nPu3Calo]/F");
 
   if(montecarlo){
     jetTreeIni_p->Branch("Pu3CaloRefPt", &Pu3CaloRefPt_, "Pu3CaloRefPt[nPu3Calo]/F");
@@ -152,6 +177,7 @@ void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   jetTreeIni_p->Branch("Vs3CaloPhi", &Vs3CaloPhi_, "Vs3CaloPhi[nVs3Calo]/F");
   jetTreeIni_p->Branch("Vs3CaloEta", &Vs3CaloEta_, "Vs3CaloEta[nVs3Calo]/F");
   jetTreeIni_p->Branch("Vs3CaloTrkMax", &Vs3CaloTrkMax_, "Vs3CaloTrkMax[nVs3Calo]/F");
+  jetTreeIni_p->Branch("Vs3CaloRawPt", &Vs3CaloRawPt_, "Vs3CaloRawPt[nVs3Calo]/F");
 
   if(montecarlo){
     jetTreeIni_p->Branch("Vs3CaloRefPt", &Vs3CaloRefPt_, "Vs3CaloRefPt[nVs3Calo]/F");
@@ -163,6 +189,32 @@ void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
     jetTreeIni_p->Branch("T3Phi", &T3Phi_, "T3Phi[nT3]/F");
     jetTreeIni_p->Branch("T3Eta", &T3Eta_, "T3Eta[nT3]/F");
   }
+
+  jetTreeIni_p->Branch("nPu3PF", &nPu3PF_, "nPu3PF/I");
+  jetTreeIni_p->Branch("Pu3PFPt", &Pu3PFPt_, "Pu3PFPt[nPu3PF]/F");
+  jetTreeIni_p->Branch("Pu3PFPhi", &Pu3PFPhi_, "Pu3PFPhi[nPu3PF]/F");
+  jetTreeIni_p->Branch("Pu3PFEta", &Pu3PFEta_, "Pu3PFEta[nPu3PF]/F");
+  jetTreeIni_p->Branch("Pu3PFTrkMax", &Pu3PFTrkMax_, "Pu3PFTrkMax[nPu3PF]/F");
+  jetTreeIni_p->Branch("Pu3PFRawPt", &Pu3PFRawPt_, "Pu3PFRawPt[nPu3PF]/F");
+
+  if(montecarlo){
+    jetTreeIni_p->Branch("Pu3PFRefPt", &Pu3PFRefPt_, "Pu3PFRefPt[nPu3PF]/F");
+    jetTreeIni_p->Branch("Pu3PFRefPhi", &Pu3PFRefPhi_, "Pu3PFRefPhi[nPu3PF]/F");
+    jetTreeIni_p->Branch("Pu3PFRefEta", &Pu3PFRefEta_, "Pu3PFRefEta[nPu3PF]/F");
+  }    
+
+  jetTreeIni_p->Branch("nVs3PF", &nVs3PF_, "nVs3PF/I");
+  jetTreeIni_p->Branch("Vs3PFPt", &Vs3PFPt_, "Vs3PFPt[nVs3PF]/F");
+  jetTreeIni_p->Branch("Vs3PFPhi", &Vs3PFPhi_, "Vs3PFPhi[nVs3PF]/F");
+  jetTreeIni_p->Branch("Vs3PFEta", &Vs3PFEta_, "Vs3PFEta[nVs3PF]/F");
+  jetTreeIni_p->Branch("Vs3PFTrkMax", &Vs3PFTrkMax_, "Vs3PFTrkMax[nVs3PF]/F");
+  jetTreeIni_p->Branch("Vs3PFRawPt", &Vs3PFRawPt_, "Vs3PFRawPt[nVs3PF]/F");
+
+  if(montecarlo){
+    jetTreeIni_p->Branch("Vs3PFRefPt", &Vs3PFRefPt_, "Vs3PFRefPt[nVs3PF]/F");
+    jetTreeIni_p->Branch("Vs3PFRefPhi", &Vs3PFRefPhi_, "Vs3PFRefPhi[nVs3PF]/F");
+    jetTreeIni_p->Branch("Vs3PFRefEta", &Vs3PFRefEta_, "Vs3PFRefEta[nVs3PF]/F");
+  }    
 
   //Gen Tree Branches
 
@@ -210,6 +262,7 @@ void GetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   jetTreeIni_p->SetBranchAddress("Pu3CaloPhi", Pu3CaloPhi_);
   jetTreeIni_p->SetBranchAddress("Pu3CaloEta", Pu3CaloEta_);
   jetTreeIni_p->SetBranchAddress("Pu3CaloTrkMax", Pu3CaloTrkMax_);
+  jetTreeIni_p->SetBranchAddress("Pu3CaloRawPt", Pu3CaloRawPt_);
 
   if(montecarlo){
     jetTreeIni_p->SetBranchAddress("Pu3CaloRefPt", Pu3CaloRefPt_);
@@ -232,6 +285,33 @@ void GetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
     jetTreeIni_p->SetBranchAddress("T3Pt", T3Pt_);
     jetTreeIni_p->SetBranchAddress("T3Phi", T3Phi_);
     jetTreeIni_p->SetBranchAddress("T3Eta", T3Eta_);
+  }
+
+
+  jetTreeIni_p->SetBranchAddress("nPu3PF", &nPu3PF_);
+  jetTreeIni_p->SetBranchAddress("Pu3PFPt", Pu3PFPt_);
+  jetTreeIni_p->SetBranchAddress("Pu3PFPhi", Pu3PFPhi_);
+  jetTreeIni_p->SetBranchAddress("Pu3PFEta", Pu3PFEta_);
+  jetTreeIni_p->SetBranchAddress("Pu3PFTrkMax", Pu3PFTrkMax_);
+  jetTreeIni_p->SetBranchAddress("Pu3PFRawPt", Pu3PFRawPt_);
+
+  if(montecarlo){
+    jetTreeIni_p->SetBranchAddress("Pu3PFRefPt", Pu3PFRefPt_);
+    jetTreeIni_p->SetBranchAddress("Pu3PFRefPhi", Pu3PFRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Pu3PFRefEta", Pu3PFRefEta_);
+  }
+
+  jetTreeIni_p->SetBranchAddress("nVs3PF", &nVs3PF_);
+  jetTreeIni_p->SetBranchAddress("Vs3PFPt", Vs3PFPt_);
+  jetTreeIni_p->SetBranchAddress("Vs3PFPhi", Vs3PFPhi_);
+  jetTreeIni_p->SetBranchAddress("Vs3PFEta", Vs3PFEta_);
+  jetTreeIni_p->SetBranchAddress("Vs3PFTrkMax", Vs3PFTrkMax_);
+  jetTreeIni_p->SetBranchAddress("Vs3PFRawPt", Vs3PFRawPt_);
+
+  if(montecarlo){
+    jetTreeIni_p->SetBranchAddress("Vs3PFRefPt", Vs3PFRefPt_);
+    jetTreeIni_p->SetBranchAddress("Vs3PFRefPhi", Vs3PFRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Vs3PFRefEta", Vs3PFRefEta_);
   }
 
 

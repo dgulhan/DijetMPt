@@ -17,10 +17,6 @@ void makeAsymmHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t nB
 {
   inFile_p->cd();
 
-  Bool_t montecarlo = false;
-  if(sType == kPPMC || sType == kHIMC)
-    montecarlo = true;
-
   const char* title;
 
   if(sType == kPPMC || sType == kPPDATA)
@@ -34,22 +30,32 @@ void makeAsymmHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t nB
   InitCuts();
   SetCuts(setNum, sType, centLow, centHi, isHighPtTrk);
 
-  if(montecarlo && setNum != 2)
-    anaTree_p->Project(name, Form("AlgJtAsymm[%d]", setNum), Form("centWeight_80[%d]", setNum)*(centCut && setCut && etaCut && phiCut && jetLCut && jetSLCut && pthat && trkCut));
+  if(sType == kHIMC && setNum != 2)
+    anaTree_p->Project(name, Form("AlgJtAsymm[%d]", setNum), Form("pthatWeight*centWeight_Merge[%d]", setNum)*(centCut && setCut && etaCut && phiCut && jetLCut && jetSLCut && pthat && trkCut));
   else
     anaTree_p->Project(name, Form("AlgJtAsymm[%d]", setNum), centCut && setCut && etaCut && phiCut && jetLCut && jetSLCut && pthat && trkCut);
 
   ajHist_p = (TH1F*)inFile_p->Get(Form("%s_h", title));
-  if(sType == kPPMC || sType == kPPDATA)
-    niceTH1N(ajHist_p, .2999, 0., 405, 506, kBlue, 1, 25);
-  else{
-    if(sType == kHIDATA)
-      niceTH1N(ajHist_p, .2999, 0., 405, 506, kRed, 1, 28);
-    else{
-      niceTH1N(ajHist_p, .2999, 0., 405, 506, 1, 0, 28);
-      ajHist_p->SetFillColor(16);
-    }
+
+  Int_t col = kRed;
+  Int_t size = 1;
+  Int_t style = 28;
+
+  if(sType == kPPDATA){
+    col = kBlue;
+    style = 25;
   }
+  else if(sType == kPPMC){
+    col = 1;
+    style = 20;
+  }
+  else if(sType == kHIMC){
+    ajHist_p->SetFillColor(16);
+    size = 0;
+    col = 0;
+  }
+
+  niceTH1N(ajHist_p, .2999, 0., 405, 506, col, size, style);
 
   ajHist_p->SetYTitle("Event Fraction");
   ajHist_p->SetXTitle("A_{J}");

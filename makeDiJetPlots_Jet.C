@@ -110,6 +110,8 @@ void addJtHistToPanel(TFile* file_p, const char* fileTag, TCanvas* canv_p, Int_t
       leg->AddEntry(hist_p, "pp", "p");
     else if(sType == kHIDATA)
       leg->AddEntry(hist_p, "PbPb", "p");
+    else if(sType == kPPMC)
+      leg->AddEntry(hist_p, "PYTHIA", "p");
     else
       leg->AddEntry(hist_p, "P+H", "f");
   }
@@ -118,16 +120,20 @@ void addJtHistToPanel(TFile* file_p, const char* fileTag, TCanvas* canv_p, Int_t
 }
 
 
-void makeJtVarPanel(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Int_t setNum, const char* jtVarIn, const char* filePPName = "", const char* fileTagPP = "", Bool_t isHighPtTrk = false, const char* filePbPbMCName = "", const char* fileTagPbPbMC = "")
+void makeJtVarPanel(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Int_t setNum, const char* jtVarIn, const char* filePPName = "", const char* fileTagPP = "", Bool_t isHighPtTrk = false, const char* filePbPbMCName = "", const char* fileTagPbPbMC = "", const char* filePPMCName = "", const char* fileTagPPMC = "")
 {
   TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
   TFile* histPPFile_p;
   TFile* histPbPbMCFile_p;
+  TFile* histPPMCFile_p;
   if(strcmp(fileTagPP, "") != 0)
     histPPFile_p = new TFile(filePPName, "READ");
 
   if(strcmp(fileTagPbPbMC, "") != 0)
     histPbPbMCFile_p = new TFile(filePbPbMCName, "READ");
+
+  if(strcmp(fileTagPPMC, "") != 0)
+    histPPMCFile_p = new TFile(filePPMCName, "READ");
 
   const char* cent[4] = {"50100", "3050", "1030", "010"};
   const char* cent2[4] = {"50-100%", "30-50%", "10-30%", "0-10%"};
@@ -137,7 +143,7 @@ void makeJtVarPanel(const char* filePbPbName, const char* fileTagPbPb, const cha
   jtVarPanel_p->Divide(4, 1, 0, 0);
   std::cout << "FourPanel Init" << std::endl;
 
-  TLegend* leg_p = new TLegend(0.60, 0.40, 0.95, 0.60);
+  TLegend* leg_p = new TLegend(0.60, 0.40, 0.95, 0.70);
   leg_p->SetFillColor(0);
   leg_p->SetFillStyle(0);
   leg_p->SetTextFont(43);
@@ -159,7 +165,8 @@ void makeJtVarPanel(const char* filePbPbName, const char* fileTagPbPb, const cha
     if(strcmp(fileTagPP, "") != 0)
       addJtHistToPanel(histPPFile_p, fileTagPP, jtVarPanel_p, setNum, jtVarIn, leg_p, centIter+1, "PP", "E1 SAME", kPPDATA);
 
-    //edit here
+    if(strcmp(fileTagPPMC, "") != 0)
+      addJtHistToPanel(histPPMCFile_p, fileTagPPMC, jtVarPanel_p, setNum, jtVarIn, leg_p, centIter+1, "PP", "E1 SAME", kPPMC);
 
     label_p->DrawLatex(.60, .30, cent2[centIter]);
     label_p->DrawLatex(.40, .80, cuts[centIter]);
@@ -170,7 +177,7 @@ void makeJtVarPanel(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   jtVarPanel_p->cd(4);
   if(isHighPtTrk)
-    label_p->DrawLatex(.40, .6, "p_{T}^{trk}>8 GeV/c");
+    label_p->DrawLatex(.40, .6, "p_{T}^{trk}>30 GeV/c");
 
 
   TFile* outFile_p = new TFile(outName, "UPDATE");
@@ -190,7 +197,7 @@ void makeJtVarPanel(const char* filePbPbName, const char* fileTagPbPb, const cha
 }
 
 
-void makeDiJetPlots_Jet(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", Bool_t isPercent = false, Bool_t isHighPtTrk = false, const char* filePbPbMCName = "", const char* fileTagPbPbMC = "")
+void makeDiJetPlots_Jet(const char* filePbPbName, const char* fileTagPbPb, const char* outName, Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", Bool_t isPercent = false, Bool_t isHighPtTrk = false, const char* filePbPbMCName = "", const char* fileTagPbPbMC = "", const char* filePPMCName = "", const char* fileTagPPMC = "")
 {
   TH1::SetDefaultSumw2();
 
@@ -201,7 +208,7 @@ void makeDiJetPlots_Jet(const char* filePbPbName, const char* fileTagPbPb, const
   
 
   for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
-    makeJtVarPanel(filePbPbName, fileTagPbPb, outName, algIter, "Aj", filePPName, fileTagPP, isHighPtTrk, filePbPbMCName, fileTagPbPbMC);
+    makeJtVarPanel(filePbPbName, fileTagPbPb, outName, algIter, "Aj", filePPName, fileTagPP, isHighPtTrk, filePbPbMCName, fileTagPbPbMC, filePPMCName, fileTagPPMC);
   }
 
   return;
