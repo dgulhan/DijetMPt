@@ -12,7 +12,6 @@
 #include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/hiForest.h"
 #include "cfmDiJetIniSkim.h"
 #include "stdlib.h"
-#include <iostream>
 #include <fstream>
 
 #include "TComplex.h"
@@ -73,7 +72,7 @@ Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
   }
   else{
     lPtCut++;
-    return false;
+v    return false;
   }
 }
 

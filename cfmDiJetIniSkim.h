@@ -11,21 +11,23 @@
 #include "TFile.h"
 #include "TH1F.h"
 
+#include <iostream>
+
 enum sampleType{
-  kHIDATA, //0                                                                                                                         
-  kHIMC,   //1                                                                                                           
+  kHIDATA, //0
+  kHIMC,   //1
   kPPDATA, //2                                                                                              
-  kPPMC,   //3                                                                                                                          
-  kPADATA, //4                                                                                                                              
-  kPAMC    //5                                                                                                                         
+  kPPMC,   //3
+  kPADATA, //4
+  kPAMC    //5
 };
 
 enum AlgoType_PbPb{
-  PuCalo,  //0                                                                                                           
-  VsCalo,  //1                                                                                                                     
-  T,        //2                                                                                                                      
-  PuPF,
-  VsPF
+  PuCalo,  //0
+  VsCalo,  //1
+  T,       //2
+  PuPF,    //3
+  VsPF     //4
 };
 
 

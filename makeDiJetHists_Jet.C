@@ -70,6 +70,66 @@ void makeAsymmHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t nB
 }
 
 
+
+void makeRawOverRefHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t nBins, Float_t histLow, Float_t histHi, Int_t centLow, Int_t centHi, sampleType sType = kHIMC)
+{
+  inFile_p->cd();
+
+  const char* title;
+
+  if(sType == kPPMC || sType == kPPDATA)
+    title = Form("%sRawRef_PP_%s", algType[setNum], fileTag);
+  else
+    title = Form("%sRawRef_%d%d_%s", algType[setNum], (Int_t)(centLow*.5), (Int_t)((centHi + 1)*.5), fileTag);
+
+  TH1F* refRawHist_p;
+
+  TString name = Form("%s_h(%d, %f, %f)", title, nBins, histLow, histHi);
+  InitCuts();
+  SetCuts(setNum, sType, centLow, centHi);
+
+  TCut refCut = Form("AlgJtRefPt[%d] > 100", setNum);
+
+  if(sType == kHIMC && setNum != 2)
+    anaTree_p->Project(name, Form("AlgJtRawPt[%d]/AlgJtRefPt[%d]", setNum, setNum), Form("centWeight_80[%d]", setNum)*(centCut && setCut && etaCut && phiCut && jetLCut && jetSLCut && pthat && trkCut && refCut));
+  else
+    anaTree_p->Project(name, Form("AlgJtRawPt[%d]/AlgJtRefPt[%d]", setNum, setNum), centCut && setCut && etaCut && phiCut && jetLCut && jetSLCut && pthat && trkCut && refCut);
+
+  refRawHist_p = (TH1F*)inFile_p->Get(Form("%s_h", title));
+
+  Int_t col = kRed;
+  Int_t size = 1;
+  Int_t style = 28;
+
+  if(sType == kPPDATA){
+    col = kBlue;
+    style = 25;
+  }
+  else if(sType == kPPMC){
+    col = 1;
+    style = 20;
+  }
+  else if(sType == kHIMC){
+    refRawHist_p->SetFillColor(16);
+    size = 0;
+    col = 0;
+  }
+
+  niceTH1N(refRawHist_p, .2999, 0., 405, 506, col, size, style);
+
+  refRawHist_p->SetYTitle("Event Fraction");
+  refRawHist_p->SetXTitle("A_{J}");
+
+
+  outFile_p = new TFile(outName, "UPDATE");
+  refRawHist_p->Write(Form("%s_h", title));
+  outFile_p->Close();
+
+  delete outFile_p;
+  return;
+}
+
+
 void makeDiJetHists_Jet(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   TH1::SetDefaultSumw2();

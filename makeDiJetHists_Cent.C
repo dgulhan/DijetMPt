@@ -86,15 +86,17 @@ void makeDiJetHists_Cent(const char* inName, const char* outName, sampleType sTy
   inFile_p = new TFile(inName, "READ");
   TTree* anaTree_p = (TTree*)inFile_p->Get("jetTreeAna");
 
-  Int_t jetAlgMax = 2;
+  Int_t jetAlgMax = 5;
 
   for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
     std::cout << "Algorithm: " << algType[algIter] << std::endl;
 
-    makeCentHist(anaTree_p, outName, algIter, sType);
-
-    if(strcmp(fileTag2, "") != 0){
-      makeRatHist(outName, algIter, sType, fileTag2);
+    if(algIter != 2){
+      makeCentHist(anaTree_p, outName, algIter, sType);
+      
+      if(strcmp(fileTag2, "") != 0){
+	makeRatHist(outName, algIter, sType, fileTag2);
+      }
     }
   }
 
