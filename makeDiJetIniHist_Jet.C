@@ -138,7 +138,7 @@ void makeDiJetIniHist(std::vector<std::string> inList, Int_t num, const char* ou
       continue;
 
     for(Int_t jtIter = 0; jtIter < nref_; jtIter++){
-      if(TMath::Abs(jteta_[jtIter]) > 2.0 || refpt_[jtIter]  < 0)
+      if(TMath::Abs(jteta_[jtIter]) > 2.0 || refpt_[jtIter]  < 100)
 	continue;
 
       for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
@@ -230,7 +230,7 @@ void makeDiJetIniHist_Cent(std::vector<std::string> inList, Int_t num, const cha
     Int_t binPos = cent_p->FindBin(hiBin_);
 
     for(Int_t jtIter = 0; jtIter < nref_; jtIter++){
-      if(TMath::Abs(jteta_[jtIter]) > 2.0 || refpt_[jtIter]  < 0)
+      if(TMath::Abs(jteta_[jtIter]) > 2.0 || refpt_[jtIter]  < 100)
         continue;
 
       mean_cent_p[binPos]->push_back(rawpt_[jtIter]/refpt_[jtIter]);
@@ -358,9 +358,11 @@ void plotDiJetIniHistCent(const char* histFileName, const char* VsPu = "Vs", con
   TH1F* get4Hist_p = (TH1F*)f->Get(Form("ak%s4%s_cent_h", VsPu, PFCalo));
   TH1F* get5Hist_p = (TH1F*)f->Get(Form("ak%s5%s_cent_h", VsPu, PFCalo));
 
-
   get3Hist_p->SetMaximum(1.0);
   get3Hist_p->SetMinimum(0.6);
+  get3Hist_p->GetXaxis()->SetTitleSize(.05);
+  get3Hist_p->GetYaxis()->SetTitleSize(.05);
+  TCanvas* plotCanv_p = new TCanvas(Form("eqCheck_ak%s#%s", VsPu, PFCalo), Form("eqCheck_ak%s%s", VsPu, PFCalo), 1);
   get3Hist_p->DrawCopy();
 
   get4Hist_p->SetMarkerColor(kRed);
@@ -373,7 +375,7 @@ void plotDiJetIniHistCent(const char* histFileName, const char* VsPu = "Vs", con
 
   drawLine();
 
-  TLegend* leg = new TLegend(.6, .4, .8, .6);
+  TLegend* leg = new TLegend(.6, .6, .8, .8);
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
   leg->SetTextFont(43);
@@ -385,6 +387,15 @@ void plotDiJetIniHistCent(const char* histFileName, const char* VsPu = "Vs", con
   leg->AddEntry(get5Hist_p, "R = 0.5");
 
   leg->Draw("SAME");
+
+  TLatex* label_p = new TLatex();
+  label_p->SetNDC();
+  label_p->SetTextFont(43);
+  label_p->SetTextSizePixels(28);
+
+  label_p->DrawLatex(.6, .82, Form("ak%s#%s", VsPu, PFCalo));  
+
+  claverCanvasSaving(plotCanv_p, Form("pdfDir/eqCheck_ak%s%s", VsPu, PFCalo), "pdf");
 }
 
 
