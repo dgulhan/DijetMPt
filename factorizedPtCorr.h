@@ -280,9 +280,10 @@ Float_t factorizedPtCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Fl
     std::cout << "factorizedPtCorr: hiBin outside of acceptable range; check input" << std::endl;
     return 1;
   }
-  else if(pt < 0.5){
+  else if(pt < 0.5)
     std::cout << "factorizedPtCorr: pt outside of acceptable range; check input" << std::endl;
-  }
+  else if(pt >= 300.0)
+    return 0;
 
   Float_t corrFactor = 1;
 
