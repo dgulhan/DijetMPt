@@ -214,7 +214,7 @@ Int_t getPtBin(Float_t pt, sampleType sType = kHIDATA)
     Float_t ptArr[8] = {.50, .55, .65, .80, 1.00, 3.00, 8.00, 1000000};
     
     for(Int_t ptPosIter = 0; ptPosIter < 7; ptPosIter++){
-      if(pt > ptArr[ptPosIter] && pt <= ptArr[ptPosIter + 1]){
+      if(pt >= ptArr[ptPosIter] && pt < ptArr[ptPosIter + 1]){
 	return posArrPbPb[ptPosIter];
       }
     }
