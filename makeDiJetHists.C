@@ -143,12 +143,8 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
 
   TH1F* getHist_p;
 
-
-  //Throw dis shit in da loop
-
-
   InitCuts();
-  SetCuts(setNum, sType, centLow, centHi, isHighPtTrk);
+  SetCuts(setNum, sType, centLow, centHi, isHighPtTrk, 0.5);
   TCut asymmCut = makeAsymmCut(setNum, 0.0, 1.0);
   if(!strcmp(CNCR, "RU")){
     asymmCut = makeAsymmCut(setNum, 0.22, 1.0);
@@ -293,13 +289,13 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
     std::cout << "Algorithm: " << algType[algIter] << std::endl;
 
     for(Int_t centIter = 0; centIter < centBins; centIter++){
-      for(Int_t corrIter = 0; corrIter < 2; corrIter++){
+      for(Int_t corrIter = 1; corrIter < 2; corrIter++){
 	for(Int_t FPTIter = 0; FPTIter < 6; FPTIter++){
 	  for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){
 
 	    if(CNCRIter < 3){
 
-	      for(Int_t tightIter = 0; tightIter < 2; tightIter++){
+	      for(Int_t tightIter = 0; tightIter < 1; tightIter++){
 
 		if((CNCRIter == 0 && centIter < 4) || (CNCRIter != 0 && centIter >= 4) || sType == kPPMC || sType == kPPDATA){
 		  makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent, isHighPtTrk);
@@ -309,6 +305,7 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 
 		  if(montecarlo && corrIter == 0)
 		    makeImbAsymmHist(anaTree_p, outName, "g", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent, isHighPtTrk);
+
 		}
 	      }
 	    }
@@ -317,7 +314,7 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 		makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent, isHighPtTrk);
 		
 		if(montecarlo && corrIter == 0)
-		  makeImbDelRHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent, isHighPtTrk);
+		  makeImbDelRHist(anaTree_p, outName, "g", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -40., 19.999, corr[corrIter], sType, isPercent, isHighPtTrk);
 	      }
 	    }
 	  }
