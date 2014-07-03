@@ -88,8 +88,11 @@ Float_t gAlgImbProjANC_[3][6];
 
 Float_t gAlgImbProjAR_[3][6][10];
 
-void SetAnaBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
+void SetAnaBranches(sampleType sType = kHIDATA)
 {
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+
   //Track Tree Branches
 
   std::cout << "Branches Set" << std::endl;
@@ -138,8 +141,12 @@ void SetAnaBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   if(montecarlo){
     jetTreeAna_p->Branch("isQuarkJet", &isQuarkJet_, "isQuarkJet[5]/O");
     jetTreeAna_p->Branch("isGluonJet", &isGluonJet_, "isGluonJet[5]/O");
+  }
 
+  if(sType == kHIMC)
     jetTreeAna_p->Branch("pthatWeight", &pthatWeight_, "pthatWeight/F");
+
+  if(montecarlo){
     jetTreeAna_p->Branch("pthat", &pthat_, "pthat/F");
 
     //refpt for jets immediately above
@@ -166,30 +173,122 @@ void SetAnaBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 }
 
 
-void InitDiJetAnaSkim(Bool_t montecarlo = false, sampleType sType = kHIDATA)
+void GetAnaBranches(sampleType sType = kHIDATA){
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+
+  std::cout << "Get Branches" << std::endl;
+
+  //Track Tree Branches
+   trackTreeAna_p->SetBranchAddress("rAlgImbProjA", rAlgImbProjA_);
+   trackTreeAna_p->SetBranchAddress("rAlgImbProjAC", rAlgImbProjAC_);
+   trackTreeAna_p->SetBranchAddress("rAlgImbProjANC", rAlgImbProjANC_);
+   trackTreeAna_p->SetBranchAddress("rAlgImbProjAR", rAlgImbProjAR_);
+
+   //Jet Tree Branches
+
+   jetTreeAna_p->SetBranchAddress("run", &run_);
+   jetTreeAna_p->SetBranchAddress("evt", &evt_);
+   jetTreeAna_p->SetBranchAddress("lumi", &lumi_);
+
+   if(sType == kHIDATA || sType == kHIMC)
+     jetTreeAna_p->SetBranchAddress("hiBin", &hiBin_);
+
+   jetTreeAna_p->SetBranchAddress("pthat", &pthat_);
+
+   if(sType == kHIDATA || sType == kHIMC){
+     jetTreeAna_p->SetBranchAddress("hiEvtPlane", &hiEvtPlane_);
+     jetTreeAna_p->SetBranchAddress("psin", &psin_);
+   }
+
+   jetTreeAna_p->SetBranchAddress("eventSet", eventSet_);
+
+   if(sType == kHIDATA){
+     jetTreeAna_p->SetBranchAddress("centWeight_80", centWeight_80_);
+     jetTreeAna_p->SetBranchAddress("centWeight_Merge", centWeight_Merge_);
+   }
+
+   if(montecarlo){
+     jetTreeAna_p->SetBranchAddress("isQuarkJet", isQuarkJet_);
+     jetTreeAna_p->SetBranchAddress("isGluonJet", isGluonJet_);
+   }     
+
+   if(sType == kHIDATA)
+     jetTreeAna_p->SetBranchAddress("pthatWeight", &pthatWeight_);
+
+   jetTreeAna_p->SetBranchAddress("AlgJtPt", AlgJtPt_);
+   jetTreeAna_p->SetBranchAddress("AlgJtPhi", AlgJtPhi_);
+   jetTreeAna_p->SetBranchAddress("AlgJtEta", AlgJtEta_);
+   jetTreeAna_p->SetBranchAddress("AlgJtTrkMax", AlgJtTrkMax_);
+   jetTreeAna_p->SetBranchAddress("AlgJtRawPt", AlgJtRawPt_);
+
+   jetTreeAna_p->SetBranchAddress("AlgJtMult", AlgJtMult_);
+
+   jetTreeAna_p->SetBranchAddress("AlgJtAvePhi", AlgJtAvePhi_);
+   jetTreeAna_p->SetBranchAddress("AlgJtDelPhi", AlgJtDelPhi_);
+   jetTreeAna_p->SetBranchAddress("AlgJtAsymm", AlgJtAsymm_);
+
+
+   if(montecarlo){
+     jetTreeAna_p->SetBranchAddress("AlgRefPt", AlgRefPt_);
+     jetTreeAna_p->SetBranchAddress("AlgRefPhi", AlgRefPhi_);
+     jetTreeAna_p->SetBranchAddress("AlgRefEta", AlgRefEta_);
+     
+     jetTreeAna_p->SetBranchAddress("AlgRefAvePhi", AlgRefAvePhi_);
+     jetTreeAna_p->SetBranchAddress("AlgRefDelPhi", AlgRefDelPhi_);
+     jetTreeAna_p->SetBranchAddress("AlgRefAsymm", AlgRefAsymm_);
+
+     //Gen Tree Variables
+
+     genTreeAna_p->SetBranchAddress("gAlgImbProjA", gAlgImbProjA_);     
+     genTreeAna_p->SetBranchAddress("gAlgImbProjAC", gAlgImbProjAC_);     
+     genTreeAna_p->SetBranchAddress("gAlgImbProjANC", gAlgImbProjANC_);     
+
+     genTreeAna_p->SetBranchAddress("gAlgImbProjAR", gAlgImbProjAR_);     
+   }
+}
+
+
+void InitDiJetAnaSkim(sampleType sType = kHIDATA)
 {
   std::cout << "Init DiJet AnaSkim" << std::endl;
 
   trackTreeAna_p = new TTree("trackTreeAna", "trackTreeAna");
   jetTreeAna_p = new TTree("jetTreeAna", "jetTreeAna");
 
-  if(montecarlo)
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC)
     genTreeAna_p = new TTree("genTreeAna", "genTreeAna");
 
-  SetAnaBranches(montecarlo, sType);
+  SetAnaBranches(sType);
 }
 
 
 void CleanupDiJetAnaSkim(Bool_t montecarlo)
 {
-  if(trackTreeAna_p == 0) delete trackTreeAna_p;
-  if(jetTreeAna_p == 0) delete jetTreeAna_p;
-  if(genTreeAna_p == 0 && montecarlo) delete genTreeAna_p;
+  if(trackTreeAna_p != 0) delete trackTreeAna_p;
+  if(jetTreeAna_p != 0) delete jetTreeAna_p;
+  if(genTreeAna_p != 0) delete genTreeAna_p;
 }
 
 
-void InitJetVar(Bool_t montecarlo = false, sampleType sType = kHIDATA)
+void GetDiJetAnaSkim(TFile* anaFile_p, sampleType sType = kHIDATA){
+  std::cout << "Get DiJet AnaSkim" << std::endl;
+
+  trackTreeAna_p = (TTree*)anaFile_p->Get("trackTreeAna");
+  jetTreeAna_p = (TTree*)anaFile_p->Get("jetTreeAna");
+
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC)
+    genTreeIni_p = (TTree*)anaFile_p->Get("genTreeAna");
+
+  GetAnaBranches(sType);
+}
+
+
+void InitJetVar(sampleType sType = kHIDATA)
 {
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+
   for(Int_t initIter = 0; initIter < 5; initIter++){
     eventSet_[initIter] = false;
 

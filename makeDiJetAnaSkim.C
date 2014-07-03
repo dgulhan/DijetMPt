@@ -210,7 +210,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
 
-  InitDiJetAnaSkim(montecarlo, sType);
+  InitDiJetAnaSkim(sType);
 
   Long64_t nentries = trackTreeIni_p->GetEntries();
 
@@ -228,7 +228,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(jentry%1000 == 0)
       std::cout << jentry << std::endl;
 
-    InitJetVar(montecarlo, sType);
+    InitJetVar(sType);
 
     getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, Pu3CaloTrkMax_, Pu3CaloRawPt_, Pu3CaloRefPt_, Pu3CaloRefPhi_, Pu3CaloRefEta_, 0, montecarlo);
     getJtVar(nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_, Vs3CaloTrkMax_, Vs3CaloRawPt_, Vs3CaloRefPt_, Vs3CaloRefPhi_, Vs3CaloRefEta_, 1, montecarlo);
@@ -409,7 +409,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	    if(eventSet_[setIter]){
 	      
 	      gAlgImbProjA_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
-	      gAlgImbProjA_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+	      gAlgImbProjA_[setIter][ptIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
 	      
 	      Float_t tempLeadDelR = getDR(genEta_[genEntry], genPhi_[genEntry], AlgJtEta_[setIter][0], AlgJtPhi_[setIter][0]);
 	      Float_t tempSubLeadDelR = getDR(genEta_[genEntry], genPhi_[genEntry], AlgJtEta_[setIter][1], AlgJtPhi_[setIter][1]);
@@ -418,11 +418,11 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 		
 		if(tempLeadDelR < .8 || tempSubLeadDelR < .8){
 		  gAlgImbProjAC_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
-		  gAlgImbProjAC_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		  gAlgImbProjAC_[setIter][ptIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
 		}
 		else{
 		  gAlgImbProjANC_[setIter][5] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
-		  gAlgImbProjANC_[setIter][setIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
+		  gAlgImbProjANC_[setIter][ptIter] += -genPt_[genEntry]*cos(getDPHI(genPhi_[genEntry], AlgJtAvePhi_[setIter]));
 		}
 		
 		for(Int_t rIter = 0; rIter < 10; rIter++){
