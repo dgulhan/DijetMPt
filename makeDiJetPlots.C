@@ -48,6 +48,48 @@ void drawPatch(float x1, float y1, float x2, float y2){
 }
 
 
+void makePatch(const char* CNCR){
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD"))
+    drawPatch(.74, .001, .90, .25);
+  else if(!strcmp(CNCR, "C") || !strcmp(CNCR, "NC"))
+    drawPatch(.74, .001, .90, .25);
+  else
+    drawPatch(.74, .001, .90, .25);
+}
+
+
+void drawNum(const char* CNCR){
+  TLatex* temp = new TLatex();
+  temp->SetNDC();
+  temp->SetTextFont(43);
+  temp->SetTextSizePixels(27);
+
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD"))
+    temp->DrawLatex(.0000001, .945, "1.5");
+  else if(!strcmp(CNCR, "C") || !strcmp(CNCR, "NC"))
+    temp->DrawLatex(.0001, .945, "0.4");
+  else
+    temp->DrawLatex(.0001, .94, "0.4");
+}
+
+
+void drawBin(const char* CNCR){
+  TLatex* temp = new TLatex();
+  temp->SetNDC();
+  temp->SetTextFont(43);
+  temp->SetTextSizePixels(28);
+
+  if(!strcmp(CNCR, "RU"))
+    temp->DrawLatex(.30, .10, "A_{J} > 0.22");
+  else if(!strcmp(CNCR, "RD"))
+    temp->DrawLatex(.30, .10, "A_{J} < 0.22");
+  else if(!strcmp(CNCR, "C"))
+    temp->DrawLatex(.15, .10, "In-cone, #DeltaR < 0.8");
+  else if(!strcmp(CNCR, "NC"))
+    temp->DrawLatex(.15, .10, "Out-cone, #DeltaR > 0.8");
+}
+
+
 void handsomeTH1( TH1 *a=0, Int_t col =1, Float_t size=1, Int_t markerstyle=20)
 {
   a->SetMarkerColor(col);
@@ -276,6 +318,7 @@ void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_
   drawHist_p->SetFillColor(color);
   drawHist_p->SetMarkerStyle(6);
   drawHist_p->SetMarkerSize(.5);
+  drawHist_p->GetXaxis()->SetTitleOffset(1.6);
   drawHist_p->DrawCopy(drawOpt);
   drawHist_p->DrawCopy("E1 SAME");
 
@@ -419,7 +462,7 @@ void makeMultStack(const char* filePbPbName, const char* fileTagPbPb, const char
       histPbPb_p[panelIter - 4]->SetFillColor(1);
       histPbPb_p[panelIter - 4]->SetLineColor(1);
 
-      histPbPb_p[panelIter - 4]->SetYTitle("PbPb - pp");
+      histPbPb_p[panelIter - 4]->SetYTitle("PbPb-pp");
       histPbPb_p[panelIter - 4]->GetYaxis()->SetTitleOffset(2.2);
       histPbPb_p[panelIter - 4]->SetXTitle("A_{J}");
       histPbPb_p[panelIter - 4]->GetXaxis()->SetTitleOffset(1.6);
@@ -491,8 +534,8 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   if(strcmp(fileTagPP, "") != 0)
     histPPFile_p = new TFile(filePPName, "READ");
 
-  const char* mcLabel[4] = {"PYTHIA", "PYTHIA + HYDJET", "PYTHIA + HYDJET", "(P + H) - P"};
-  const char* dataLabel[4] = {"pp 5.3 pb^{-1}", "PbPb 150 #mub^{-1}", "PbPb", "PbPb - pp"};
+  const char* mcLabel[4] = {"PYTHIA", "PYTHIA+HYDJET", "PYTHIA+HYDJET", "(P+H)-P"};
+  const char* dataLabel[4] = {"pp 5.3 pb^{-1}", "PbPb 150 #mub^{-1}", "PbPb", "PbPb-pp"};
 
   const char* overLabel[4];
   Float_t overCoord[4] = {.84, .76, .90, .82};
@@ -557,7 +600,17 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   TLegend* legA_p = new TLegend(0.25, 0.18, 0.99, 0.88);
   TLegend* legB_p;
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")) legB_p = new TLegend(0.45, 0.1, 0.75, 0.40);
+  TLegend* legC_p;
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")){
+    legB_p = new TLegend(0.45, 0.1, 0.75, 0.40);
+    legC_p = new TLegend(.20, .15, .45, .30);
+
+    legC_p->SetFillColor(0);
+    legC_p->SetFillStyle(0);
+    legC_p->SetTextFont(43);
+    legC_p->SetTextSizePixels(28);
+    legC_p->SetBorderSize(0);    
+  }
   else legB_p = new TLegend(0.25, 0.1, 0.55, 0.40);
 
 
@@ -578,6 +631,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   histPP_p[0]->GetYaxis()->SetTitleOffset(2.2);
 
   drawFullStack(histPP_p, 0, 25, legA_p, 1, false, CNCR, isPercent);
+  makePatch(CNCR);
 
   Float_t sysAPP[4] = {2.2, 3.3, 4.4, 5.5};
   if(!montecarlo && !strcmp(CNCR, "") && !strcmp(Tight, "")) makeSysError(sysAPP, histPP_p[5]);
@@ -631,8 +685,12 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.50, overCoord[1], "30-100%");
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD"))
-    label1_p->DrawLatex(.25, .05, "#sqrt{s_{NN}} = 2.76 TeV");
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")){
+    label1_p->DrawLatex(.20, .05, "#sqrt{s_{NN}} = 2.76 TeV");
+    legC_p->AddEntry(histPP_p[5], "pp cumulative", "L");
+    legC_p->AddEntry(hist1_p[5], "PbPb cumulative", "L");
+    legC_p->Draw("SAME");
+  }
   else
     label1_p->DrawLatex(.05, .05, "#sqrt{s_{NN}} = 2.76 TeV");
 
@@ -649,6 +707,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   legA_p->Draw("SAME");
 
   label1_p->DrawLatex(.30, .92, "p_{T}^{trk} (|#eta|<2.4)");
+  drawBin(CNCR);
 
   profPanel_p->cd(3);
 
@@ -673,6 +732,12 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.60, overCoord[1], "0-30%");
     label1_p->DrawLatex(.60, overCoord[0], Form("%s", overLabel[2]));
   }
+
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD"))
+    label1_p->DrawLatex(.20, .05, "anti-k_{T} Calo R=0.3");
+  else
+    label1_p->DrawLatex(.05, .05, "anti-k_{T} Calo R=0.3");
+
 
   if(isHighPtTrk)
     label1_p->DrawLatex(.05, .05, "In jet p_{T}^{trk}>12 GeV/c");
@@ -757,6 +822,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   profPanel_p->cd(ppStart);
   makeHistForPtStack(hist1_p, ppStart, Tight, CNCR, isPercent);
   drawFullStack(hist1_p, 0, 24, 0, ppStart, true, CNCR, isPercent);
+  drawNum(CNCR);
 
   if(!strcmp(CNCR, "")){
     label1_p->DrawLatex(.22, overCoord[2], overLabel[3]);
@@ -816,7 +882,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     drawFullStack(hist3_p, 0, 24, 0, 9, true, CNCR, isPercent);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "10-30%");
-    label1_p->DrawLatex(.05, .38, "anti-k_{T} Calo R = 0.3");
+    //    label1_p->DrawLatex(.05, .38, "anti-k_{T} Calo R = 0.3");
 
     zeroLine_p->Draw();
 
@@ -868,7 +934,7 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
     for(Int_t tightIter = 0; tightIter < 2; tightIter++){
-      for(Int_t corrIter = 0; corrIter < 2; corrIter++){
+      for(Int_t corrIter = 1; corrIter < 2; corrIter++){
 	for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1)
 	    continue;
