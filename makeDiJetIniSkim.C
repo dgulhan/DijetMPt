@@ -1,5 +1,5 @@
 //=============================================
-// Author: Chris McGinn
+// Author McGinn
 // 
 // DiJet Initial Skim Class (MC)
 //
@@ -72,7 +72,7 @@ Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
   }
   else{
     lPtCut++;
-v    return false;
+    return false;
   }
 }
 
@@ -135,6 +135,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   }
   else if(sType == kPPDATA || sType == kPPMC){
     c->hasAk3CaloJetTree = true;
+    c->hasAkPu3JetTree = true;
   }
 
   std::cout << "TreeTruth: " << c->hasAk3CaloJetTree << std::endl;
@@ -483,7 +484,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   tempTot = tempTot - vzCut;
   std::cout << "vzCut: " << tempTot << std::endl;
 
-  for(Int_t cutIter = 0; cutIter < 3; cutIter++){
+  for(Int_t cutIter = 0; cutIter < 5; cutIter++){
     std::cout << std::endl;
     tempTot = totEv - selectCut - vzCut - AlgLeadJtPtCut[cutIter];
     std::cout << "AlgLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
