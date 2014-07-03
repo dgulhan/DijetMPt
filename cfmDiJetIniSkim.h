@@ -10,8 +10,8 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
-
 #include <iostream>
+#include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/commonSetup.h"
 
 enum sampleType{
   kHIDATA, //0
@@ -56,16 +56,12 @@ TTree* genTreeIni_p;
 
 //Track Tree Variables
 
-const int MAXTRKS = 20000; //From SetupTrackTree.h
-
 Int_t nTrk_;
-Float_t trkPt_[MAXTRKS];
-Float_t trkPhi_[MAXTRKS];
-Float_t trkEta_[MAXTRKS];
+Float_t trkPt_[maxTracks];
+Float_t trkPhi_[maxTracks];
+Float_t trkEta_[maxTracks];
 
 //Jet Tree Variables
-
-const int MAXJETS = 504; //From SetupJetTree.h
 
 Int_t runIni_;
 Int_t evtIni_;
@@ -78,61 +74,62 @@ Float_t hiEvtPlaneIni_;
 Float_t psinIni_;
 
 Int_t nPu3Calo_;
-Float_t Pu3CaloPt_[MAXJETS];
-Float_t Pu3CaloPhi_[MAXJETS];
-Float_t Pu3CaloEta_[MAXJETS];
-Float_t Pu3CaloTrkMax_[MAXJETS];
-Float_t Pu3CaloRawPt_[MAXJETS];
-Float_t Pu3CaloRefPt_[MAXJETS];
-Float_t Pu3CaloRefPhi_[MAXJETS];
-Float_t Pu3CaloRefEta_[MAXJETS];
+Float_t Pu3CaloPt_[maxJets];
+Float_t Pu3CaloPhi_[maxJets];
+Float_t Pu3CaloEta_[maxJets];
+Float_t Pu3CaloTrkMax_[maxJets];
+Float_t Pu3CaloRawPt_[maxJets];
+Float_t Pu3CaloRefPt_[maxJets];
+Float_t Pu3CaloRefPhi_[maxJets];
+Float_t Pu3CaloRefEta_[maxJets];
 
 Int_t nVs3Calo_;
-Float_t Vs3CaloPt_[MAXJETS];
-Float_t Vs3CaloPhi_[MAXJETS];
-Float_t Vs3CaloEta_[MAXJETS];
-Float_t Vs3CaloTrkMax_[MAXJETS];
-Float_t Vs3CaloRawPt_[MAXJETS];
-Float_t Vs3CaloRefPt_[MAXJETS];
-Float_t Vs3CaloRefPhi_[MAXJETS];
-Float_t Vs3CaloRefEta_[MAXJETS];
+Float_t Vs3CaloPt_[maxJets];
+Float_t Vs3CaloPhi_[maxJets];
+Float_t Vs3CaloEta_[maxJets];
+Float_t Vs3CaloTrkMax_[maxJets];
+Float_t Vs3CaloRawPt_[maxJets];
+Float_t Vs3CaloRefPt_[maxJets];
+Float_t Vs3CaloRefPhi_[maxJets];
+Float_t Vs3CaloRefEta_[maxJets];
 
 Int_t nT3_;
-Float_t T3Pt_[MAXJETS];
-Float_t T3Phi_[MAXJETS];
-Float_t T3Eta_[MAXJETS];
+Float_t T3Pt_[maxJets];
+Float_t T3Phi_[maxJets];
+Float_t T3Eta_[maxJets];
 
 Int_t nPu3PF_;
-Float_t Pu3PFPt_[MAXJETS];
-Float_t Pu3PFPhi_[MAXJETS];
-Float_t Pu3PFEta_[MAXJETS];
-Float_t Pu3PFTrkMax_[MAXJETS];
-Float_t Pu3PFRawPt_[MAXJETS];
-Float_t Pu3PFRefPt_[MAXJETS];
-Float_t Pu3PFRefPhi_[MAXJETS];
-Float_t Pu3PFRefEta_[MAXJETS];
+Float_t Pu3PFPt_[maxJets];
+Float_t Pu3PFPhi_[maxJets];
+Float_t Pu3PFEta_[maxJets];
+Float_t Pu3PFTrkMax_[maxJets];
+Float_t Pu3PFRawPt_[maxJets];
+Float_t Pu3PFRefPt_[maxJets];
+Float_t Pu3PFRefPhi_[maxJets];
+Float_t Pu3PFRefEta_[maxJets];
 
 Int_t nVs3PF_;
-Float_t Vs3PFPt_[MAXJETS];
-Float_t Vs3PFPhi_[MAXJETS];
-Float_t Vs3PFEta_[MAXJETS];
-Float_t Vs3PFTrkMax_[MAXJETS];
-Float_t Vs3PFRawPt_[MAXJETS];
-Float_t Vs3PFRefPt_[MAXJETS];
-Float_t Vs3PFRefPhi_[MAXJETS];
-Float_t Vs3PFRefEta_[MAXJETS];
+Float_t Vs3PFPt_[maxJets];
+Float_t Vs3PFPhi_[maxJets];
+Float_t Vs3PFEta_[maxJets];
+Float_t Vs3PFTrkMax_[maxJets];
+Float_t Vs3PFRawPt_[maxJets];
+Float_t Vs3PFRefPt_[maxJets];
+Float_t Vs3PFRefPhi_[maxJets];
+Float_t Vs3PFRefEta_[maxJets];
 
 //Gen Tree Variables
 
-const int MAXGEN = 50000; //From SetupGenParticleTree.h
-
 Int_t nGen_;
-Float_t genPt_[MAXGEN];
-Float_t genPhi_[MAXGEN];
-Float_t genEta_[MAXGEN];
+Float_t genPt_[maxEntrySim];
+Float_t genPhi_[maxEntrySim];
+Float_t genEta_[maxEntrySim];
 
-void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
+void SetIniBranches(sampleType sType = kHIDATA)
 {
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+
   //Track Tree Branches
 
   std::cout << "Branches Set" << std::endl;
@@ -151,7 +148,6 @@ void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 
   if(sType == kHIDATA || sType == kHIMC)
     jetTreeIni_p->Branch("hiBinIni", &hiBinIni_, "hiBinIni/I");
-
    
   if(montecarlo)
     jetTreeIni_p->Branch("pthatIni", &pthatIni_, "pthatIni/F");
@@ -231,8 +227,11 @@ void SetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
 }
 
 
-void GetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
+void GetIniBranches(sampleType sType = kHIDATA)
 {
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+
   //Track Tree Branches
 
   std::cout << "Get Branches" << std::endl;
@@ -316,20 +315,22 @@ void GetIniBranches(Bool_t montecarlo = false, sampleType sType = kHIDATA)
     jetTreeIni_p->SetBranchAddress("Vs3PFRefEta", Vs3PFRefEta_);
   }
 
-
   //Gen Tree Branches
 
   if(montecarlo){
-    genTreeIni_p->Branch("nGen", &nGen_);
-    genTreeIni_p->Branch("genPt", genPt_);
-    genTreeIni_p->Branch("genPhi", genPhi_);
-    genTreeIni_p->Branch("genEta", genEta_);
+    genTreeIni_p->SetBranchAddress("nGen", &nGen_);
+    genTreeIni_p->SetBranchAddress("genPt", genPt_);
+    genTreeIni_p->SetBranchAddress("genPhi", genPhi_);
+    genTreeIni_p->SetBranchAddress("genEta", genEta_);
   }
 }
 
 
-void InitDiJetIniSkim(Bool_t montecarlo = false, sampleType sType = kHIDATA)
+void InitDiJetIniSkim(sampleType sType = kHIDATA)
 {
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+
   std::cout << "Init DiJet IniSkim" << std::endl;
 
   trackTreeIni_p = new TTree("trackTreeIni", "trackTreeIni");
@@ -338,20 +339,32 @@ void InitDiJetIniSkim(Bool_t montecarlo = false, sampleType sType = kHIDATA)
   if(montecarlo)
     genTreeIni_p = new TTree("genTreeIni", "genTreeIni");
 
-  SetIniBranches(montecarlo, sType);
+  SetIniBranches(sType);
 }
 
 
-void CleanupDiJetIniSkim(Bool_t montecarlo)
+void CleanupDiJetIniSkim()
 {
-  if(trackTreeIni_p == 0) delete trackTreeIni_p;
-  if(jetTreeIni_p == 0) delete jetTreeIni_p;
-  if(genTreeIni_p == 0 && montecarlo) delete genTreeIni_p;
+  if(trackTreeIni_p != 0){
+    delete trackTreeIni_p;
+    trackTreeIni_p = 0;
+  }
+  if(jetTreeIni_p != 0){
+    delete jetTreeIni_p;
+    jetTreeIni_p = 0;
+  }
+  if(genTreeIni_p != 0){
+    delete genTreeIni_p;
+    genTreeIni_p = 0;
+  }
 }
 
 
-void GetDiJetIniSkim(TFile* iniFile_p, Bool_t montecarlo = false, sampleType sType = kHIDATA)
+void GetDiJetIniSkim(TFile* iniFile_p, sampleType sType = kHIDATA)
 {
+  Bool_t montecarlo = false;
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+
   std::cout << "Get DiJet IniSkim" << std::endl;
 
   trackTreeIni_p = (TTree*)iniFile_p->Get("trackTreeIni");
@@ -360,7 +373,7 @@ void GetDiJetIniSkim(TFile* iniFile_p, Bool_t montecarlo = false, sampleType sTy
   if(montecarlo)
     genTreeIni_p = (TTree*)iniFile_p->Get("genTreeIni");
 
-  GetIniBranches(montecarlo, sType);
+  GetIniBranches(sType);
 }
 
 

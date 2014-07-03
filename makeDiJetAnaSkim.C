@@ -183,7 +183,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   TFile* iniSkim_p = new TFile(listOfFiles[0].data(), "READ");
 
-  GetDiJetIniSkim(iniSkim_p, montecarlo, sType);
+  GetDiJetIniSkim(iniSkim_p, sType);
 
   std::cout << "IniSkim Loaded" << std::endl;
 
@@ -462,7 +462,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
   centHistFile_Merge_p->Close();
   delete centHistFile_Merge_p;
 
-  CleanupDiJetAnaSkim(montecarlo);
+  CleanupDiJetAnaSkim();
 
   iniSkim_p->Close();
   delete iniSkim_p;

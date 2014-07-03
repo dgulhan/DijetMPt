@@ -263,11 +263,20 @@ void InitDiJetAnaSkim(sampleType sType = kHIDATA)
 }
 
 
-void CleanupDiJetAnaSkim(Bool_t montecarlo)
+void CleanupDiJetAnaSkim()
 {
-  if(trackTreeAna_p != 0) delete trackTreeAna_p;
-  if(jetTreeAna_p != 0) delete jetTreeAna_p;
-  if(genTreeAna_p != 0) delete genTreeAna_p;
+  if(trackTreeAna_p != 0){
+    delete trackTreeAna_p;
+    trackTreeAna_p = 0;
+  }
+  if(jetTreeAna_p != 0){
+    delete jetTreeAna_p;
+    jetTreeAna_p = 0;
+  }
+  if(genTreeAna_p != 0){
+    delete genTreeAna_p;
+    genTreeAna_p = 0;
+  }
 }
 
 

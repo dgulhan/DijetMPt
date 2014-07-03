@@ -115,7 +115,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
 
-  InitDiJetIniSkim(montecarlo, sType);
+  InitDiJetIniSkim(sType);
 
   HiForest *c = new HiForest(listOfFiles[0].data(), "Forest", cType, montecarlo);
 
@@ -436,7 +436,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       //Grab proj. Pt Spectra For Tracks in each Event Subset    
       
       nTrk_++;
-      if(nTrk_ > MAXTRKS - 1){
+      if(nTrk_ > maxTracks - 1){
 	printf("ERROR: Trk arrays not large enough.\n");
 	return(1);
       }
@@ -464,7 +464,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	genEta_[nGen_] = genCollection.eta[genEntry];
 	
 	nGen_++;
-	if(nGen_ > MAXGEN - 1){
+	if(nGen_ > maxEntrySim - 1){
 	  printf("ERROR: Gen arrays not large enough.\n");
 	  return(1);
 	}
@@ -503,7 +503,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   outFile->Close();
 
   delete c;
-  CleanupDiJetIniSkim(montecarlo);
+  CleanupDiJetIniSkim();
   delete outFile;
 
   printf("Done.\n");
