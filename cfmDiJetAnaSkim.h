@@ -90,8 +90,7 @@ Float_t gAlgImbProjAR_[3][6][10];
 
 void SetAnaBranches(sampleType sType = kHIDATA)
 {
-  Bool_t montecarlo = false;
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+  Bool_t montecarlo = isMonteCarlo(sType);
 
   //Track Tree Branches
 
@@ -173,9 +172,9 @@ void SetAnaBranches(sampleType sType = kHIDATA)
 }
 
 
-void GetAnaBranches(sampleType sType = kHIDATA){
-  Bool_t montecarlo = false;
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+void GetAnaBranches(sampleType sType = kHIDATA)
+{
+  Bool_t montecarlo = isMonteCarlo(sType);
 
   std::cout << "Get Branches" << std::endl;
 
@@ -256,7 +255,7 @@ void InitDiJetAnaSkim(sampleType sType = kHIDATA)
   trackTreeAna_p = new TTree("trackTreeAna", "trackTreeAna");
   jetTreeAna_p = new TTree("jetTreeAna", "jetTreeAna");
 
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC)
+  if(isMonteCarlo(sType))
     genTreeAna_p = new TTree("genTreeAna", "genTreeAna");
 
   SetAnaBranches(sType);
@@ -286,7 +285,7 @@ void GetDiJetAnaSkim(TFile* anaFile_p, sampleType sType = kHIDATA){
   trackTreeAna_p = (TTree*)anaFile_p->Get("trackTreeAna");
   jetTreeAna_p = (TTree*)anaFile_p->Get("jetTreeAna");
 
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC)
+  if(isMonteCarlo(sType))
     genTreeIni_p = (TTree*)anaFile_p->Get("genTreeAna");
 
   GetAnaBranches(sType);
@@ -295,8 +294,7 @@ void GetDiJetAnaSkim(TFile* anaFile_p, sampleType sType = kHIDATA){
 
 void InitJetVar(sampleType sType = kHIDATA)
 {
-  Bool_t montecarlo = false;
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+  Bool_t montecarlo = isMonteCarlo(sType);
 
   for(Int_t initIter = 0; initIter < 5; initIter++){
     eventSet_[initIter] = false;
@@ -340,7 +338,7 @@ void InitJetVar(sampleType sType = kHIDATA)
   }
 }
 
-void InitProjPerp(Bool_t montecarlo = false)
+void InitProjPerp(sampleType sType = kHIDATA)
 {
   //Tracks proj. onto Alg, ordered according to enum above, corr in the back 5, All, Cone, and NotCone
 
@@ -356,7 +354,7 @@ void InitProjPerp(Bool_t montecarlo = false)
     }
   }
 
-  if(montecarlo){
+  if(isMonteCarlo(sType)){
     //Gen. proj. onto Truth
     for(Int_t initIter = 0; initIter < 3; initIter++){
       for(Int_t initIter2 = 0; initIter2 < 6; initIter2++){

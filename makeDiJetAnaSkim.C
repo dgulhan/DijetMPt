@@ -152,9 +152,7 @@ Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPhi[], F
 int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETANASKIM.root", Int_t num = 0)
 {
   //Define MC or Data
-  Bool_t montecarlo = false;
-  if(sType == kPPMC || sType == kPAMC || sType == kHIMC)
-    montecarlo = true;
+  Bool_t montecarlo = isMonteCarlo(sType);
 
   std::cout << sType << std::endl;
   std::cout << montecarlo << std::endl;
@@ -287,7 +285,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
     //Iterate over tracks
 
-    InitProjPerp(montecarlo);
+    InitProjPerp(sType);
 
     //Switch below to iterated OR EDIT HERE
 

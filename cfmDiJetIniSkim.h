@@ -31,6 +31,12 @@ enum AlgoType_PbPb{
 };
 
 
+Bool_t isMonteCarlo(sampleType sType = kHIDATA){
+  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) return true;
+  else return false;
+}
+
+
 TString getSampleName ( sampleType colli) {
   if (colli == kHIDATA) return "pbpbDATA";
   if (colli == kHIMC) return "pbpbMC";
@@ -127,8 +133,7 @@ Float_t genEta_[maxEntrySim];
 
 void SetIniBranches(sampleType sType = kHIDATA)
 {
-  Bool_t montecarlo = false;
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+  Bool_t montecarlo = isMonteCarlo(sType);
 
   //Track Tree Branches
 
@@ -229,8 +234,7 @@ void SetIniBranches(sampleType sType = kHIDATA)
 
 void GetIniBranches(sampleType sType = kHIDATA)
 {
-  Bool_t montecarlo = false;
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
+  Bool_t montecarlo = isMonteCarlo(sType);
 
   //Track Tree Branches
 
@@ -328,15 +332,12 @@ void GetIniBranches(sampleType sType = kHIDATA)
 
 void InitDiJetIniSkim(sampleType sType = kHIDATA)
 {
-  Bool_t montecarlo = false;
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
-
   std::cout << "Init DiJet IniSkim" << std::endl;
 
   trackTreeIni_p = new TTree("trackTreeIni", "trackTreeIni");
   jetTreeIni_p = new TTree("jetTreeIni", "jetTreeIni");
 
-  if(montecarlo)
+  if(isMonteCarlo(sType))
     genTreeIni_p = new TTree("genTreeIni", "genTreeIni");
 
   SetIniBranches(sType);
@@ -362,15 +363,12 @@ void CleanupDiJetIniSkim()
 
 void GetDiJetIniSkim(TFile* iniFile_p, sampleType sType = kHIDATA)
 {
-  Bool_t montecarlo = false;
-  if(sType == kHIMC || sType == kPPMC || sType == kPAMC) montecarlo = true;
-
   std::cout << "Get DiJet IniSkim" << std::endl;
 
   trackTreeIni_p = (TTree*)iniFile_p->Get("trackTreeIni");
   jetTreeIni_p = (TTree*)iniFile_p->Get("jetTreeIni");
 
-  if(montecarlo)
+  if(isMonteCarlo(sType))
     genTreeIni_p = (TTree*)iniFile_p->Get("genTreeIni");
 
   GetIniBranches(sType);

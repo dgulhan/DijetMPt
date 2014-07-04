@@ -80,9 +80,7 @@ Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
 int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETINISKIM.root", Int_t num = 0)
 {
   //Define MC or Data
-  Bool_t montecarlo = false;
-  if(sType == kPPMC || sType == kPAMC || sType == kHIMC)
-    montecarlo = true;
+  Bool_t montecarlo = isMonteCarlo(sType);
 
   std::cout << sType << std::endl;
   std::cout << montecarlo << std::endl;
