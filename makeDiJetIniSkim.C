@@ -81,6 +81,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 {
   //Define MC or Data
   Bool_t montecarlo = isMonteCarlo(sType);
+  Bool_t hi = isHI(sType);
 
   std::cout << sType << std::endl;
   std::cout << montecarlo << std::endl;
@@ -125,13 +126,13 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   c->hasTrackTree = true;
   c->hasEvtTree = true;
 
-  if(sType == kHIDATA || sType == kHIMC){
+  if(hi){
     c->hasAkPu3JetTree = true;
     c->hasAkVs3PFJetTree = true;
     c->hasAkPu3CaloJetTree = true;
     c->hasAkVs3CaloJetTree = true;
   }
-  else if(sType == kPPDATA || sType == kPPMC){
+  else{
     c->hasAk3CaloJetTree = true;
     c->hasAkPu3JetTree = true;
   }
@@ -153,7 +154,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   Long64_t nentries;
 
-  if(sType == kPPDATA || sType == kPPMC)
+  if(!hi)
     nentries = c->ak3CaloJetTree->GetEntries();
   else
     nentries = c->GetEntries();
@@ -192,13 +193,13 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     Jets AlgJtCollection[5];
     Int_t algMax = 5;
 
-    if(sType == kHIDATA || sType == kHIMC){
+    if(hi){
       AlgJtCollection[0] = c->akPu3Calo;
       AlgJtCollection[1] = c->akVs3Calo;
       AlgJtCollection[3] = c->akPu3PF;
       AlgJtCollection[4] = c->akVs3PF;
     }
-    else if(sType == kPPDATA || sType == kPPMC){
+    else{
       AlgJtCollection[0] = c->akPu3Calo;
       AlgJtCollection[1] = c->ak3Calo;
       algMax = 2;
@@ -274,7 +275,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(kHIMC) pthatIni_ = c->akPu3PF.pthat;
     else if(kPPMC) pthatIni_ = c->ak3Calo.pthat;
 
-    if(sType == kHIDATA || sType == kHIMC){
+    if(hi){
       hiEvtPlaneIni_ = c->evt.hiEvtPlanes[21];                                                  
       TComplex cn1((c->pf.sumpt[0])*(c->pf.vn[2][0]), c->pf.psin[2][0], true);                    
       TComplex cn2((c->pf.sumpt[14])*(c->pf.vn[2][14]), c->pf.psin[2][14], true);                
@@ -286,7 +287,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     evtIni_ = c->evt.evt;
     lumiIni_ = c->evt.lumi;
 
-    if(sType == kHIDATA || sType == kHIMC)
+    if(hi)
       hiBinIni_ = c->evt.hiBin;
 
     //Iterate over jets

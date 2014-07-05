@@ -91,6 +91,7 @@ Float_t gAlgImbProjAR_[3][6][10];
 void SetAnaBranches(sampleType sType = kHIDATA)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
+  Bool_t hi = isHI(sType);
 
   //Track Tree Branches
 
@@ -112,7 +113,7 @@ void SetAnaBranches(sampleType sType = kHIDATA)
   jetTreeAna_p->Branch("evt", &evt_, "evt/I");
   jetTreeAna_p->Branch("lumi", &lumi_, "lumi/I");
 
-  if(sType == kHIDATA || sType == kHIMC){
+  if(hi){
     jetTreeAna_p->Branch("hiBin", &hiBin_, "hiBin/I");
     jetTreeAna_p->Branch("hiEvtPlane", &hiEvtPlane_, "hiEvtPlane/F");
     jetTreeAna_p->Branch("psin", &psin_, "psin/F");
@@ -175,6 +176,7 @@ void SetAnaBranches(sampleType sType = kHIDATA)
 void GetAnaBranches(sampleType sType = kHIDATA)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
+  Bool_t hi = isHI(sType);
 
   std::cout << "Get Branches" << std::endl;
 
@@ -190,19 +192,18 @@ void GetAnaBranches(sampleType sType = kHIDATA)
    jetTreeAna_p->SetBranchAddress("evt", &evt_);
    jetTreeAna_p->SetBranchAddress("lumi", &lumi_);
 
-   if(sType == kHIDATA || sType == kHIMC)
+   if(montecarlo)
+     jetTreeAna_p->SetBranchAddress("pthat", &pthat_);
+
+   if(hi){
      jetTreeAna_p->SetBranchAddress("hiBin", &hiBin_);
-
-   jetTreeAna_p->SetBranchAddress("pthat", &pthat_);
-
-   if(sType == kHIDATA || sType == kHIMC){
      jetTreeAna_p->SetBranchAddress("hiEvtPlane", &hiEvtPlane_);
      jetTreeAna_p->SetBranchAddress("psin", &psin_);
    }
 
    jetTreeAna_p->SetBranchAddress("eventSet", eventSet_);
 
-   if(sType == kHIDATA){
+   if(sType == kHIMC){
      jetTreeAna_p->SetBranchAddress("centWeight_80", centWeight_80_);
      jetTreeAna_p->SetBranchAddress("centWeight_Merge", centWeight_Merge_);
    }
@@ -212,7 +213,7 @@ void GetAnaBranches(sampleType sType = kHIDATA)
      jetTreeAna_p->SetBranchAddress("isGluonJet", isGluonJet_);
    }     
 
-   if(sType == kHIDATA)
+   if(sType == kHIMC)
      jetTreeAna_p->SetBranchAddress("pthatWeight", &pthatWeight_);
 
    jetTreeAna_p->SetBranchAddress("AlgJtPt", AlgJtPt_);
@@ -262,20 +263,12 @@ void InitDiJetAnaSkim(sampleType sType = kHIDATA)
 }
 
 
-void CleanupDiJetAnaSkim()
+void CleanupDiJetAnaSkim(sampleType sType = kHIDATA)
 {
-  if(trackTreeAna_p != 0){
-    delete trackTreeAna_p;
-    trackTreeAna_p = 0;
-  }
-  if(jetTreeAna_p != 0){
-    delete jetTreeAna_p;
-    jetTreeAna_p = 0;
-  }
-  if(genTreeAna_p != 0){
-    delete genTreeAna_p;
-    genTreeAna_p = 0;
-  }
+  delete trackTreeAna_p;
+  delete jetTreeAna_p;
+  
+  if(isMonteCarlo(sType)) delete genTreeAna_p;
 }
 
 

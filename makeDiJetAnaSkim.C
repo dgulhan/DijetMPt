@@ -153,6 +153,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 {
   //Define MC or Data
   Bool_t montecarlo = isMonteCarlo(sType);
+  Bool_t hi = isHI(sType);
 
   std::cout << sType << std::endl;
   std::cout << montecarlo << std::endl;
@@ -254,7 +255,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(montecarlo)
       pthat_ = pthatIni_;
     
-    if(sType == kHIDATA || sType == kHIMC){
+    if(hi){
       hiBin_ = hiBinIni_;
       hiEvtPlane_ = hiEvtPlaneIni_;
       psin_ = psinIni_;
@@ -331,7 +332,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	}
       }
       
-      if(sType == kHIDATA || sType == kHIMC)
+      if(hi)
 	InitPosArrPbPb(hiBin_);
       
       for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
@@ -460,7 +461,7 @@ int makeDiJetAnaSkim(string fList = "", sampleType sType = kHIDATA, const char *
   centHistFile_Merge_p->Close();
   delete centHistFile_Merge_p;
 
-  CleanupDiJetAnaSkim();
+  CleanupDiJetAnaSkim(sType);
 
   iniSkim_p->Close();
   delete iniSkim_p;

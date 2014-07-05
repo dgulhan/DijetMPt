@@ -37,6 +37,12 @@ Bool_t isMonteCarlo(sampleType sType = kHIDATA){
 }
 
 
+Bool_t isHI(sampleType sType = kHIDATA){
+  if(sType == kHIDATA || sType == kHIMC) return true;
+  else return false;
+}
+
+
 TString getSampleName ( sampleType colli) {
   if (colli == kHIDATA) return "pbpbDATA";
   if (colli == kHIMC) return "pbpbMC";
@@ -134,7 +140,7 @@ Float_t genEta_[maxEntrySim];
 void SetIniBranches(sampleType sType = kHIDATA)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
-
+  Bool_t hi = isHI(sType);
   //Track Tree Branches
 
   std::cout << "Branches Set" << std::endl;
@@ -151,13 +157,13 @@ void SetIniBranches(sampleType sType = kHIDATA)
   jetTreeIni_p->Branch("evtIni", &evtIni_, "evtIni/I");
   jetTreeIni_p->Branch("lumiIni", &lumiIni_, "lumiIni/I");
 
-  if(sType == kHIDATA || sType == kHIMC)
+  if(hi)
     jetTreeIni_p->Branch("hiBinIni", &hiBinIni_, "hiBinIni/I");
    
   if(montecarlo)
     jetTreeIni_p->Branch("pthatIni", &pthatIni_, "pthatIni/F");
 
-  if(sType == kHIDATA || sType == kHIMC){
+  if(hi){
     jetTreeIni_p->Branch("hiEvtPlaneIni", &hiEvtPlaneIni_, "hiEvtPlaneIni/F");
     jetTreeIni_p->Branch("psinIni", &psinIni_, "psinIni/F");
   }    
@@ -235,6 +241,7 @@ void SetIniBranches(sampleType sType = kHIDATA)
 void GetIniBranches(sampleType sType = kHIDATA)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
+  Bool_t hi = isHI(sType);
 
   //Track Tree Branches
 
@@ -251,13 +258,13 @@ void GetIniBranches(sampleType sType = kHIDATA)
   jetTreeIni_p->SetBranchAddress("evtIni", &evtIni_);
   jetTreeIni_p->SetBranchAddress("lumiIni", &lumiIni_);
 
-  if(sType == kHIDATA || sType == kHIMC)
+  if(hi)
     jetTreeIni_p->SetBranchAddress("hiBinIni", &hiBinIni_);
 
   if(montecarlo)
     jetTreeIni_p->SetBranchAddress("pthatIni", &pthatIni_);
 
-  if(sType == kHIDATA || sType == kHIMC){
+  if(hi){
     jetTreeIni_p->SetBranchAddress("hiEvtPlaneIni", &hiEvtPlaneIni_);
     jetTreeIni_p->SetBranchAddress("psinIni", &psinIni_);
   }  
