@@ -539,8 +539,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(!justJt){
       trackTreeIni_p->Fill();
     
-      if(montecarlo)
-	genTreeIni_p->Fill();
+      if(montecarlo) genTreeIni_p->Fill();
     }
 
     jtVect_p->clear();
@@ -556,7 +555,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   for(Int_t cutIter = 0; cutIter < 5; cutIter++){
     std::cout << std::endl;
     tempTot = totEv - selectCut - vzCut - AlgLeadJtPtCut[cutIter];
-    std::cout << "AlgLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
+v    std::cout << "AlgLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
     tempTot = tempTot - AlgSubLeadJtPtCut[cutIter];
     std::cout << "AlgSubLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
   }
@@ -568,8 +567,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   if(!justJt){
     trackTreeIni_p->Write("", TObject::kOverwrite);
     
-    if(montecarlo)
-      genTreeIni_p->Write("", TObject::kOverwrite);
+    if(montecarlo) genTreeIni_p->Write("", TObject::kOverwrite);
   }
 
   delete c;
