@@ -12,6 +12,7 @@
 #include "TH1F.h"
 #include <iostream>
 #include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/commonSetup.h"
+#include "TMath.h"
 
 enum sampleType{
   kHIDATA, //0
@@ -61,6 +62,32 @@ TString getSampleName ( int colli) {
   if (colli == kPAMC) return "ppbMC";
   return "NULL";
 }
+
+
+Float_t getDPHI(Float_t phi1, Float_t phi2)
+{
+  Float_t dphi = phi1 - phi2;
+  
+  if(dphi > TMath::Pi())
+    dphi = dphi - 2. * TMath::Pi();
+  if(dphi <= -TMath::Pi())
+    dphi = dphi + 2. * TMath::Pi();
+  
+  if(TMath::Abs(dphi) > TMath::Pi()) {
+    cout << " commonUtility::getDPHI error!!! dphi is bigger than TMath::Pi() " << endl;
+  }
+  
+  return dphi;
+}
+
+
+Float_t getDR(Float_t eta1, Float_t phi1, Float_t eta2, Float_t phi2)
+{
+  Float_t theDphi = getDPHI(phi1, phi2);
+  Float_t theDeta = eta1 - eta2;
+  return TMath::Sqrt(theDphi*theDphi + theDeta*theDeta);
+}
+
 
 TTree* trackTreeIni_p;
 TTree* jetTreeIni_p;
@@ -130,6 +157,20 @@ Float_t Vs3PFRefPt_[maxJets];
 Float_t Vs3PFRefPhi_[maxJets];
 Float_t Vs3PFRefEta_[maxJets];
 
+Float_t TrkJtPt_[2];
+Float_t TrkJtPhi_[2];
+Float_t TrkJtEta_[2];
+
+Int_t nLeadJtConst_;
+Float_t TrkLeadJtConstPt_[maxTracks];
+Float_t TrkLeadJtConstPhi_[maxTracks];
+Float_t TrkLeadJtConstEta_[maxTracks];
+
+Int_t nSubLeadJtConst_;
+Float_t TrkSubLeadJtConstPt_[maxTracks];
+Float_t TrkSubLeadJtConstPhi_[maxTracks];
+Float_t TrkSubLeadJtConstEta_[maxTracks];
+
 //Gen Tree Variables
 
 Int_t nGen_;
@@ -137,20 +178,22 @@ Float_t genPt_[maxEntrySim];
 Float_t genPhi_[maxEntrySim];
 Float_t genEta_[maxEntrySim];
 
-void SetIniBranches(sampleType sType = kHIDATA)
+void SetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
   Bool_t hi = isHI(sType);
   //Track Tree Branches
 
   std::cout << "Branches Set" << std::endl;
+
+  if(!justJt){
+    trackTreeIni_p->Branch("nTrk", &nTrk_, "nTrk/I");
   
-  trackTreeIni_p->Branch("nTrk", &nTrk_, "nTrk/I");
-  
-  trackTreeIni_p->Branch("trkPt", trkPt_, "trkPt[nTrk]/F");
-  trackTreeIni_p->Branch("trkPhi", trkPhi_, "trkPhi[nTrk]/F");
-  trackTreeIni_p->Branch("trkEta", trkEta_, "trkEta[nTrk]/F");
-  
+    trackTreeIni_p->Branch("trkPt", trkPt_, "trkPt[nTrk]/F");
+    trackTreeIni_p->Branch("trkPhi", trkPhi_, "trkPhi[nTrk]/F");
+    trackTreeIni_p->Branch("trkEta", trkEta_, "trkEta[nTrk]/F");
+  }  
+
   //Jet Tree Branches
 
   jetTreeIni_p->Branch("runIni", &runIni_, "runIni/I");
@@ -225,9 +268,25 @@ void SetIniBranches(sampleType sType = kHIDATA)
     jetTreeIni_p->Branch("Vs3PFRefEta", Vs3PFRefEta_, "Vs3PFRefEta[nVs3PF]/F");
   }    
 
+  if(justJt){
+    jetTreeIni_p->Branch("TrkJtPt", TrkJtPt_, "TrkJtPt[2]/F");
+    jetTreeIni_p->Branch("TrkJtPhi", TrkJtPhi_, "TrkJtPhi[2]/F");
+    jetTreeIni_p->Branch("TrkJtEta", TrkJtEta_, "TrkJtEta[2]/F");
+
+    jetTreeIni_p->Branch("nLeadJtConst", &nLeadJtConst_, "nLeadJtConst/I");
+    jetTreeIni_p->Branch("TrkLeadJtConstPt", TrkLeadJtConstPt_, "TrkLeadJtConstPt[nLeadJtConst]/F");
+    jetTreeIni_p->Branch("TrkLeadJtConstPhi", TrkLeadJtConstPhi_, "TrkLeadJtConstPhi[nLeadJtConst]/F");
+    jetTreeIni_p->Branch("TrkLeadJtConstEta", TrkLeadJtConstEta_, "TrkLeadJtConstEta[nLeadJtConst]/F");
+
+    jetTreeIni_p->Branch("nSubLeadJtConst", &nSubLeadJtConst_, "nSubLeadJtConst/I");
+    jetTreeIni_p->Branch("TrkSubLeadJtConstPt", TrkSubLeadJtConstPt_, "TrkSubLeadJtConstPt[nSubLeadJtConst]/F");
+    jetTreeIni_p->Branch("TrkSubLeadJtConstPhi", TrkSubLeadJtConstPhi_, "TrkSubLeadJtConstPhi[nSubLeadJtConst]/F");
+    jetTreeIni_p->Branch("TrkSubLeadJtConstEta", TrkSubLeadJtConstEta_, "TrkSubLeadJtConstEta[nSubLeadJtConst]/F");
+  }
+
   //Gen Tree Branches
 
-  if(montecarlo){
+  if(montecarlo && !justJt){
     genTreeIni_p->Branch("nGen", &nGen_, "nGen/I");
     
     genTreeIni_p->Branch("genPt", genPt_, "genPt[nGen]/F");
@@ -238,7 +297,7 @@ void SetIniBranches(sampleType sType = kHIDATA)
 }
 
 
-void GetIniBranches(sampleType sType = kHIDATA)
+void GetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
   Bool_t hi = isHI(sType);
@@ -247,10 +306,12 @@ void GetIniBranches(sampleType sType = kHIDATA)
 
   std::cout << "Get Branches" << std::endl;
 
-  trackTreeIni_p->SetBranchAddress("nTrk", &nTrk_);
-  trackTreeIni_p->SetBranchAddress("trkPt", trkPt_);
-  trackTreeIni_p->SetBranchAddress("trkPhi", trkPhi_);
-  trackTreeIni_p->SetBranchAddress("trkEta", trkEta_);
+  if(!justJt){
+    trackTreeIni_p->SetBranchAddress("nTrk", &nTrk_);
+    trackTreeIni_p->SetBranchAddress("trkPt", trkPt_);
+    trackTreeIni_p->SetBranchAddress("trkPhi", trkPhi_);
+    trackTreeIni_p->SetBranchAddress("trkEta", trkEta_);
+  }
 
   //Jet Tree Branches
 
@@ -326,9 +387,25 @@ void GetIniBranches(sampleType sType = kHIDATA)
     jetTreeIni_p->SetBranchAddress("Vs3PFRefEta", Vs3PFRefEta_);
   }
 
+  if(justJt){
+    jetTreeIni_p->SetBranchAddress("TrkJtPt", TrkJtPt_);
+    jetTreeIni_p->SetBranchAddress("TrkJtPhi", TrkJtPhi_);
+    jetTreeIni_p->SetBranchAddress("TrkJtEta", TrkJtEta_);
+
+    jetTreeIni_p->SetBranchAddress("nLeadJtConst", &nLeadJtConst_);
+    jetTreeIni_p->SetBranchAddress("TrkLeadJtConstPt", TrkLeadJtConstPt_);
+    jetTreeIni_p->SetBranchAddress("TrkLeadJtConstPhi", TrkLeadJtConstPhi_);
+    jetTreeIni_p->SetBranchAddress("TrkLeadJtConstEta", TrkLeadJtConstEta_);
+
+    jetTreeIni_p->SetBranchAddress("nSubLeadJtConst", &nSubLeadJtConst_);
+    jetTreeIni_p->SetBranchAddress("TrkSubLeadJtConstPt", TrkSubLeadJtConstPt_);
+    jetTreeIni_p->SetBranchAddress("TrkSubLeadJtConstPhi", TrkSubLeadJtConstPhi_);
+    jetTreeIni_p->SetBranchAddress("TrkSubLeadJtConstEta", TrkSubLeadJtConstEta_);
+  }
+
   //Gen Tree Branches
 
-  if(montecarlo){
+  if(montecarlo && !justJt){
     genTreeIni_p->SetBranchAddress("nGen", &nGen_);
     genTreeIni_p->SetBranchAddress("genPt", genPt_);
     genTreeIni_p->SetBranchAddress("genPhi", genPhi_);
@@ -337,48 +414,67 @@ void GetIniBranches(sampleType sType = kHIDATA)
 }
 
 
-void InitDiJetIniSkim(sampleType sType = kHIDATA)
+void InitDiJetIniSkim(sampleType sType = kHIDATA, Bool_t justJt = false)
 {
   std::cout << "Init DiJet IniSkim" << std::endl;
 
-  trackTreeIni_p = new TTree("trackTreeIni", "trackTreeIni");
+  if(!justJt)
+    trackTreeIni_p = new TTree("trackTreeIni", "trackTreeIni");
+
   jetTreeIni_p = new TTree("jetTreeIni", "jetTreeIni");
 
-  if(isMonteCarlo(sType))
+  if(isMonteCarlo(sType) && !justJt)
     genTreeIni_p = new TTree("genTreeIni", "genTreeIni");
 
-  SetIniBranches(sType);
+  SetIniBranches(sType, justJt);
 }
 
 
 void CleanupDiJetIniSkim()
 {
   if(trackTreeIni_p != 0){
+    std::cout << "Deleting trackTree" << std::endl;
     delete trackTreeIni_p;
     trackTreeIni_p = 0;
   }
   if(jetTreeIni_p != 0){
+    std::cout << "Deleting jetTree" << std::endl;
     delete jetTreeIni_p;
     jetTreeIni_p = 0;
   }
   if(genTreeIni_p != 0){
+    std::cout << "Deleting genTree" << std::endl;
     delete genTreeIni_p;
     genTreeIni_p = 0;
   }
 }
 
 
-void GetDiJetIniSkim(TFile* iniFile_p, sampleType sType = kHIDATA)
+void GetDiJetIniSkim(TFile* iniFile_p, sampleType sType = kHIDATA, Bool_t justJt = false)
 {
   std::cout << "Get DiJet IniSkim" << std::endl;
 
-  trackTreeIni_p = (TTree*)iniFile_p->Get("trackTreeIni");
+  if(!justJt)
+    trackTreeIni_p = (TTree*)iniFile_p->Get("trackTreeIni");
+
   jetTreeIni_p = (TTree*)iniFile_p->Get("jetTreeIni");
 
-  if(isMonteCarlo(sType))
+  if(isMonteCarlo(sType) && !justJt)
     genTreeIni_p = (TTree*)iniFile_p->Get("genTreeIni");
 
-  GetIniBranches(sType);
+  GetIniBranches(sType, justJt);
+}
+
+
+void InitTrkJts(Bool_t justJt = false)
+{
+  if(justJt){
+    for(Int_t jtIter = 0; jtIter < 2; jtIter++){
+      TrkJtPt_[jtIter] = -10;
+      TrkJtPhi_[jtIter] = -10;
+      TrkJtEta_[jtIter] = -10;
+    }
+  }
 }
 
 

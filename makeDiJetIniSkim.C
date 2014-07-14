@@ -7,8 +7,6 @@
 //
 //=============================================
 
-#include "TFile.h"
-#include "TTree.h"
 #include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/hiForest.h"
 #include "cfmDiJetIniSkim.h"
 #include "stdlib.h"
@@ -16,12 +14,23 @@
 
 #include "TComplex.h"
 
+#include <vector>
+#include "TLorentzVector.h"
+
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/ClusterSequence.hh"
+#include "fastjet/ClusterSequenceArea.hh"
+
 const Float_t leadJtPtCut = 120.;
 const Float_t subLeadJtPtCut = 50.;
 const Float_t jtDelPhiCut = 0;
 const Float_t jtEtaCut = 2.0; // Default Max at 2.4 to avoid transition junk, otherwise vary as needed
 
 collisionType getCType(sampleType sType);
+
+Double_t R = 0.3;
+fastjet::JetAlgorithm algorithm = fastjet::antikt_algorithm;
+fastjet::JetDefinition jetDef(algorithm, R, fastjet::E_scheme, fastjet::Best);
 
 Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
 {
@@ -77,7 +86,7 @@ Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
 }
 
 
-int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETINISKIM.root", Int_t num = 0)
+int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETINISKIM.root", Int_t num = 0, Bool_t justJt = false)
 {
   //Define MC or Data
   Bool_t montecarlo = isMonteCarlo(sType);
@@ -114,7 +123,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
 
-  InitDiJetIniSkim(sType);
+  InitDiJetIniSkim(sType, justJt);
 
   HiForest *c = new HiForest(listOfFiles[0].data(), "Forest", cType, montecarlo);
 
@@ -401,12 +410,16 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       nVs3PF_++;
     }
 
+
     //Iterate over tracks
 
     nTrk_ = 0;
 
     Tracks trkCollection;
     trkCollection = c->track;
+
+    std::vector<fastjet::PseudoJet>* jtVect_p = new std::vector<fastjet::PseudoJet>;
+    TLorentzVector tempTL;
     
     for(Int_t trkEntry = 0; trkEntry < trkCollection.nTrk; trkEntry++){
       
@@ -415,66 +428,123 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       
       if(trkCollection.trkPt[trkEntry] <= 0.5)
 	continue;
-      
+	
       if(!trkCollection.highPurity[trkEntry])
 	continue;
-      
+	
       if(TMath::Abs(trkCollection.trkDz1[trkEntry]/trkCollection.trkDzError1[trkEntry]) > 3)
 	continue;
-      
+	
       if(TMath::Abs(trkCollection.trkDxy1[trkEntry]/trkCollection.trkDxyError1[trkEntry]) > 3)
 	continue;
-      
+	
       if(trkCollection.trkPtError[trkEntry]/trkCollection.trkPt[trkEntry] > 0.1)
 	continue;
-      
+	
       trkPt_[nTrk_] = trkCollection.trkPt[trkEntry];
       trkPhi_[nTrk_] = trkCollection.trkPhi[trkEntry];
       trkEta_[nTrk_] = trkCollection.trkEta[trkEntry];
-      
+      tempTL.SetPtEtaPhiM(trkCollection.trkPt[trkEntry], trkCollection.trkEta[trkEntry], trkCollection.trkPhi[trkEntry], 0);
+      jtVect_p->push_back(tempTL);
+	
       //Grab proj. Pt Spectra For Tracks in each Event Subset    
-      
+	
       nTrk_++;
       if(nTrk_ > maxTracks - 1){
 	printf("ERROR: Trk arrays not large enough.\n");
 	return(1);
       }
     }
+
+    if(justJt){
+      nLeadJtConst_ = 0;
+      nSubLeadJtConst_ = 0;
+    }
+
+    InitTrkJts(justJt);
+
+    if(justJt && algPasses[1] == true){
+      fastjet::ClusterSequence cs(*jtVect_p, jetDef);
+      std::vector<fastjet::PseudoJet> jtVectSort = sorted_by_pt(cs.inclusive_jets());
+
+      for(Int_t jtIter = 0; jtIter < (Int_t)(jtVectSort.size()); jtIter++){
+	if(getDR(jtVectSort[jtIter].eta(), jtVectSort[jtIter].phi_std(), Vs3CaloEta_[0], Vs3CaloPhi_[0]) < 0.3){
+	  std::vector<fastjet::PseudoJet> jtConst = jtVectSort[jtIter].constituents();
+
+	  nLeadJtConst_ = (Int_t)(jtConst.size());
+	  TrkJtPt_[0] = jtVectSort[jtIter].perp();
+	  TrkJtPhi_[0] = jtVectSort[jtIter].phi_std();
+	  TrkJtEta_[0] = jtVectSort[jtIter].eta();
+
+	  for(Int_t constIter = 0; constIter < nLeadJtConst_; constIter++){
+	    TrkLeadJtConstPt_[constIter] = jtConst[constIter].perp();
+	    TrkLeadJtConstPhi_[constIter] = jtConst[constIter].phi_std();
+	    TrkLeadJtConstEta_[constIter] = jtConst[constIter].eta();
+	  }
+	}
+	else if(getDR(jtVectSort[jtIter].eta(), jtVectSort[jtIter].phi_std(), Vs3CaloEta_[1], Vs3CaloPhi_[1]) < 0.3){
+	  std::vector<fastjet::PseudoJet> jtConst = jtVectSort[jtIter].constituents();
+
+	  nSubLeadJtConst_ = (Int_t)(jtConst.size());
+	  TrkJtPt_[1] = jtVectSort[jtIter].perp();
+	  TrkJtPhi_[1] = jtVectSort[jtIter].phi_std();
+	  TrkJtEta_[1] = jtVectSort[jtIter].eta();
+
+	  for(Int_t constIter = 0; constIter < nSubLeadJtConst_; constIter++){
+	    TrkSubLeadJtConstPt_[constIter] = jtConst[constIter].perp();
+	    TrkSubLeadJtConstPhi_[constIter] = jtConst[constIter].phi_std();
+	    TrkSubLeadJtConstEta_[constIter] = jtConst[constIter].eta();
+	  }
+	}
+
+	if(nLeadJtConst_ != 0 && nSubLeadJtConst_ != 0)
+	  break;
+      }
+      jtVectSort.clear();
+    }
     
-    if(montecarlo){
-      //Iterate over truth
-      nGen_ = 0;
-      
-      GenParticles genCollection;
-      genCollection = c->genparticle;
-      
-      for(Int_t genEntry = 0; genEntry < genCollection.mult; genEntry++){
-	if(genCollection.chg[genEntry] == 0)
-	  continue;
+    if(!justJt){
+      if(montecarlo){
+	//Iterate over truth
+	nGen_ = 0;
 	
-	if(TMath::Abs(genCollection.eta[genEntry]) > 2.4)
-	  continue;
+	GenParticles genCollection;
+	genCollection = c->genparticle;
 	
-	if(genCollection.pt[genEntry] < 0.5)
-	  continue;
+	for(Int_t genEntry = 0; genEntry < genCollection.mult; genEntry++){
+	  if(genCollection.chg[genEntry] == 0)
+	    continue;
 	
-	genPt_[nGen_] = genCollection.pt[genEntry];
-	genPhi_[nGen_] = genCollection.phi[genEntry];
-	genEta_[nGen_] = genCollection.eta[genEntry];
+	  if(TMath::Abs(genCollection.eta[genEntry]) > 2.4)
+	    continue;
+	  
+	  if(genCollection.pt[genEntry] < 0.5)
+	    continue;
 	
-	nGen_++;
-	if(nGen_ > maxEntrySim - 1){
-	  printf("ERROR: Gen arrays not large enough.\n");
-	  return(1);
+	  genPt_[nGen_] = genCollection.pt[genEntry];
+	  genPhi_[nGen_] = genCollection.phi[genEntry];
+	  genEta_[nGen_] = genCollection.eta[genEntry];
+	  
+	  nGen_++;
+	  if(nGen_ > maxEntrySim - 1){
+	    printf("ERROR: Gen arrays not large enough.\n");
+	    return(1);
+	  }
 	}
       }
     }
     
     jetTreeIni_p->Fill();
-    trackTreeIni_p->Fill();
+
+    if(!justJt){
+      trackTreeIni_p->Fill();
     
-    if(montecarlo)
-      genTreeIni_p->Fill();
+      if(montecarlo)
+	genTreeIni_p->Fill();
+    }
+
+    jtVect_p->clear();
+    delete jtVect_p;
   }
 
   std::cout << "totEv: " << totEv << std::endl;
@@ -494,15 +564,17 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   outFile->cd();
 
   jetTreeIni_p->Write("", TObject::kOverwrite);
-  trackTreeIni_p->Write("", TObject::kOverwrite);
 
-  if(montecarlo)
-    genTreeIni_p->Write("", TObject::kOverwrite);
-
-  outFile->Close();
+  if(!justJt){
+    trackTreeIni_p->Write("", TObject::kOverwrite);
+    
+    if(montecarlo)
+      genTreeIni_p->Write("", TObject::kOverwrite);
+  }
 
   delete c;
   CleanupDiJetIniSkim();
+  outFile->Close();
   delete outFile;
 
   printf("Done.\n");
@@ -530,15 +602,17 @@ collisionType getCType(sampleType sType)
 
 int main(int argc, char *argv[])
 {
-  if(argc != 5)
+  if(argc != 6)
     {
-      std::cout << "Usage: makeDiJetIniSkim <inputFile> <MCBool> <outputFile> <#>" << std::endl;
+      std::cout << "Usage: makeDiJetIniSkim <inputFile> <sType> <outputFile> <#> <justJtBool>" << std::endl;
+      std::cout << argc << std::endl;
+      std::cout << argv[0] << ", "  << argv[1] << ", " << argv[2] << ", " << argv[3] << ", " << argv[4] << ", " << argv[5] << std::endl;
       return 1;
     }
 
   int rStatus = -1;
 
-  rStatus = makeDiJetIniSkim(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]));
+  rStatus = makeDiJetIniSkim(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]), Bool_t(atoi(argv[5])));
 
   return rStatus;
 }
