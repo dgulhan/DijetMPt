@@ -14,14 +14,11 @@
 #include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/commonSetup.h"
 #include "TMath.h"
 
-enum sampleType{
-  kHIDATA, //0
-  kHIMC,   //1
-  kPPDATA, //2                                                                                              
-  kPPMC,   //3
-  kPADATA, //4
-  kPAMC    //5
-};
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/ClusterSequence.hh"
+#include "fastjet/ClusterSequenceArea.hh"
+
+#include "factorizedPtCorr.h"
 
 enum AlgoType_PbPb{
   PuCalo,  //0
@@ -62,32 +59,6 @@ TString getSampleName ( int colli) {
   if (colli == kPAMC) return "ppbMC";
   return "NULL";
 }
-
-
-Float_t getDPHI(Float_t phi1, Float_t phi2)
-{
-  Float_t dphi = phi1 - phi2;
-  
-  if(dphi > TMath::Pi())
-    dphi = dphi - 2. * TMath::Pi();
-  if(dphi <= -TMath::Pi())
-    dphi = dphi + 2. * TMath::Pi();
-  
-  if(TMath::Abs(dphi) > TMath::Pi()) {
-    cout << " commonUtility::getDPHI error!!! dphi is bigger than TMath::Pi() " << endl;
-  }
-  
-  return dphi;
-}
-
-
-Float_t getDR(Float_t eta1, Float_t phi1, Float_t eta2, Float_t phi2)
-{
-  Float_t theDphi = getDPHI(phi1, phi2);
-  Float_t theDeta = eta1 - eta2;
-  return TMath::Sqrt(theDphi*theDphi + theDeta*theDeta);
-}
-
 
 TTree* trackTreeIni_p;
 TTree* jetTreeIni_p;
@@ -157,19 +128,40 @@ Float_t Vs3PFRefPt_[maxJets];
 Float_t Vs3PFRefPhi_[maxJets];
 Float_t Vs3PFRefEta_[maxJets];
 
-Float_t TrkJtPt_[2];
-Float_t TrkJtPhi_[2];
-Float_t TrkJtEta_[2];
+Float_t TrkJtPt_[5];
+Float_t TrkJtPhi_[5];
+Float_t TrkJtEta_[5];
 
 Int_t nLeadJtConst_;
 Float_t TrkLeadJtConstPt_[maxTracks];
 Float_t TrkLeadJtConstPhi_[maxTracks];
 Float_t TrkLeadJtConstEta_[maxTracks];
+Float_t TrkLeadJtConstCorr_[maxTracks];
 
 Int_t nSubLeadJtConst_;
 Float_t TrkSubLeadJtConstPt_[maxTracks];
 Float_t TrkSubLeadJtConstPhi_[maxTracks];
 Float_t TrkSubLeadJtConstEta_[maxTracks];
+Float_t TrkSubLeadJtConstCorr_[maxTracks];
+
+Int_t nThirdJtConst_;
+Float_t TrkThirdJtConstPt_[maxTracks];
+Float_t TrkThirdJtConstPhi_[maxTracks];
+Float_t TrkThirdJtConstEta_[maxTracks];
+Float_t TrkThirdJtConstCorr_[maxTracks];
+
+Int_t nFourthJtConst_;
+Float_t TrkFourthJtConstPt_[maxTracks];
+Float_t TrkFourthJtConstPhi_[maxTracks];
+Float_t TrkFourthJtConstEta_[maxTracks];
+Float_t TrkFourthJtConstCorr_[maxTracks];
+
+Int_t nFifthJtConst_;
+Float_t TrkFifthJtConstPt_[maxTracks];
+Float_t TrkFifthJtConstPhi_[maxTracks];
+Float_t TrkFifthJtConstEta_[maxTracks];
+Float_t TrkFifthJtConstCorr_[maxTracks];
+
 
 //Gen Tree Variables
 
@@ -269,19 +261,39 @@ void SetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
   }    
 
   if(justJt){
-    jetTreeIni_p->Branch("TrkJtPt", TrkJtPt_, "TrkJtPt[2]/F");
-    jetTreeIni_p->Branch("TrkJtPhi", TrkJtPhi_, "TrkJtPhi[2]/F");
-    jetTreeIni_p->Branch("TrkJtEta", TrkJtEta_, "TrkJtEta[2]/F");
+    jetTreeIni_p->Branch("TrkJtPt", TrkJtPt_, "TrkJtPt[5]/F");
+    jetTreeIni_p->Branch("TrkJtPhi", TrkJtPhi_, "TrkJtPhi[5]/F");
+    jetTreeIni_p->Branch("TrkJtEta", TrkJtEta_, "TrkJtEta[5]/F");
 
     jetTreeIni_p->Branch("nLeadJtConst", &nLeadJtConst_, "nLeadJtConst/I");
     jetTreeIni_p->Branch("TrkLeadJtConstPt", TrkLeadJtConstPt_, "TrkLeadJtConstPt[nLeadJtConst]/F");
     jetTreeIni_p->Branch("TrkLeadJtConstPhi", TrkLeadJtConstPhi_, "TrkLeadJtConstPhi[nLeadJtConst]/F");
     jetTreeIni_p->Branch("TrkLeadJtConstEta", TrkLeadJtConstEta_, "TrkLeadJtConstEta[nLeadJtConst]/F");
+    jetTreeIni_p->Branch("TrkLeadJtConstCorr", TrkLeadJtConstCorr_, "TrkLeadJtConstCorr[nLeadJtConst]/F");
 
     jetTreeIni_p->Branch("nSubLeadJtConst", &nSubLeadJtConst_, "nSubLeadJtConst/I");
     jetTreeIni_p->Branch("TrkSubLeadJtConstPt", TrkSubLeadJtConstPt_, "TrkSubLeadJtConstPt[nSubLeadJtConst]/F");
     jetTreeIni_p->Branch("TrkSubLeadJtConstPhi", TrkSubLeadJtConstPhi_, "TrkSubLeadJtConstPhi[nSubLeadJtConst]/F");
     jetTreeIni_p->Branch("TrkSubLeadJtConstEta", TrkSubLeadJtConstEta_, "TrkSubLeadJtConstEta[nSubLeadJtConst]/F");
+    jetTreeIni_p->Branch("TrkSubLeadJtConstCorr", TrkSubLeadJtConstCorr_, "TrkSubLeadJtConstCorr[nSubLeadJtConst]/F");
+
+    jetTreeIni_p->Branch("nThirdJtConst", &nThirdJtConst_, "nThirdJtConst/I");
+    jetTreeIni_p->Branch("TrkThirdJtConstPt", TrkThirdJtConstPt_, "TrkThirdJtConstPt[nThirdJtConst]/F");
+    jetTreeIni_p->Branch("TrkThirdJtConstPhi", TrkThirdJtConstPhi_, "TrkThirdJtConstPhi[nThirdJtConst]/F");
+    jetTreeIni_p->Branch("TrkThirdJtConstEta", TrkThirdJtConstEta_, "TrkThirdJtConstEta[nThirdJtConst]/F");
+    jetTreeIni_p->Branch("TrkThirdJtConstCorr", TrkThirdJtConstCorr_, "TrkThirdJtConstCorr[nThirdJtConst]/F");
+
+    jetTreeIni_p->Branch("nFourthJtConst", &nFourthJtConst_, "nFourthJtConst/I");
+    jetTreeIni_p->Branch("TrkFourthJtConstPt", TrkFourthJtConstPt_, "TrkFourthJtConstPt[nFourthJtConst]/F");
+    jetTreeIni_p->Branch("TrkFourthJtConstPhi", TrkFourthJtConstPhi_, "TrkFourthJtConstPhi[nFourthJtConst]/F");
+    jetTreeIni_p->Branch("TrkFourthJtConstEta", TrkFourthJtConstEta_, "TrkFourthJtConstEta[nFourthJtConst]/F");
+    jetTreeIni_p->Branch("TrkFourthJtConstCorr", TrkFourthJtConstCorr_, "TrkFourthJtConstCorr[nFourthJtConst]/F");
+
+    jetTreeIni_p->Branch("nFifthJtConst", &nFifthJtConst_, "nFifthJtConst/I");
+    jetTreeIni_p->Branch("TrkFifthJtConstPt", TrkFifthJtConstPt_, "TrkFifthJtConstPt[nFifthJtConst]/F");
+    jetTreeIni_p->Branch("TrkFifthJtConstPhi", TrkFifthJtConstPhi_, "TrkFifthJtConstPhi[nFifthJtConst]/F");
+    jetTreeIni_p->Branch("TrkFifthJtConstEta", TrkFifthJtConstEta_, "TrkFifthJtConstEta[nFifthJtConst]/F");
+    jetTreeIni_p->Branch("TrkFifthJtConstCorr", TrkFifthJtConstCorr_, "TrkFifthJtConstCorr[nFifthJtConst]/F");
   }
 
   //Gen Tree Branches
@@ -396,11 +408,31 @@ void GetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     jetTreeIni_p->SetBranchAddress("TrkLeadJtConstPt", TrkLeadJtConstPt_);
     jetTreeIni_p->SetBranchAddress("TrkLeadJtConstPhi", TrkLeadJtConstPhi_);
     jetTreeIni_p->SetBranchAddress("TrkLeadJtConstEta", TrkLeadJtConstEta_);
+    jetTreeIni_p->SetBranchAddress("TrkLeadJtConstCorr", TrkLeadJtConstCorr_);
 
     jetTreeIni_p->SetBranchAddress("nSubLeadJtConst", &nSubLeadJtConst_);
     jetTreeIni_p->SetBranchAddress("TrkSubLeadJtConstPt", TrkSubLeadJtConstPt_);
     jetTreeIni_p->SetBranchAddress("TrkSubLeadJtConstPhi", TrkSubLeadJtConstPhi_);
     jetTreeIni_p->SetBranchAddress("TrkSubLeadJtConstEta", TrkSubLeadJtConstEta_);
+    jetTreeIni_p->SetBranchAddress("TrkSubLeadJtConstCorr", TrkSubLeadJtConstCorr_);
+
+    jetTreeIni_p->SetBranchAddress("nThirdJtConst", &nThirdJtConst_);
+    jetTreeIni_p->SetBranchAddress("TrkThirdJtConstPt", TrkThirdJtConstPt_);
+    jetTreeIni_p->SetBranchAddress("TrkThirdJtConstPhi", TrkThirdJtConstPhi_);
+    jetTreeIni_p->SetBranchAddress("TrkThirdJtConstEta", TrkThirdJtConstEta_);
+    jetTreeIni_p->SetBranchAddress("TrkThirdJtConstCorr", TrkThirdJtConstCorr_);
+
+    jetTreeIni_p->SetBranchAddress("nFourthJtConst", &nFourthJtConst_);
+    jetTreeIni_p->SetBranchAddress("TrkFourthJtConstPt", TrkFourthJtConstPt_);
+    jetTreeIni_p->SetBranchAddress("TrkFourthJtConstPhi", TrkFourthJtConstPhi_);
+    jetTreeIni_p->SetBranchAddress("TrkFourthJtConstEta", TrkFourthJtConstEta_);
+    jetTreeIni_p->SetBranchAddress("TrkFourthJtConstCorr", TrkFourthJtConstCorr_);
+
+    jetTreeIni_p->SetBranchAddress("nFifthJtConst", &nFifthJtConst_);
+    jetTreeIni_p->SetBranchAddress("TrkFifthJtConstPt", TrkFifthJtConstPt_);
+    jetTreeIni_p->SetBranchAddress("TrkFifthJtConstPhi", TrkFifthJtConstPhi_);
+    jetTreeIni_p->SetBranchAddress("TrkFifthJtConstEta", TrkFifthJtConstEta_);
+    jetTreeIni_p->SetBranchAddress("TrkFifthJtConstCorr", TrkFifthJtConstCorr_);
   }
 
   //Gen Tree Branches
@@ -418,13 +450,9 @@ void InitDiJetIniSkim(sampleType sType = kHIDATA, Bool_t justJt = false)
 {
   std::cout << "Init DiJet IniSkim" << std::endl;
 
-  if(!justJt)
-    trackTreeIni_p = new TTree("trackTreeIni", "trackTreeIni");
-
+  if(!justJt) trackTreeIni_p = new TTree("trackTreeIni", "trackTreeIni");
   jetTreeIni_p = new TTree("jetTreeIni", "jetTreeIni");
-
-  if(isMonteCarlo(sType) && !justJt)
-    genTreeIni_p = new TTree("genTreeIni", "genTreeIni");
+  if(isMonteCarlo(sType) && !justJt) genTreeIni_p = new TTree("genTreeIni", "genTreeIni");
 
   SetIniBranches(sType, justJt);
 }
@@ -432,21 +460,9 @@ void InitDiJetIniSkim(sampleType sType = kHIDATA, Bool_t justJt = false)
 
 void CleanupDiJetIniSkim()
 {
-  if(trackTreeIni_p != 0){
-    std::cout << "Deleting trackTree" << std::endl;
-    delete trackTreeIni_p;
-    trackTreeIni_p = 0;
-  }
-  if(jetTreeIni_p != 0){
-    std::cout << "Deleting jetTree" << std::endl;
-    delete jetTreeIni_p;
-    jetTreeIni_p = 0;
-  }
-  if(genTreeIni_p != 0){
-    std::cout << "Deleting genTree" << std::endl;
-    delete genTreeIni_p;
-    genTreeIni_p = 0;
-  }
+  if(trackTreeIni_p != 0) delete trackTreeIni_p;
+  if(jetTreeIni_p != 0) delete jetTreeIni_p;
+  if(genTreeIni_p != 0) delete genTreeIni_p;
 }
 
 
@@ -454,13 +470,9 @@ void GetDiJetIniSkim(TFile* iniFile_p, sampleType sType = kHIDATA, Bool_t justJt
 {
   std::cout << "Get DiJet IniSkim" << std::endl;
 
-  if(!justJt)
-    trackTreeIni_p = (TTree*)iniFile_p->Get("trackTreeIni");
-
+  if(!justJt) trackTreeIni_p = (TTree*)iniFile_p->Get("trackTreeIni");
   jetTreeIni_p = (TTree*)iniFile_p->Get("jetTreeIni");
-
-  if(isMonteCarlo(sType) && !justJt)
-    genTreeIni_p = (TTree*)iniFile_p->Get("genTreeIni");
+  if(isMonteCarlo(sType) && !justJt) genTreeIni_p = (TTree*)iniFile_p->Get("genTreeIni");
 
   GetIniBranches(sType, justJt);
 }
@@ -469,7 +481,7 @@ void GetDiJetIniSkim(TFile* iniFile_p, sampleType sType = kHIDATA, Bool_t justJt
 void InitTrkJts(Bool_t justJt = false)
 {
   if(justJt){
-    for(Int_t jtIter = 0; jtIter < 2; jtIter++){
+    for(Int_t jtIter = 0; jtIter < 5; jtIter++){
       TrkJtPt_[jtIter] = -10;
       TrkJtPhi_[jtIter] = -10;
       TrkJtEta_[jtIter] = -10;
@@ -478,4 +490,35 @@ void InitTrkJts(Bool_t justJt = false)
 }
 
 
+void GetTrkJts(Int_t jtNum, sampleType sType, fastjet::PseudoJet inJtVect, Int_t &nConst, Float_t constPt[], Float_t constPhi[], Float_t constEta[], Float_t constCorr[])
+{
+  if(nConst != 0) return;
+
+  if(getDR(inJtVect.eta(), inJtVect.phi_std(), Vs3CaloEta_[jtNum], Vs3CaloPhi_[jtNum]) > 0.3) return;
+
+  std::vector<fastjet::PseudoJet> jtConst = inJtVect.constituents();
+
+  nConst = (Int_t)(jtConst.size());
+  TrkJtPt_[jtNum] = inJtVect.perp();
+  TrkJtPhi_[jtNum] = inJtVect.phi_std();
+  TrkJtEta_[jtNum] = inJtVect.eta();
+
+  for(Int_t constIter = 0; constIter < nConst; constIter++){
+    constPt[constIter] = jtConst[constIter].perp();
+    constPhi[constIter] = jtConst[constIter].phi_std();
+    constEta[constIter] = jtConst[constIter].eta();
+
+    Int_t ptPos = getPtBin(jtConst[constIter].perp(), sType);
+    Float_t tempRMin = getTrkRMin(jtConst[constIter].phi_std(), jtConst[constIter].eta(), nVs3Calo_, Vs3CaloPhi_, Vs3CaloEta_);
+
+    constCorr[constIter] = factorizedPtCorr(ptPos, hiBinIni_, jtConst[constIter].perp(), jtConst[constIter].phi_std(), jtConst[constIter].eta(), tempRMin, sType);
+  }
+  return;
+}
+
+
 #endif
+
+
+
+

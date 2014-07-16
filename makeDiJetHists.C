@@ -15,6 +15,8 @@ TFile* outFile_p = 0;
 
 const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
+
+
 void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, Int_t setNum, const char* CNCR, Int_t FPTNum, Int_t centLow, Int_t centHi, Float_t histLow, Float_t histHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isPercent = false, Bool_t isHighPtTrk = false)
 {
   inFile_p->cd();
@@ -92,7 +94,7 @@ void makeImbAsymmHist(TTree* anaTree_p, const char* outName, const char* gorr, I
       asymmCut = makeAsymmCut(setNum, asymmBinsTight[binIter], asymmBinsTight[binIter + 1]);
 
     if(montecarlo && setNum != 2)
-      anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
+      anaTree_p->Project(name1[binIter], var, Form("centWeight_Merge[%d]*pthatWeight", setNum)*(setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut), "");
     else
       anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
 
@@ -166,8 +168,8 @@ void makeImbDelRHist(TTree* anaTree_p, const char* outName, const char* gorr, In
   for(Int_t rIter = 0; rIter < 10; rIter++){
     TString var = Form("%sAlgImbProjAR[%d][%d][%d]", gorr, setCorrNum, FPTNum, rIter);
 
-    if(montecarlo)
-      anaTree_p->Project(name1[rIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
+    if(montecarlo && setNum != 2)
+      anaTree_p->Project(name1[rIter], var, Form("centWeight_Merge[%d]*pthatWeight", setNum)*(setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut), "");
     else
       anaTree_p->Project(name1[rIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && trkCut, "");
 
@@ -236,12 +238,15 @@ void makeMultDiffHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t
     else
       asymmCut = makeAsymmCut(setNum, asymmBinsTight[binIter], asymmBinsTight[binIter + 1]);
 
+    if(montecarlo && setNum != 2)
+      anaTree_p->Project(name1[binIter], var, Form("centWeight_Merge[%d]*pthatWeight", setNum)*(setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut), "");
+    else
       anaTree_p->Project(name1[binIter], var, setCut && centCut && etaCut && phiCut && jetLCut && jetSLCut && asymmCut && pthat && trkCut, "");
 
-      getHist_p = (TH1F*)inFile_p->Get(name2[binIter]);
+    getHist_p = (TH1F*)inFile_p->Get(name2[binIter]);
 
-      multHist_p->SetBinContent(binIter + 1, getHist_p->GetMean());
-      multHist_p->SetBinError(binIter + 1, getHist_p->GetMeanError());
+    multHist_p->SetBinContent(binIter + 1, getHist_p->GetMean());
+    multHist_p->SetBinError(binIter + 1, getHist_p->GetMeanError());
   }
 
   outFile_p = new TFile(outName, "UPDATE");
@@ -281,21 +286,23 @@ void makeDiJetHists(const char* inName, const char* outName, sampleType sType = 
 
   Int_t centBins = 6;
   Int_t centLow[6] = {0, 20, 60, 100, 0, 60};
-  Int_t centHi[6] = {19, 59, 99, 199, 59, 199};
+  Int_t centHi[6] = {5, 59, 99, 199, 59, 199};
 
   if(sType == kPPMC || sType == kPPDATA) centBins = 1;
+
+  std::cout << jetAlgMax << std::endl;
 
   for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
     std::cout << "Algorithm: " << algType[algIter] << std::endl;
 
     for(Int_t centIter = 0; centIter < centBins; centIter++){
-      for(Int_t corrIter = 1; corrIter < 2; corrIter++){
+      for(Int_t corrIter = 0; corrIter < 2; corrIter++){
 	for(Int_t FPTIter = 0; FPTIter < 6; FPTIter++){
 	  for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){
 
 	    if(CNCRIter < 3){
 
-	      for(Int_t tightIter = 0; tightIter < 1; tightIter++){
+	      for(Int_t tightIter = 0; tightIter < 2; tightIter++){
 
 		if((CNCRIter == 0 && centIter < 4) || (CNCRIter != 0 && centIter >= 4) || sType == kPPMC || sType == kPPDATA){
 		  makeImbAsymmHist(anaTree_p, outName, "r", algIter, CNCR[CNCRIter], FPTIter, centLow[centIter], centHi[centIter], -60., 59.999, corr[corrIter], Tight[tightIter], sType, isPercent, isHighPtTrk);

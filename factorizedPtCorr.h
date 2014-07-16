@@ -10,7 +10,15 @@
 #include "TProfile2D.h"
 #include "TMath.h"
 #include <iostream>
-#include "../DijetInitialSkim/cfmDiJetIniSkim.h"
+
+enum sampleType{
+  kHIDATA, //0                                                                                       
+  kHIMC,   //1                                                                                     
+  kPPDATA, //2                                                                        
+  kPPMC,   //3                                                                                   
+  kPADATA, //4                                                                              
+  kPAMC    //5                                                                                   
+};
 
 //Current # of correction histograms
 
@@ -47,6 +55,31 @@ TProfile* FakeCalodelR_p[nHistPP];
 
 TFile* SecondCaloFile_p;
 TH2D* SecondCaloptEta_p;
+
+
+Float_t getDPHI(Float_t phi1, Float_t phi2)
+{
+  Float_t dphi = phi1 - phi2;
+
+  if(dphi > TMath::Pi())
+    dphi = dphi - 2. * TMath::Pi();
+  if(dphi <= -TMath::Pi())
+    dphi = dphi + 2. * TMath::Pi();
+
+  if(TMath::Abs(dphi) > TMath::Pi()) {
+    std::cout << " commonUtility::getDPHI error!!! dphi is bigger than TMath::Pi() " << std::endl;
+  }
+
+  return dphi;
+}
+
+
+Float_t getDR(Float_t eta1, Float_t phi1, Float_t eta2, Float_t phi2)
+{
+  Float_t theDphi = getDPHI(phi1, phi2);
+  Float_t theDeta = eta1 - eta2;
+  return TMath::Sqrt(theDphi*theDphi + theDeta*theDeta);
+}
 
 
 void InitCorrFiles(sampleType sType = kHIDATA)
@@ -233,6 +266,21 @@ Int_t getPtBin(Float_t pt, sampleType sType = kHIDATA)
 }
 
 
+Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPhi[], Float_t jtEta[])
+{
+  Float_t trkRMin = 199;
+
+  if(nJt != 0){
+    for(Int_t jtEntry = 0; jtEntry < nJt; jtEntry++){
+      if(trkRMin > getDR(trkEta, trkPhi, jtEta[jtEntry], jtPhi[jtEntry]))
+        trkRMin = getDR(trkEta, trkPhi, jtEta[jtEntry], jtPhi[jtEntry]);
+    }
+  }
+
+  return trkRMin;
+}
+
+
 Float_t getEffCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Float_t eta, Float_t rmin, sampleType sType = kHIDATA)
 {
   Float_t effCorr = 1;
@@ -291,6 +339,12 @@ Float_t factorizedPtCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Fl
 
   if(sType == kPPDATA || sType == kPPMC){
     corrFactor = corrFactor*(1 - SecondCaloptEta_p->GetBinContent(SecondCaloptEta_p->FindBin(pt, eta)));
+  }
+
+  if(corrFactor > 1000){
+    std::cout << "Problem: " << corrFactor << std::endl;
+    std::cout << "pt, phi, eta: " << pt << ", " << phi << ", " << eta << std::endl;
+    return 0;
   }
 
   return corrFactor;

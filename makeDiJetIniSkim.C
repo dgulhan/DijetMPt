@@ -17,10 +17,6 @@
 #include <vector>
 #include "TLorentzVector.h"
 
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-
 const Float_t leadJtPtCut = 120.;
 const Float_t subLeadJtPtCut = 50.;
 const Float_t jtDelPhiCut = 0;
@@ -124,6 +120,11 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
 
   InitDiJetIniSkim(sType, justJt);
+
+  if(justJt){
+    InitCorrFiles(sType);
+    InitCorrHists(sType);
+  }
 
   HiForest *c = new HiForest(listOfFiles[0].data(), "Forest", cType, montecarlo);
 
@@ -462,43 +463,19 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     InitTrkJts(justJt);
+    if(hi)
+      InitPosArrPbPb(hiBinIni_);
 
     if(justJt && algPasses[1] == true){
       fastjet::ClusterSequence cs(*jtVect_p, jetDef);
       std::vector<fastjet::PseudoJet> jtVectSort = sorted_by_pt(cs.inclusive_jets());
 
       for(Int_t jtIter = 0; jtIter < (Int_t)(jtVectSort.size()); jtIter++){
-	if(getDR(jtVectSort[jtIter].eta(), jtVectSort[jtIter].phi_std(), Vs3CaloEta_[0], Vs3CaloPhi_[0]) < 0.3){
-	  std::vector<fastjet::PseudoJet> jtConst = jtVectSort[jtIter].constituents();
-
-	  nLeadJtConst_ = (Int_t)(jtConst.size());
-	  TrkJtPt_[0] = jtVectSort[jtIter].perp();
-	  TrkJtPhi_[0] = jtVectSort[jtIter].phi_std();
-	  TrkJtEta_[0] = jtVectSort[jtIter].eta();
-
-	  for(Int_t constIter = 0; constIter < nLeadJtConst_; constIter++){
-	    TrkLeadJtConstPt_[constIter] = jtConst[constIter].perp();
-	    TrkLeadJtConstPhi_[constIter] = jtConst[constIter].phi_std();
-	    TrkLeadJtConstEta_[constIter] = jtConst[constIter].eta();
-	  }
-	}
-	else if(getDR(jtVectSort[jtIter].eta(), jtVectSort[jtIter].phi_std(), Vs3CaloEta_[1], Vs3CaloPhi_[1]) < 0.3){
-	  std::vector<fastjet::PseudoJet> jtConst = jtVectSort[jtIter].constituents();
-
-	  nSubLeadJtConst_ = (Int_t)(jtConst.size());
-	  TrkJtPt_[1] = jtVectSort[jtIter].perp();
-	  TrkJtPhi_[1] = jtVectSort[jtIter].phi_std();
-	  TrkJtEta_[1] = jtVectSort[jtIter].eta();
-
-	  for(Int_t constIter = 0; constIter < nSubLeadJtConst_; constIter++){
-	    TrkSubLeadJtConstPt_[constIter] = jtConst[constIter].perp();
-	    TrkSubLeadJtConstPhi_[constIter] = jtConst[constIter].phi_std();
-	    TrkSubLeadJtConstEta_[constIter] = jtConst[constIter].eta();
-	  }
-	}
-
-	if(nLeadJtConst_ != 0 && nSubLeadJtConst_ != 0)
-	  break;
+	GetTrkJts(0, sType, jtVectSort[jtIter], nLeadJtConst_, TrkLeadJtConstPt_, TrkLeadJtConstPhi_, TrkLeadJtConstEta_, TrkLeadJtConstCorr_);
+	GetTrkJts(1, sType, jtVectSort[jtIter], nSubLeadJtConst_, TrkSubLeadJtConstPt_, TrkSubLeadJtConstPhi_, TrkSubLeadJtConstEta_, TrkSubLeadJtConstCorr_);
+	GetTrkJts(2, sType, jtVectSort[jtIter], nThirdJtConst_, TrkThirdJtConstPt_, TrkThirdJtConstPhi_, TrkThirdJtConstEta_, TrkThirdJtConstCorr_);
+	GetTrkJts(3, sType, jtVectSort[jtIter], nFourthJtConst_, TrkFourthJtConstPt_, TrkFourthJtConstPhi_, TrkFourthJtConstEta_, TrkFourthJtConstCorr_);
+	GetTrkJts(4, sType, jtVectSort[jtIter], nFifthJtConst_, TrkFifthJtConstPt_, TrkFifthJtConstPhi_, TrkFifthJtConstEta_, TrkFifthJtConstCorr_);
       }
       jtVectSort.clear();
     }
@@ -555,7 +532,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   for(Int_t cutIter = 0; cutIter < 5; cutIter++){
     std::cout << std::endl;
     tempTot = totEv - selectCut - vzCut - AlgLeadJtPtCut[cutIter];
-v    std::cout << "AlgLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
+    std::cout << "AlgLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
     tempTot = tempTot - AlgSubLeadJtPtCut[cutIter];
     std::cout << "AlgSubLeadJtPtCut[" << cutIter << "]: " << tempTot << std::endl;
   }

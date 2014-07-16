@@ -1,7 +1,7 @@
 //=============================================
 // Author: Chris McGinn
 // 
-// DiJet Analysis Skim Class (MC)
+// DiJet Analysis Skim Class (MC); Mixing mod
 //
 //=============================================
 
@@ -12,9 +12,9 @@
 #include "stdlib.h"
 #include <fstream>
 #include "TComplex.h"
+#include "cfmTreeCentSort.h"
 
-
-int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETANASKIM.root", Int_t num = 0, Bool_t justJt = false)
+int makeDiJetAnaSkim_MIXING(std::string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETANASKIM.root", Int_t num = 0, Bool_t justJt = false)
 {
   //Define MC or Data
   Bool_t montecarlo = isMonteCarlo(sType);
@@ -53,24 +53,32 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 
   //Setup correction tables
 
-  InitCorrFiles(sType);
-  InitCorrHists(sType);
+  TFile* mixFile_p = new TFile("/mnt/hadoop/cms/store/user/dgulhan/HIMC/MB/Track8_Jet26_STARTHI53_LV1/merged2/HiForest_HYDJET_Track8_Jet26_STARTHI53_LV1_merged_forest_0.root", "READ");
+  TTree* mixTree_p = (TTree*)mixFile_p->Get("hiEvtAnalyzer/HiTree");
+  mixTree_p->AddFriend("skimanalysis/HltTree");
+  RunFillCentEntryVect(mixTree_p);
 
-  TFile *centHistFile_80_p = new TFile("centHist_eventSet_80.root", "READ");
-  TH1F *hist_DataOverMC_80_p[5];
+  TTree* mixGenTree_p = (TTree*)mixFile_p->Get("HiGenParticleAna/hi");
 
-  TFile *centHistFile_Merge_p = new TFile("centHist_eventSet_Merge.root", "READ");
-  TH1F *hist_DataOverMC_Merge_p[5];
+  Int_t tempNGen_ = 0;
+  Float_t tempGenPt_[maxEntrySim];
+  Float_t tempGenPhi_[maxEntrySim];
+  Float_t tempGenEta_[maxEntrySim];
+  Int_t tempGenChg_[maxEntrySim];
 
-  if(sType == kHIMC){
-    for(Int_t algIter = 0; algIter < 5; algIter++){
-      if(algIter != 2){
-	hist_DataOverMC_80_p[algIter] = (TH1F*)centHistFile_80_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
-	if(algIter < 2)
-	  hist_DataOverMC_Merge_p[algIter] = (TH1F*)centHistFile_Merge_p->Get(Form("hiBin_%s_DataOverMC_h", algType[algIter]));
-      }
-    }
-  } 
+  mixGenTree_p->SetBranchStatus("*", 0);
+  mixGenTree_p->SetBranchStatus("mult", 1);
+  mixGenTree_p->SetBranchStatus("pt", 1);
+  mixGenTree_p->SetBranchStatus("phi", 1);
+  mixGenTree_p->SetBranchStatus("eta", 1);
+  mixGenTree_p->SetBranchStatus("chg", 1);
+
+  mixGenTree_p->SetBranchAddress("mult", &tempNGen_);
+  mixGenTree_p->SetBranchAddress("pt", tempGenPt_);
+  mixGenTree_p->SetBranchAddress("phi", tempGenPhi_);
+  mixGenTree_p->SetBranchAddress("eta", tempGenEta_);
+  mixGenTree_p->SetBranchAddress("chg", tempGenChg_);
+
 
   TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
 
@@ -142,105 +150,58 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
     }
 
   
-    if(sType == kHIMC){
-      for(Int_t algIter = 0; algIter < 5; algIter++){
-	if(algIter != 2){
-	  centWeight_80_[algIter] = hist_DataOverMC_80_p[algIter]->GetBinContent(hist_DataOverMC_80_p[algIter]->FindBin(hiBin_));
-	  if(algIter < 2)
-	    centWeight_Merge_[algIter] = hist_DataOverMC_Merge_p[algIter]->GetBinContent(hist_DataOverMC_Merge_p[algIter]->FindBin(hiBin_));
-	}
-      }
-    }
-
     //Iterate over tracks
 
     InitProjPerp(sType);
 
     //Switch below to iterated OR EDIT HERE
 
-    if((eventSet_[PuCalo] || eventSet_[VsCalo] || eventSet_[T]) && !justJt){
-      
-      
-      for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
-        
-	//Grab proj. Pt Spectra For Tracks in each Event Subset
-	
-	for(Int_t jtIter = 0; jtIter < 3; jtIter++){
-	  if(eventSet_[jtIter])
-	    GetTrkProjPerp(jtIter, jtIter, trkPt_[trkEntry], trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry]);
-	}
+    if(eventSet_[VsCalo] && centEntryVect_p[hiBin_]->size() != 0){
+      Float_t eventPt_[2] = {0., 0.};
 
+      GetMixProjPerp(eventPt_, nLeadJtCont_, TrkLeadJtConstPt_, TrkLeadJtConstPhi_, TrkLeadJtConstEta_, TrkLeadJtConstCorr_);
+      GetMixProjPerp(eventPt_, nSubLeadJtCont_, TrkSubLeadJtConstPt_, TrkSubLeadJtConstPhi_, TrkSubLeadJtConstEta_, TrkSubLeadJtConstCorr_);
+      GetMixProjPerp(eventPt_, nThirdJtCont_, TrkThirdJtConstPt_, TrkThirdJtConstPhi_, TrkThirdJtConstEta_, TrkThirdJtConstCorr_);
+      GetMixProjPerp(eventPt_, nFourthJtCont_, TrkFourthJtConstPt_, TrkFourthJtConstPhi_, TrkFourthJtConstEta_, TrkFourthJtConstCorr_);
+      GetMixProjPerp(eventPt_, nFifthJtCont_, TrkFifthJtConstPt_, TrkFifthJtConstPhi_, TrkFifthJtConstEta_, TrkFifthJtConstCorr_);
+
+      mixGenTree_p->GetEntry(centEntryVect_p[hiBin_]->at(0));
+      mixTree_p->GetEntry(centEntryVect_p[hiBin_]->at(0));
+      centEntryVect_p[hiBin_]->erase(centEntryVect_p[hiBin_]->begin());
+
+      Int_t chgMult = 0;
+      for(Int_t genIter = 0; genIter < tempNGen_; genIter++){
+	if(tempGenChg_[genIter] == 0 || TMath::Abs(tempGenEta_[genIter]) > 2.4) continue;
+
+        GetTrkProjPerp(1, 1, tempGenPt_[genIter], tempGenPt_[genIter], tempGenPhi_[genIter], tempGenEta_[genIter]);
+	chgMult++;
       }
 
-      if(hi)
-	InitPosArrPbPb(hiBin_);
+      eventPt_[0] = eventPt_[0]/chgMult;
+      eventPt_[1] = eventPt_[1]/chgMult;
 
-      for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
-	Int_t ptPos = getPtBin(trkPt_[trkEntry], sType);
+      for(Int_t genIter = 0; genIter < tempNGen_; genIter++){
+	if(tempGenChg_[genIter] == 0 || TMath::Abs(tempGenEta_[genIter]) > 2.4) continue;
 
-	Float_t tempRMin[3];
+	Float_t tempGenPtCorr[2] = {tempGenPt_[genIter]*cos(tempGenPhi_[genIter]) + eventPt_[0], tempGenPt_[genIter]*sin(tempGenPhi_[genIter]) + eventPt_[1]};
 
-	tempRMin[PuCalo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nPu3Calo_, Pu3CaloPhi_, Pu3CaloEta_);
-	tempRMin[VsCalo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPhi_, Vs3CaloEta_);
-	tempRMin[T] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nT3_, T3Phi_, T3Eta_);
-
-	Float_t tempFact[3] = {0., 0., 0.};
-	Float_t tempCorr[3] = {0., 0., 0.};
-
-	tempFact[PuCalo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[PuCalo], sType);
-	tempCorr[PuCalo] = trkPt_[trkEntry]*tempFact[PuCalo];
-
-	tempFact[VsCalo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[VsCalo], sType);
-	tempCorr[VsCalo] = trkPt_[trkEntry]*tempFact[VsCalo];
-
-	if(montecarlo){
-	  tempFact[T] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T], sType);
-	  tempCorr[T] = trkPt_[trkEntry]*tempFact[T];
-	}
-
-	for(Int_t jtIter = 0; jtIter < 3; jtIter++){
-	  if(eventSet_[jtIter]) 
-            GetTrkProjPerp(jtIter, jtIter+3, trkPt_[trkEntry], tempCorr[jtIter], trkPhi_[trkEntry], trkEta_[trkEntry]);
-	}
-
-      }
-
-      if(montecarlo){
-	//Iterate over Truth
-
-	for(Int_t genEntry = 0; genEntry < nGen_; genEntry++){
-	  for(Int_t jtIter = 0; jtIter < 3; jtIter++){
-	    GetGenProjPerp(jtIter, genPt_[genEntry], genPhi_[genEntry], genEta_[genEntry]);
-	  }
-	}
-
+	GetTrkProjPerp(1, 4, TMath::Sqrt(tempGenPtCorr[0]*tempGenPtCorr[0] + tempGenPtCorr[1]*tempGenPtCorr[1]), TMath::Sqrt(tempGenPtCorr[0]*tempGenPtCorr[0] + tempGenPtCorr[1]*tempGenPtCorr[1]), tempGenPhi_[genIter], tempGenEta_[genIter]);
       }
 
     }
+    else if(centEntryVect_p[hiBin_]->size() == 0)
+      std::cout << "Ran out of minBias events at centrality: " << hiBin_ << std::endl;
+
 
     jetTreeAna_p->Fill();
-
-    if(!justJt){
-      trackTreeAna_p->Fill();
-    
-      if(montecarlo) genTreeAna_p->Fill();
-    }
+    trackTreeAna_p->Fill();
+    if(montecarlo) genTreeAna_p->Fill();
   }
   
   outFile->cd();
   jetTreeAna_p->Write("", TObject::kOverwrite);
-
-  if(!justJt){
-    trackTreeAna_p->Write("", TObject::kOverwrite);
-
-    if(montecarlo) genTreeAna_p->Write("", TObject::kOverwrite);
-  }
-
-  centHistFile_80_p->Close();
-  delete centHistFile_80_p;
-
-  centHistFile_Merge_p->Close();
-  delete centHistFile_Merge_p;
+  trackTreeAna_p->Write("", TObject::kOverwrite);
+  if(montecarlo) genTreeAna_p->Write("", TObject::kOverwrite);
 
   CleanupDiJetAnaSkim();
   outFile->Close();
@@ -264,7 +225,7 @@ int main(int argc, char *argv[])
 
   int rStatus = -1;
 
-  rStatus = makeDiJetAnaSkim(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]), Bool_t(atoi(argv[5])));
+  rStatus = makeDiJetAnaSkim_MIXING(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]), Bool_t(atoi(argv[5])));
 
   return rStatus;
 }
