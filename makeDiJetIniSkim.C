@@ -17,6 +17,10 @@
 #include <vector>
 #include "TLorentzVector.h"
 
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/ClusterSequence.hh"
+#include "fastjet/ClusterSequenceArea.hh"
+
 const Float_t leadJtPtCut = 120.;
 const Float_t subLeadJtPtCut = 50.;
 const Float_t jtDelPhiCut = 0;
@@ -80,6 +84,34 @@ Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
     return false;
   }
 }
+
+
+void GetTrkJts(Int_t jtNum, sampleType sType, fastjet::PseudoJet inJtVect, Int_t &nConst, Float_t constPt[], Float_t constPhi[], Float_t constEta[], Float_t constCorr[])
+{
+  if(nConst != 0) return;
+
+  if(getDR(inJtVect.eta(), inJtVect.phi_std(), Vs3CaloEta_[jtNum], Vs3CaloPhi_[jtNum]) > 0.3) return;
+
+  std::vector<fastjet::PseudoJet> jtConst = inJtVect.constituents();
+
+  nConst = (Int_t)(jtConst.size());
+  TrkJtPt_[jtNum] = inJtVect.perp();
+  TrkJtPhi_[jtNum] = inJtVect.phi_std();
+  TrkJtEta_[jtNum] = inJtVect.eta();
+
+  for(Int_t constIter = 0; constIter < nConst; constIter++){
+    constPt[constIter] = jtConst[constIter].perp();
+    constPhi[constIter] = jtConst[constIter].phi_std();
+    constEta[constIter] = jtConst[constIter].eta();
+
+    Int_t ptPos = getPtBin(jtConst[constIter].perp(), sType);
+    Float_t tempRMin = getTrkRMin(jtConst[constIter].phi_std(), jtConst[constIter].eta(), nVs3Calo_, Vs3CaloPhi_, Vs3CaloEta_);
+
+    constCorr[constIter] = factorizedPtCorr(ptPos, hiBinIni_, jtConst[constIter].perp(), jtConst[constIter].phi_std(), jtConst[constIter].eta(), tempRMin, sType);
+  }
+  return;
+}
+
 
 
 int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETINISKIM.root", Int_t num = 0, Bool_t justJt = false)
@@ -309,7 +341,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     nVs3PF_ = 0;
 
     for(Int_t Pu3CaloIter = 0; Pu3CaloIter < AlgJtCollection[0].nref; Pu3CaloIter++){
-      if(AlgJtCollection[0].jtpt[Pu3CaloIter] < subLeadJtPtCut)
+      if(AlgJtCollection[0].jtpt[Pu3CaloIter] < 30.0)
 	break;
       else if(TMath::Abs(AlgJtCollection[0].jteta[Pu3CaloIter]) > jtEtaCut)
 	continue;
@@ -331,7 +363,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     for(Int_t Vs3CaloIter = 0; Vs3CaloIter < AlgJtCollection[1].nref; Vs3CaloIter++){
-      if(AlgJtCollection[1].jtpt[Vs3CaloIter] < subLeadJtPtCut)
+      if(AlgJtCollection[1].jtpt[Vs3CaloIter] < 30.0)
 	break;
       else if(TMath::Abs(AlgJtCollection[1].jteta[Vs3CaloIter]) > jtEtaCut)
 	continue;
@@ -354,7 +386,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
     if(montecarlo){
       for(Int_t T3Iter = 0; T3Iter < c->akPu3PF.ngen; T3Iter++){
-	if(c->akPu3PF.genpt[T3Iter] < subLeadJtPtCut)
+	if(c->akPu3PF.genpt[T3Iter] < 30.0)
 	  break;
 	else if(TMath::Abs(c->akPu3PF.geneta[T3Iter]) > jtEtaCut)
 	  continue;
@@ -368,7 +400,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     for(Int_t Pu3PFIter = 0; Pu3PFIter < AlgJtCollection[3].nref; Pu3PFIter++){
-      if(AlgJtCollection[3].jtpt[Pu3PFIter] < subLeadJtPtCut)
+      if(AlgJtCollection[3].jtpt[Pu3PFIter] < 30.0)
 	break;
       else if(TMath::Abs(AlgJtCollection[3].jteta[Pu3PFIter]) > jtEtaCut)
 	continue;
@@ -390,7 +422,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     for(Int_t Vs3PFIter = 0; Vs3PFIter < AlgJtCollection[4].nref; Vs3PFIter++){
-      if(AlgJtCollection[4].jtpt[Vs3PFIter] < subLeadJtPtCut)
+      if(AlgJtCollection[4].jtpt[Vs3PFIter] < 30.0)
 	break;
       else if(TMath::Abs(AlgJtCollection[4].jteta[Vs3PFIter]) > jtEtaCut)
 	continue;
@@ -460,6 +492,9 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(justJt){
       nLeadJtConst_ = 0;
       nSubLeadJtConst_ = 0;
+      nThirdJtConst_ = 0;
+      nFourthJtConst_ = 0;
+      nFifthJtConst_ = 0;
     }
 
     InitTrkJts(justJt);

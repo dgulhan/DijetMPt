@@ -14,10 +14,6 @@
 #include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/commonSetup.h"
 #include "TMath.h"
 
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequence.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-
 #include "factorizedPtCorr.h"
 
 enum AlgoType_PbPb{
@@ -488,34 +484,6 @@ void InitTrkJts(Bool_t justJt = false)
     }
   }
 }
-
-
-void GetTrkJts(Int_t jtNum, sampleType sType, fastjet::PseudoJet inJtVect, Int_t &nConst, Float_t constPt[], Float_t constPhi[], Float_t constEta[], Float_t constCorr[])
-{
-  if(nConst != 0) return;
-
-  if(getDR(inJtVect.eta(), inJtVect.phi_std(), Vs3CaloEta_[jtNum], Vs3CaloPhi_[jtNum]) > 0.3) return;
-
-  std::vector<fastjet::PseudoJet> jtConst = inJtVect.constituents();
-
-  nConst = (Int_t)(jtConst.size());
-  TrkJtPt_[jtNum] = inJtVect.perp();
-  TrkJtPhi_[jtNum] = inJtVect.phi_std();
-  TrkJtEta_[jtNum] = inJtVect.eta();
-
-  for(Int_t constIter = 0; constIter < nConst; constIter++){
-    constPt[constIter] = jtConst[constIter].perp();
-    constPhi[constIter] = jtConst[constIter].phi_std();
-    constEta[constIter] = jtConst[constIter].eta();
-
-    Int_t ptPos = getPtBin(jtConst[constIter].perp(), sType);
-    Float_t tempRMin = getTrkRMin(jtConst[constIter].phi_std(), jtConst[constIter].eta(), nVs3Calo_, Vs3CaloPhi_, Vs3CaloEta_);
-
-    constCorr[constIter] = factorizedPtCorr(ptPos, hiBinIni_, jtConst[constIter].perp(), jtConst[constIter].phi_std(), jtConst[constIter].eta(), tempRMin, sType);
-  }
-  return;
-}
-
 
 #endif
 

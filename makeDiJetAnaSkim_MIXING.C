@@ -159,11 +159,11 @@ int makeDiJetAnaSkim_MIXING(std::string fList = "", sampleType sType = kHIDATA, 
     if(eventSet_[VsCalo] && centEntryVect_p[hiBin_]->size() != 0){
       Float_t eventPt_[2] = {0., 0.};
 
-      GetMixProjPerp(eventPt_, nLeadJtCont_, TrkLeadJtConstPt_, TrkLeadJtConstPhi_, TrkLeadJtConstEta_, TrkLeadJtConstCorr_);
-      GetMixProjPerp(eventPt_, nSubLeadJtCont_, TrkSubLeadJtConstPt_, TrkSubLeadJtConstPhi_, TrkSubLeadJtConstEta_, TrkSubLeadJtConstCorr_);
-      GetMixProjPerp(eventPt_, nThirdJtCont_, TrkThirdJtConstPt_, TrkThirdJtConstPhi_, TrkThirdJtConstEta_, TrkThirdJtConstCorr_);
-      GetMixProjPerp(eventPt_, nFourthJtCont_, TrkFourthJtConstPt_, TrkFourthJtConstPhi_, TrkFourthJtConstEta_, TrkFourthJtConstCorr_);
-      GetMixProjPerp(eventPt_, nFifthJtCont_, TrkFifthJtConstPt_, TrkFifthJtConstPhi_, TrkFifthJtConstEta_, TrkFifthJtConstCorr_);
+      GetMixProjPerp(eventPt_, nLeadJtConst_, TrkLeadJtConstPt_, TrkLeadJtConstPhi_, TrkLeadJtConstEta_, TrkLeadJtConstCorr_);
+      GetMixProjPerp(eventPt_, nSubLeadJtConst_, TrkSubLeadJtConstPt_, TrkSubLeadJtConstPhi_, TrkSubLeadJtConstEta_, TrkSubLeadJtConstCorr_);
+      GetMixProjPerp(eventPt_, nThirdJtConst_, TrkThirdJtConstPt_, TrkThirdJtConstPhi_, TrkThirdJtConstEta_, TrkThirdJtConstCorr_);
+      GetMixProjPerp(eventPt_, nFourthJtConst_, TrkFourthJtConstPt_, TrkFourthJtConstPhi_, TrkFourthJtConstEta_, TrkFourthJtConstCorr_);
+      GetMixProjPerp(eventPt_, nFifthJtConst_, TrkFifthJtConstPt_, TrkFifthJtConstPhi_, TrkFifthJtConstEta_, TrkFifthJtConstCorr_);
 
       mixGenTree_p->GetEntry(centEntryVect_p[hiBin_]->at(0));
       mixTree_p->GetEntry(centEntryVect_p[hiBin_]->at(0));
