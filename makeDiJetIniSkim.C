@@ -166,6 +166,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   c->hasSkimTree = true;
   c->hasTrackTree = true;
+  c->hasPFTree = true;
   c->hasEvtTree = true;
 
   if(hi){
@@ -489,6 +490,27 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       }
     }
 
+    nPF_ = 0;
+
+    PFs pf = c->pf;
+
+    for(Int_t pfIter = 0; pfIter < pf.nPFpart; pfIter++){
+      if(TMath::Abs(pf.pfEta[pfIter]) > 2.3) continue;
+
+      if(pf.pfPt[pfIter] < 0.5) continue;
+
+      pfPt_[nPF_] = pf.pfPt[pfIter];
+      pfVsIniPt_[nPF_] = pf.pfVsPtInitial[pfIter];
+      pfPhi_[nPF_] = pf.pfPhi[pfIter];
+      pfEta_[nPF_] = pf.pfEta[pfIter];
+
+      nPF_++;
+      if(nPF_ > maxPF - 1){
+	printf("ERROR: PF arrays not large enough.\n");
+	return(1);
+      }
+    }
+
     if(justJt){
       nLeadJtConst_ = 0;
       nSubLeadJtConst_ = 0;
@@ -550,6 +572,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
     if(!justJt){
       trackTreeIni_p->Fill();
+      pfCandTreeIni_p->Fill();
     
       if(montecarlo) genTreeIni_p->Fill();
     }
@@ -578,6 +601,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   if(!justJt){
     trackTreeIni_p->Write("", TObject::kOverwrite);
+    pfCandTreeIni_p->Write("", TObject::kOverwrite);
     
     if(montecarlo) genTreeIni_p->Write("", TObject::kOverwrite);
   }
