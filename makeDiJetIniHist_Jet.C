@@ -17,7 +17,7 @@
 
 TChain* getChain_p[3] = {0, 0, 0};
 
-Float_t ptHatCuts[6] = {30, 50, 80, 120, 170, 1000000};
+Int_t ptHatCuts[6] = {30, 50, 80, 120, 170, 1000000};
 Float_t ptHatWeights[5] = {.556347, .030167, .00539882, .00546899, .0000263122};
 
 Int_t pcollisionEventSelection_;
@@ -31,7 +31,7 @@ Float_t jteta_[maxJets];
 Float_t rawpt_[maxJets];
 Float_t refpt_[maxJets];
 
-Float_t jtPtCut = 0.0;
+Float_t jtPtCut = 20.0;
 
 void BookChain(Bool_t isPbPb)
 {
@@ -139,17 +139,23 @@ void makeDiJetIniHist(std::vector<std::string> inList, const char* outName, cons
   GetChain(inList, alg, isPbPb);
 
   const Int_t nBins = 100;
+  const Int_t hatBins = 5;
   Float_t bins[nBins+1];
 
   std::vector<Float_t>* mean_rawOverGen_p[nBins];
+  std::vector<Float_t>* weight_rawOverGen_p[nBins];
   std::vector<Float_t>* mean_jetOverGen_p[nBins];
+  std::vector<Float_t>* weight_jetOverGen_p[nBins];
 
-  bins[0] = 0;
   for(Int_t iter = 0; iter < nBins; iter++){
-    bins[iter+1] = bins[iter] + 7;
+    bins[iter] = 7*iter;
     mean_rawOverGen_p[iter] = new std::vector<Float_t>;
+    weight_rawOverGen_p[iter] = new std::vector<Float_t>;
     mean_jetOverGen_p[iter] = new std::vector<Float_t>;
+    weight_jetOverGen_p[iter] = new std::vector<Float_t>;
   }
+
+  bins[nBins] = 700;
 
   TH1F* rawOverGenHist_p = new TH1F(Form("%s_rawOverGen_h", alg), Form("%s_rawOverGen_h", alg), nBins, bins);
   TH1F* jetOverGenHist_p = new TH1F(Form("%s_jetOverGen_h", alg), Form("%s_jetOverGen_h", alg), nBins, bins);
@@ -175,32 +181,48 @@ void makeDiJetIniHist(std::vector<std::string> inList, const char* outName, cons
 
     if(TMath::Abs(vz_) > 15) continue;
 
+    Int_t hatPos = -1;
+
+    for(Int_t hatIter = 0; hatIter < hatBins; hatIter++){
+      if(pthat_ > ptHatCuts[hatIter] && pthat_ < ptHatCuts[hatIter+1]){
+	hatPos = hatIter;
+	break;
+      }
+    }
+
     for(Int_t jtIter = 0; jtIter < nref_; jtIter++){
       if(TMath::Abs(jteta_[jtIter]) > 2.0 || refpt_[jtIter] < jtPtCut)	continue;
 
       for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
-	if(rawpt_[jtIter] > bins[rawIter] && rawpt_[jtIter] < bins[rawIter + 1])
+	if(rawpt_[jtIter] > bins[rawIter] && rawpt_[jtIter] < bins[rawIter + 1]){
 	  mean_rawOverGen_p[rawIter]->push_back(rawpt_[jtIter]/refpt_[jtIter]);
+	  weight_rawOverGen_p[rawIter]->push_back(ptHatWeights[hatPos]);
+	}
 
-	if(refpt_[jtIter] > bins[rawIter] && refpt_[jtIter] < bins[rawIter + 1])
+	if(refpt_[jtIter] > bins[rawIter] && refpt_[jtIter] < bins[rawIter + 1]){
 	  mean_jetOverGen_p[rawIter]->push_back(jtpt_[jtIter]/refpt_[jtIter]);
+	  weight_jetOverGen_p[rawIter]->push_back(ptHatWeights[hatPos]);
+	}
+
       }
     }
   }
 
+
   for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
     if(mean_rawOverGen_p[rawIter]->size() != 0){
-      Float_t mean = getMean(mean_rawOverGen_p[rawIter]);
+      Float_t mean = getMeanWeighted(mean_rawOverGen_p[rawIter], weight_rawOverGen_p[rawIter]);
       rawOverGenHist_p->SetBinContent(rawIter+1, mean);
       rawOverGenHist_p->SetBinError(rawIter+1, getError(mean_rawOverGen_p[rawIter], mean));
     }
 
     if(mean_jetOverGen_p[rawIter]->size() != 0){
-      Float_t mean = getMean(mean_jetOverGen_p[rawIter]);
+      Float_t mean = getMeanWeighted(mean_jetOverGen_p[rawIter], weight_jetOverGen_p[rawIter]);
       jetOverGenHist_p->SetBinContent(rawIter+1, mean);
       jetOverGenHist_p->SetBinError(rawIter+1, getError(mean_jetOverGen_p[rawIter], mean));
-    }
+    }    
   }
+
 
   TFile* out = new TFile(outName, "UPDATE");
   std::cout << outName << std::endl;
@@ -215,14 +237,15 @@ void makeDiJetIniHist(std::vector<std::string> inList, const char* outName, cons
   delete jetOverGenHist_p;
   jetOverGenHist_p = 0;
 
+
   for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
     mean_rawOverGen_p[rawIter]->clear();
     delete mean_rawOverGen_p[rawIter];
     mean_rawOverGen_p[rawIter] = 0;
-
+    
     mean_jetOverGen_p[rawIter]->clear();
     delete mean_jetOverGen_p[rawIter];
-    mean_jetOverGen_p[rawIter] = 0;
+    mean_jetOverGen_p[rawIter] = 0;   
   }
 
   CleanChain();
@@ -447,6 +470,11 @@ void drawLine(){
   zeroLine_p->SetLineStyle(2);
   zeroLine_p->Draw("SAME");
 
+  TLine* fiftyLine_p = new TLine(50.0, 0.9, 50.0, 1.1);
+  fiftyLine_p->SetLineColor(1);
+  fiftyLine_p->SetLineStyle(2);
+  fiftyLine_p->Draw("SAME");
+
   return;
 }
 
@@ -533,6 +561,8 @@ void plotDiJetIniHistCent(const char* histFileName, const char* VsPu = "Vs", con
 
 int runMakeDiJetIniHist(std::string fList = "", const char* outFileName = "raw_rawOverGen", Bool_t isPbPb = false)
 {
+  TH1::SetDefaultSumw2();
+
   std::string buffer;
   std::vector<std::string> listOfFiles;
   int nLines = 0;
