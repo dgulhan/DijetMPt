@@ -7,7 +7,7 @@
 #include "TChain.h"
 #include "TMath.h"
 
-void derivePtHatWeights(std::string fList = "")
+void derivePtHatWeights(std::string fList = "", Bool_t isPbPb = false)
 {
   std::string buffer;
   std::vector<std::string> listOfFiles;
@@ -62,11 +62,26 @@ void derivePtHatWeights(std::string fList = "")
     }
   }
 
-  for(Int_t hatIter = 0; hatIter < 5; hatIter++){
-    std::cout << hatIter << std::endl;
-    std::cout << "  hatEntries: " << hatEntries[hatIter] << std::endl;
-    hatWeight[hatIter] = (crossSections[hatIter] - crossSections[hatIter+1])/hatEntries[hatIter];
-    std::cout << "  hatWeight: " << hatWeight[hatIter] << std::endl;
+  if(!isPbPb){
+    for(Int_t hatIter = 0; hatIter < 5; hatIter++){
+      std::cout << hatIter << std::endl;
+      std::cout << "  hatEntries: " << hatEntries[hatIter] << std::endl;
+      hatWeight[hatIter] = (crossSections[hatIter] - crossSections[hatIter+1])/hatEntries[hatIter];
+      std::cout << "  hatWeight: " << hatWeight[hatIter] << std::endl;
+    }
+  }
+  else{
+    for(Int_t hatIter = 0; hatIter < 3; hatIter++){
+      std::cout << hatIter << std::endl;
+      std::cout << "  hatEntries: " << hatEntries[hatIter] << std::endl;
+      hatWeight[hatIter] = (crossSections[hatIter] - crossSections[hatIter+1])/hatEntries[hatIter];
+      std::cout << "  hatWeight: " << hatWeight[hatIter] << std::endl;
+    }
+
+    std::cout << 3 << std::endl;
+    std::cout << "  hatEntries: " << hatEntries[3] + hatEntries[4] << std::endl;
+    hatWeight[3] = crossSections[3]/(hatEntries[3] + hatEntries[4]);
+    std::cout << "  hatWeight: " << hatWeight[3] << std::endl;
   }
 
   return;
