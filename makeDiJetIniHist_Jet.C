@@ -8,17 +8,23 @@
 #include "TLine.h"
 
 #include "/net/hisrv0001/home/cfmcginn/emDiJet/CMSSW_5_3_12_patch3/tempHIFA/HiForestAnalysis/commonSetup.h"
-#include "cfmVectFunc.h"
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #include "commonUtility.h"
+#include "TMath.h"
+#include "TLatex.h"
 
 TChain* getChain_p[3] = {0, 0, 0};
 
-Int_t ptHatCuts[6] = {30, 50, 80, 120, 170, 1000000};
-Float_t ptHatWeights[5] = {.556347, .030167, .00539882, .00546899, .0000263122};
+Int_t ptHatCuts_Pyth[6] = {30, 50, 80, 120, 170, 1000000};
+Float_t ptHatWeights_Pyth[5] = {.556347, .057268, .00590566, .00598662, .0000263236};
+Int_t ptHatCuts_PythHyd[5] = {30, 50, 80, 120, 1000000};
+Float_t ptHatWeights_PythHyd[4] = {.399951, .0254714, .00242036, .000287973};
+
+Int_t centCutArray[9] = {0, 10, 20, 40, 60, 80, 100, 140, 200};
 
 Int_t pcollisionEventSelection_;
 Float_t vz_;
@@ -108,29 +114,86 @@ void CleanChain()
 void setHatWeights()
 {
   Float_t denom = 0;
+  Float_t denom_PbPb = 0;
   for(Int_t iter = 0; iter < 5; iter++){
-    denom += ptHatWeights[iter];
+    denom += ptHatWeights_Pyth[iter];
+
+    if(iter == 4) continue;
+
+    denom_PbPb += ptHatWeights_PythHyd[iter];
   }
   for(Int_t iter = 0; iter < 5; iter++){
-    ptHatWeights[iter] = ptHatWeights[iter]/denom;
+    ptHatWeights_Pyth[iter] = ptHatWeights_Pyth[iter]/denom;
+
+    if(iter == 4) continue;
+
+    ptHatWeights_PythHyd[iter] = ptHatWeights_PythHyd[iter]/denom_PbPb;
   }
   return;
 }
 
 
-Float_t getHatWeight(Float_t inHat)
+Float_t getHatWeight(Float_t inHat, Bool_t isPbPb)
 {
-  for(Int_t iter = 0; iter < 5; iter++){
-    if(inHat > ptHatCuts[iter] && inHat < ptHatCuts[iter+1])
-      return ptHatWeights[iter];
+  if(isPbPb){
+    for(Int_t iter = 0; iter < 4; iter++){
+      if(inHat > ptHatCuts_PythHyd[iter] && inHat < ptHatCuts_PythHyd[iter+1])
+	return ptHatWeights_PythHyd[iter];
+    }
+  }
+  else{
+    for(Int_t iter = 0; iter < 5; iter++){
+      if(inHat > ptHatCuts_Pyth[iter] && inHat < ptHatCuts_Pyth[iter+1])
+	return ptHatWeights_Pyth[iter];
+    }
   }
 
+  std::cout << inHat << std::endl;
+  std::cout << ptHatCuts_PythHyd[4] << std::endl;
   std::cout << "No weight assigned; check for error." << std::endl;
   return 0;
 }
 
 
-void makeDiJetIniHist(std::vector<std::string> inList, const char* outName, const char* alg = "akVs3Calo", Bool_t isPbPb = false)
+void getLogBins(const Float_t lower, const Float_t higher, const Int_t nBins, Float_t bins[])
+{
+  Float_t logBins[nBins+1];
+  bins[0] = lower;
+  bins[nBins] = higher;
+
+  logBins[0] = TMath::Log10(lower);
+  logBins[nBins] = TMath::Log10(higher);
+
+  Float_t interval = (logBins[nBins] - logBins[0])/nBins;
+
+  for(Int_t iter = 1; iter < nBins; iter++){
+    logBins[iter] = logBins[0] + iter*interval;
+    bins[iter] = TMath::Power(10, logBins[iter]);
+  }
+
+  return;
+}
+
+
+std::string getCentString(Bool_t isPbPb, Int_t centLow, Int_t centHi)
+{
+  if(isPbPb) return Form("%d%d", (Int_t)(centLow*.5), (Int_t)((centHi)*.5));
+  else return "PP";
+}
+
+
+Int_t getCentPos(Int_t inHiBin)
+{
+  for(Int_t centIter = 0; centIter < 9; centIter++){
+    if(inHiBin >= centCutArray[centIter] && inHiBin < centCutArray[centIter+1])
+      return centIter;
+  }
+  std::cout << "Uh oh, no known centrality, getCentPos, return -1" << std::endl;
+  return -1;
+}
+
+
+void makeDiJetIniHist(std::vector<std::string> inList, const std::string outName, const char* alg = "akVs3Calo", Bool_t isPbPb = false)
 {
   TH1::SetDefaultSumw2();
 
@@ -138,39 +201,50 @@ void makeDiJetIniHist(std::vector<std::string> inList, const char* outName, cons
 
   GetChain(inList, alg, isPbPb);
 
-  const Int_t nBins = 100;
-  const Int_t hatBins = 5;
+  const Int_t nBins = 50;
+  const Float_t lower = 20.;
+  const Float_t higher = 700.;
+
+  Int_t nCentBins;
+
+  if(isPbPb) nCentBins = 8;
+  else nCentBins = 1;
+
+  std::string centString[nCentBins];
+
+  if(isPbPb){
+    for(Int_t centIter = 0; centIter < nCentBins; centIter++){
+      centString[centIter] = getCentString(isPbPb, centCutArray[centIter], centCutArray[centIter+1]);
+    }
+  }
+  else centString[0] = getCentString(isPbPb, 0, 0);
+
+  //Edit Here
+
   Float_t bins[nBins+1];
 
-  std::vector<Float_t>* mean_rawOverGen_p[nBins];
-  std::vector<Float_t>* weight_rawOverGen_p[nBins];
-  std::vector<Float_t>* mean_jetOverGen_p[nBins];
-  std::vector<Float_t>* weight_jetOverGen_p[nBins];
+  getLogBins(lower, higher, nBins, bins);
 
-  for(Int_t iter = 0; iter < nBins; iter++){
-    bins[iter] = 7*iter;
-    mean_rawOverGen_p[iter] = new std::vector<Float_t>;
-    weight_rawOverGen_p[iter] = new std::vector<Float_t>;
-    mean_jetOverGen_p[iter] = new std::vector<Float_t>;
-    weight_jetOverGen_p[iter] = new std::vector<Float_t>;
+  TH1F* pthatNoWeight_p = new TH1F("pthatNoWeight_h", "pthatNoWeight_h", 100, 30, 300);
+  TH1F* pthatWeight_p = new TH1F("pthatWeight_h", "pthatWeight_h", 100, 30, 300);
+  TH1F* mean_jetOverGen_p[nCentBins][nBins];
+
+  for(Int_t centIter = 0; centIter < nCentBins; centIter++){
+    for(Int_t iter = 0; iter < nBins; iter++){
+      mean_jetOverGen_p[centIter][iter] = new TH1F(Form("tempJetHist_%s_%d", centString[centIter].c_str(), iter), Form("tempJetHist_%s_%d", centString[centIter].c_str(), iter), 2000, 0, 2);
+    }
   }
 
-  bins[nBins] = 700;
-
-  TH1F* rawOverGenHist_p = new TH1F(Form("%s_rawOverGen_h", alg), Form("%s_rawOverGen_h", alg), nBins, bins);
-  TH1F* jetOverGenHist_p = new TH1F(Form("%s_jetOverGen_h", alg), Form("%s_jetOverGen_h", alg), nBins, bins);
-
-  handsomeTH1(rawOverGenHist_p);
-  rawOverGenHist_p->SetXTitle("p_{T}^{raw}");
-  rawOverGenHist_p->GetXaxis()->SetTitleOffset(.75);
-  rawOverGenHist_p->SetYTitle("p_{T}^{raw}/p_{T}^{gen}");
-
-  handsomeTH1(jetOverGenHist_p);
-  jetOverGenHist_p->SetXTitle("p_{T}^{gen}");
-  jetOverGenHist_p->GetXaxis()->SetTitleOffset(.75);
-  jetOverGenHist_p->SetYTitle("p_{T}^{jet}/p_{T}^{gen}");
-  jetOverGenHist_p->SetMaximum(1.10);
-  jetOverGenHist_p->SetMinimum(0.90);
+  TH1F* jetOverGenHist_p[nCentBins];
+  for(Int_t centIter = 0; centIter < nCentBins; centIter++){
+    jetOverGenHist_p[centIter] = new TH1F(Form("%s_jetOverGen_%s_h", alg, centString[centIter].c_str()), Form("%s_jetOverGen_%s_h", alg, centString[centIter].c_str()), nBins, bins);
+    handsomeTH1(jetOverGenHist_p[centIter]);
+    jetOverGenHist_p[centIter]->SetXTitle("p_{T}^{gen}");
+    jetOverGenHist_p[centIter]->GetXaxis()->SetTitleOffset(.75);
+    jetOverGenHist_p[centIter]->SetYTitle("p_{T}^{jet}/p_{T}^{gen}");
+    jetOverGenHist_p[centIter]->SetMaximum(1.04999);
+    jetOverGenHist_p[centIter]->SetMinimum(0.95001);
+  }
 
   for(Int_t jEntry = 0; jEntry <  getChain_p[0]->GetEntries(); jEntry++){
     getChain_p[0]->GetEntry(jEntry);
@@ -181,72 +255,88 @@ void makeDiJetIniHist(std::vector<std::string> inList, const char* outName, cons
 
     if(TMath::Abs(vz_) > 15) continue;
 
-    Int_t hatPos = -1;
+    if(pthat_ < 30) continue;
 
-    for(Int_t hatIter = 0; hatIter < hatBins; hatIter++){
-      if(pthat_ > ptHatCuts[hatIter] && pthat_ < ptHatCuts[hatIter+1]){
-	hatPos = hatIter;
-	break;
-      }
-    }
+    Float_t hatWeight = getHatWeight(pthat_, isPbPb);
+    Int_t centPos = 0;
+    if(isPbPb) centPos = getCentPos(hiBin_);
+
+    pthatNoWeight_p->Fill(pthat_);
+    pthatWeight_p->Fill(pthat_, hatWeight);
 
     for(Int_t jtIter = 0; jtIter < nref_; jtIter++){
       if(TMath::Abs(jteta_[jtIter]) > 2.0 || refpt_[jtIter] < jtPtCut)	continue;
 
       for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
-	if(rawpt_[jtIter] > bins[rawIter] && rawpt_[jtIter] < bins[rawIter + 1]){
-	  mean_rawOverGen_p[rawIter]->push_back(rawpt_[jtIter]/refpt_[jtIter]);
-	  weight_rawOverGen_p[rawIter]->push_back(ptHatWeights[hatPos]);
-	}
-
 	if(refpt_[jtIter] > bins[rawIter] && refpt_[jtIter] < bins[rawIter + 1]){
-	  mean_jetOverGen_p[rawIter]->push_back(jtpt_[jtIter]/refpt_[jtIter]);
-	  weight_jetOverGen_p[rawIter]->push_back(ptHatWeights[hatPos]);
+	  mean_jetOverGen_p[centPos][rawIter]->Fill(jtpt_[jtIter]/refpt_[jtIter], hatWeight);
+	  break;
 	}
-
       }
     }
   }
 
 
-  for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
-    if(mean_rawOverGen_p[rawIter]->size() != 0){
-      Float_t mean = getMeanWeighted(mean_rawOverGen_p[rawIter], weight_rawOverGen_p[rawIter]);
-      rawOverGenHist_p->SetBinContent(rawIter+1, mean);
-      rawOverGenHist_p->SetBinError(rawIter+1, getError(mean_rawOverGen_p[rawIter], mean));
+  for(Int_t centIter = 0; centIter < nCentBins; centIter++){
+    for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
+      if(mean_jetOverGen_p[centIter][rawIter]->GetEntries() != 0){
+	mean_jetOverGen_p[centIter][rawIter]->Fit("gaus", "Q WL");
+	jetOverGenHist_p[centIter]->SetBinContent(rawIter+1, mean_jetOverGen_p[centIter][rawIter]->GetFunction("gaus")->GetParameter(1));
+	
+	if(mean_jetOverGen_p[centIter][rawIter]->GetEntries() != 1){
+	  jetOverGenHist_p[centIter]->SetBinError(rawIter+1, mean_jetOverGen_p[centIter][rawIter]->GetFunction("gaus")->GetParError(1));
+	  
+	  if(jetOverGenHist_p[centIter]->GetBinError(rawIter+1) > .05){
+	    std::cout << rawIter << ", " << bins[rawIter] << ", " << bins[rawIter+1] << ", " << jetOverGenHist_p[centIter]->GetBinContent(rawIter + 1) << ", " << jetOverGenHist_p[centIter]->GetBinError(rawIter+1) << std::endl;
+	  }
+	}
+      }    
     }
-
-    if(mean_jetOverGen_p[rawIter]->size() != 0){
-      Float_t mean = getMeanWeighted(mean_jetOverGen_p[rawIter], weight_jetOverGen_p[rawIter]);
-      jetOverGenHist_p->SetBinContent(rawIter+1, mean);
-      jetOverGenHist_p->SetBinError(rawIter+1, getError(mean_jetOverGen_p[rawIter], mean));
-    }    
   }
 
 
-  TFile* out = new TFile(outName, "UPDATE");
+  TFile* out = new TFile(outName.c_str(), "UPDATE");
   std::cout << outName << std::endl;
-  rawOverGenHist_p->Write();
-  jetOverGenHist_p->Write();
+  if(!strcmp(alg, "akVs3PF")){
+    pthatWeight_p->Scale(1./pthatWeight_p->Integral());
+    handsomeTH1(pthatWeight_p);
+    pthatWeight_p->GetXaxis()->SetTitleOffset(1.15);
+    pthatWeight_p->SetXTitle("p_{T}^{#hat}");
+    pthatWeight_p->GetXaxis()->SetTitleOffset(1.15);
+    pthatWeight_p->SetYTitle("Event Fraction");
+    pthatWeight_p->Write();
+
+    pthatNoWeight_p->Scale(1./pthatNoWeight_p->Integral());
+    handsomeTH1(pthatNoWeight_p);
+    pthatNoWeight_p->GetXaxis()->SetTitleOffset(1.15);
+    pthatNoWeight_p->SetXTitle("p_{T}^{#hat}");
+    pthatNoWeight_p->GetXaxis()->SetTitleOffset(1.15);
+    pthatNoWeight_p->SetYTitle("Event Fraction");
+    pthatNoWeight_p->Write();
+  }
+  for(Int_t centIter = 0; centIter < nCentBins; centIter++){
+    jetOverGenHist_p[centIter]->Write();
+  }
   out->Close();
   delete out;
 
-  delete rawOverGenHist_p;
-  rawOverGenHist_p = 0;
-
-  delete jetOverGenHist_p;
-  jetOverGenHist_p = 0;
-
-
-  for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
-    mean_rawOverGen_p[rawIter]->clear();
-    delete mean_rawOverGen_p[rawIter];
-    mean_rawOverGen_p[rawIter] = 0;
-    
-    mean_jetOverGen_p[rawIter]->clear();
-    delete mean_jetOverGen_p[rawIter];
-    mean_jetOverGen_p[rawIter] = 0;   
+  for(Int_t centIter = 0; centIter < nCentBins; centIter++){
+    delete jetOverGenHist_p[centIter];
+    jetOverGenHist_p[centIter] = 0;
   }
+
+  for(Int_t centIter = 0; centIter < nCentBins; centIter++){
+    for(Int_t rawIter = 0; rawIter < nBins; rawIter++){
+      delete mean_jetOverGen_p[centIter][rawIter];
+      mean_jetOverGen_p[centIter][rawIter] = 0;   
+    }
+  }
+
+  delete pthatWeight_p;
+  pthatWeight_p = 0;
+
+  delete pthatNoWeight_p;
+  pthatNoWeight_p = 0;
 
   CleanChain();
 
@@ -255,7 +345,7 @@ void makeDiJetIniHist(std::vector<std::string> inList, const char* outName, cons
 
 
 
-
+/*
 void makeDiJetIniHist_Eta(std::vector<std::string> inList, const char* outName, const char* alg = "akVs3Calo", Bool_t isPbPb = false)
 {
   TH1::SetDefaultSumw2();
@@ -403,7 +493,7 @@ void makeDiJetIniHist_Cent(std::vector<std::string> inList, const char* outName,
   return;
 }
 
-
+*/
 void makeDiJetIniHistRatVsPu(const char* histFileName, const char* PFCalo = "PF")
 {
   TH1::SetDefaultSumw2();
@@ -470,7 +560,7 @@ void drawLine(){
   zeroLine_p->SetLineStyle(2);
   zeroLine_p->Draw("SAME");
 
-  TLine* fiftyLine_p = new TLine(50.0, 0.9, 50.0, 1.1);
+  TLine* fiftyLine_p = new TLine(50.0, 0.95, 50.0, 1.05);
   fiftyLine_p->SetLineColor(1);
   fiftyLine_p->SetLineStyle(2);
   fiftyLine_p->Draw("SAME");
@@ -502,6 +592,156 @@ void plotDiJetIniHistRatPFCalo(const char* histFileName, const char* VsPu = "Vs"
   drawLine();
 
   return;
+}
+
+
+void plotInitHist(TH1F* inHist_p)
+{
+  inHist_p->GetXaxis()->SetTitleSize(0.07);
+  inHist_p->GetXaxis()->SetTitleOffset(1.1);
+  inHist_p->GetXaxis()->SetLabelSize(0.06);
+  inHist_p->GetYaxis()->SetTitleSize(0.07);
+  inHist_p->GetYaxis()->SetTitleOffset(1.2);
+  inHist_p->GetYaxis()->SetLabelSize(0.055);
+}
+
+
+void plotDiJetIniHist_PYTH(const std::string histFileName, const std::string VsPu, const std::string PFCalo)
+{
+  TH1::SetDefaultSumw2();
+  TFile *f = new TFile(histFileName.c_str(), "UPDATE");
+
+  TH1F* getHist3_p = (TH1F*)f->Get(Form("ak%s3%s_jetOverGen_PP_h", VsPu.c_str(), PFCalo.c_str()));
+  TH1F* getHist4_p = (TH1F*)f->Get(Form("ak%s4%s_jetOverGen_PP_h", VsPu.c_str(), PFCalo.c_str()));
+  TH1F* getHist5_p = (TH1F*)f->Get(Form("ak%s5%s_jetOverGen_PP_h", VsPu.c_str(), PFCalo.c_str()));
+
+  TCanvas* plotCanv_p = new TCanvas(Form("ak%s%s_jetOverGen_PP_c", VsPu.c_str(), PFCalo.c_str()), Form("ak%s%s_jetOverGen_PP_c", VsPu.c_str(), PFCalo.c_str()), 3*300, 1*350);
+  plotCanv_p->Divide(3, 1, 0.0, 0.0);
+
+  plotInitHist(getHist3_p);
+  plotInitHist(getHist4_p);
+  plotInitHist(getHist5_p);
+
+  plotCanv_p->cd(1);
+  gPad->SetLogx();
+  getHist3_p->Draw();
+  drawLine();
+
+  TLatex* label_p = new TLatex();
+  label_p->SetNDC();
+  label_p->SetTextFont(43);
+  label_p->SetTextSizePixels(23);
+
+  label_p->DrawLatex(.5, .9, Form("ak%s3%s", VsPu.c_str(), PFCalo.c_str()));
+  label_p->DrawLatex(.5, .80, Form("p_{T}^{gen} > 20 GeV/c"));
+
+  plotCanv_p->cd(2);
+  gPad->SetLogx();
+  getHist4_p->Draw();
+  drawLine();
+  label_p->DrawLatex(.5, .9, Form("ak%s4%s", VsPu.c_str(), PFCalo.c_str()));
+  label_p->DrawLatex(.5, .80, Form("|#eta| < 2.0"));
+
+  plotCanv_p->cd(3);
+  gPad->SetLogx();
+  getHist5_p->Draw();
+  drawLine();
+  label_p->DrawLatex(.6, .9, Form("ak%s5%s", VsPu.c_str(), PFCalo.c_str()));
+
+  plotCanv_p->Write("", TObject::kOverwrite);
+  claverCanvasSaving(plotCanv_p, Form("pdfDir/ak%s%s_jetOverGen", VsPu.c_str(), PFCalo.c_str()), "pdf");
+
+  delete label_p;
+  delete plotCanv_p;
+  f->Close();
+  delete f;
+}
+
+
+void drawCentHist(TH1F* inHist_p)
+{
+  gPad->SetLogx();
+  inHist_p->Draw();
+  drawLine();
+  return;
+}
+
+
+void plotDiJetIniHist_PYTHHYD(const std::string histFileName, const std::string alg)
+{
+  TH1::SetDefaultSumw2();
+  TFile *f = new TFile(histFileName.c_str(), "UPDATE");
+
+  TH1F* getHist_p[8];
+
+  for(Int_t iter = 0; iter < 8; iter++){
+    getHist_p[iter] = (TH1F*)f->Get(Form("%s_jetOverGen_%d%d_h", alg.c_str(), centCutArray[iter]/2, centCutArray[iter+1]/2));
+  }
+
+  TCanvas* plotCanv_p = new TCanvas(Form("%s_jetOverGen_PbPb_c", alg.c_str()), Form("%s_jetOverGen_PbPb_c", alg.c_str()), 4*300, 2*350);
+  plotCanv_p->Divide(4, 2, 0.0, 0.0);
+
+  for(Int_t iter = 0; iter < 8; iter++){
+    plotInitHist(getHist_p[iter]);
+  }
+
+  plotCanv_p->cd(1);
+  drawCentHist(getHist_p[7]);
+
+  TLatex* label_p = new TLatex();
+  label_p->SetNDC();
+  label_p->SetTextFont(43);
+  label_p->SetTextSizePixels(23);
+
+  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[7]/2, centCutArray[8]/2));
+  label_p->DrawLatex(.5, .70, Form("p_{T}^{gen} > 20 GeV/c"));
+
+  plotCanv_p->cd(2);
+  drawCentHist(getHist_p[6]);
+  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[6]/2, centCutArray[7]/2));
+  label_p->DrawLatex(.5, .70, Form("|#eta| < 2.0"));
+
+  plotCanv_p->cd(3);
+  drawCentHist(getHist_p[5]);
+  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[5]/2, centCutArray[6]/2));
+
+  plotCanv_p->cd(4);
+  drawCentHist(getHist_p[4]);
+  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[4]/2, centCutArray[5]/2));
+
+  plotCanv_p->cd(5);
+  drawCentHist(getHist_p[3]);
+  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[3]/2, centCutArray[4]/2));
+
+  plotCanv_p->cd(6);
+  drawCentHist(getHist_p[2]);
+  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[2]/2, centCutArray[3]/2));
+
+  plotCanv_p->cd(7);
+  drawCentHist(getHist_p[1]);
+  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[1]/2, centCutArray[2]/2));
+
+  plotCanv_p->cd(8);
+  drawCentHist(getHist_p[0]);
+  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[0]/2, centCutArray[1]/2));
+
+
+  plotCanv_p->Write("", TObject::kOverwrite);
+  claverCanvasSaving(plotCanv_p, Form("pdfDir/%s_jetOverGen", alg.c_str()), "pdf");
+
+  delete label_p;
+  delete plotCanv_p;
+  f->Close();
+  delete f;
+
 }
 
 
@@ -559,6 +799,33 @@ void plotDiJetIniHistCent(const char* histFileName, const char* VsPu = "Vs", con
 }
 
 
+void runPlotDiJetIniHist_PYTH(const std::string histFileName)
+{
+  plotDiJetIniHist_PYTH(histFileName, "", "PF");
+  plotDiJetIniHist_PYTH(histFileName, "", "Calo");
+
+  plotDiJetIniHist_PYTH(histFileName, "Vs", "PF");
+  plotDiJetIniHist_PYTH(histFileName, "Vs", "Calo");
+
+  plotDiJetIniHist_PYTH(histFileName, "Pu", "PF");
+  plotDiJetIniHist_PYTH(histFileName, "Pu", "Calo");
+
+  return;
+}
+
+
+void runPlotDiJetIniHist_PYTHHYD(const std::string histFileName)
+{
+  plotDiJetIniHist_PYTHHYD(histFileName, "akVs3PF");
+  plotDiJetIniHist_PYTHHYD(histFileName, "akVs3Calo");
+
+  plotDiJetIniHist_PYTHHYD(histFileName, "akPu3PF");
+  plotDiJetIniHist_PYTHHYD(histFileName, "akPu3Calo");
+
+  return;
+}
+
+
 int runMakeDiJetIniHist(std::string fList = "", const char* outFileName = "raw_rawOverGen", Bool_t isPbPb = false)
 {
   TH1::SetDefaultSumw2();
@@ -585,14 +852,49 @@ int runMakeDiJetIniHist(std::string fList = "", const char* outFileName = "raw_r
 
   setHatWeights();
 
-  for(Int_t iter = 0; iter < 5; iter++){
-    std::cout << ptHatWeights[iter] << std::endl;
+  if(!isPbPb){
+    for(Int_t iter = 0; iter < 5; iter++){
+      std::cout << ptHatWeights_Pyth[iter] << std::endl;
+    }
+  }
+  else{
+    for(Int_t iter = 0; iter < 4; iter++){
+      std::cout << ptHatWeights_PythHyd[iter] << std::endl;
+    }
+  }
+
+  if(!isPbPb){
+    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak3PF", isPbPb);
+    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak3Calo", isPbPb);
   }
 
   makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs3PF", isPbPb);
-  //  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu3PF", isPbPb);
-  //  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs3Calo", isPbPb);
-  //  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu3Calo", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu3PF", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs3Calo", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu3Calo", isPbPb);
+
+  if(!isPbPb){
+    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak4PF", isPbPb);
+    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak4Calo", isPbPb);
+  }
+
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs4PF", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu4PF", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs4Calo", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu4Calo", isPbPb);
+
+  if(!isPbPb){
+    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak5PF", isPbPb);
+    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak5Calo", isPbPb);
+  }
+
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs5PF", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu5PF", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs5Calo", isPbPb);
+  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu5Calo", isPbPb);
+
+  runPlotDiJetIniHist_PYTH(Form("%s.root", outFileName));
+  runPlotDiJetIniHist_PYTHHYD(Form("%s.root", outFileName));
 
   /*
   makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs4PF", isPbPb);
