@@ -16,13 +16,12 @@
 #include "commonUtility.h"
 #include "TMath.h"
 #include "TLatex.h"
-
 TChain* getChain_p[3] = {0, 0, 0};
 
-Int_t ptHatCuts_Pyth[6] = {30, 50, 80, 120, 170, 1000000};
-Float_t ptHatWeights_Pyth[5] = {.556347, .057268, .00590566, .00598662, .0000263236};
-Int_t ptHatCuts_PythHyd[5] = {30, 50, 80, 120, 1000000};
-Float_t ptHatWeights_PythHyd[4] = {.399951, .0254714, .00242036, .000287973};
+Int_t ptHatCuts_PYTH[6] = {30, 50, 80, 120, 170, 1000000};
+Float_t ptHatWeights_PYTH[5] = {.556347, .057268, .00590566, .00597628, .0000266327};
+Int_t ptHatCuts_PYTHHYD[9] = {15, 30, 50, 80, 120, 220, 280, 370, 1000000};
+Float_t ptHatWeights_PYTHHYD[8] = {.611066, .0399951, .00243874, .000241009, .0000273228, .00000147976, .000000618337, .000000250369};
 
 Int_t centCutArray[9] = {0, 10, 20, 40, 60, 80, 100, 140, 200};
 
@@ -116,19 +115,19 @@ void setHatWeights()
   Float_t denom = 0;
   Float_t denom_PbPb = 0;
   for(Int_t iter = 0; iter < 5; iter++){
-    denom += ptHatWeights_Pyth[iter];
-
-    if(iter == 4) continue;
-
-    denom_PbPb += ptHatWeights_PythHyd[iter];
+    denom += ptHatWeights_PYTH[iter];
   }
   for(Int_t iter = 0; iter < 5; iter++){
-    ptHatWeights_Pyth[iter] = ptHatWeights_Pyth[iter]/denom;
-
-    if(iter == 4) continue;
-
-    ptHatWeights_PythHyd[iter] = ptHatWeights_PythHyd[iter]/denom_PbPb;
+    ptHatWeights_PYTH[iter] = ptHatWeights_PYTH[iter]/denom;
   }
+
+  for(Int_t iter = 0; iter < 5; iter++){
+    denom_PbPb += ptHatWeights_PYTHHYD[iter];
+  }
+  for(Int_t iter = 0; iter < 8; iter++){
+    ptHatWeights_PYTHHYD[iter] = ptHatWeights_PYTHHYD[iter]/denom_PbPb;
+  }
+
   return;
 }
 
@@ -136,20 +135,19 @@ void setHatWeights()
 Float_t getHatWeight(Float_t inHat, Bool_t isPbPb)
 {
   if(isPbPb){
-    for(Int_t iter = 0; iter < 4; iter++){
-      if(inHat > ptHatCuts_PythHyd[iter] && inHat < ptHatCuts_PythHyd[iter+1])
-	return ptHatWeights_PythHyd[iter];
+    for(Int_t iter = 0; iter < 8; iter++){
+      if(inHat > ptHatCuts_PYTHHYD[iter] && inHat < ptHatCuts_PYTHHYD[iter+1])
+	return ptHatWeights_PYTHHYD[iter];
     }
   }
   else{
     for(Int_t iter = 0; iter < 5; iter++){
-      if(inHat > ptHatCuts_Pyth[iter] && inHat < ptHatCuts_Pyth[iter+1])
-	return ptHatWeights_Pyth[iter];
+      if(inHat > ptHatCuts_PYTH[iter] && inHat < ptHatCuts_PYTH[iter+1])
+	return ptHatWeights_PYTH[iter];
     }
   }
 
   std::cout << inHat << std::endl;
-  std::cout << ptHatCuts_PythHyd[4] << std::endl;
   std::cout << "No weight assigned; check for error." << std::endl;
   return 0;
 }
@@ -635,6 +633,7 @@ void plotDiJetIniHist_PYTH(const std::string histFileName, const std::string VsP
   label_p->DrawLatex(.5, .9, Form("ak%s3%s", VsPu.c_str(), PFCalo.c_str()));
   label_p->DrawLatex(.5, .80, Form("p_{T}^{gen} > 20 GeV/c"));
 
+
   plotCanv_p->cd(2);
   gPad->SetLogx();
   getHist4_p->Draw();
@@ -647,6 +646,7 @@ void plotDiJetIniHist_PYTH(const std::string histFileName, const std::string VsP
   getHist5_p->Draw();
   drawLine();
   label_p->DrawLatex(.6, .9, Form("ak%s5%s", VsPu.c_str(), PFCalo.c_str()));
+  label_p->DrawLatex(.6, .80, "PYTHIA");
 
   plotCanv_p->Write("", TObject::kOverwrite);
   claverCanvasSaving(plotCanv_p, Form("pdfDir/ak%s%s_jetOverGen", VsPu.c_str(), PFCalo.c_str()), "pdf");
@@ -707,6 +707,7 @@ void plotDiJetIniHist_PYTHHYD(const std::string histFileName, const std::string 
   drawCentHist(getHist_p[5]);
   label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
   label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[5]/2, centCutArray[6]/2));
+  label_p->DrawLatex(.5, .70, "PYT+HYD");
 
   plotCanv_p->cd(4);
   drawCentHist(getHist_p[4]);
@@ -822,6 +823,18 @@ void runPlotDiJetIniHist_PYTHHYD(const std::string histFileName)
   plotDiJetIniHist_PYTHHYD(histFileName, "akPu3PF");
   plotDiJetIniHist_PYTHHYD(histFileName, "akPu3Calo");
 
+  plotDiJetIniHist_PYTHHYD(histFileName, "akVs4PF");
+  plotDiJetIniHist_PYTHHYD(histFileName, "akVs4Calo");
+
+  plotDiJetIniHist_PYTHHYD(histFileName, "akPu4PF");
+  plotDiJetIniHist_PYTHHYD(histFileName, "akPu4Calo");
+
+  plotDiJetIniHist_PYTHHYD(histFileName, "akVs5PF");
+  plotDiJetIniHist_PYTHHYD(histFileName, "akVs5Calo");
+
+  plotDiJetIniHist_PYTHHYD(histFileName, "akPu5PF");
+  plotDiJetIniHist_PYTHHYD(histFileName, "akPu5Calo");
+
   return;
 }
 
@@ -850,16 +863,14 @@ int runMakeDiJetIniHist(std::string fList = "", const char* outFileName = "raw_r
     }
   }
 
-  setHatWeights();
-
   if(!isPbPb){
     for(Int_t iter = 0; iter < 5; iter++){
-      std::cout << ptHatWeights_Pyth[iter] << std::endl;
+      std::cout << ptHatWeights_PYTH[iter] << std::endl;
     }
   }
   else{
     for(Int_t iter = 0; iter < 4; iter++){
-      std::cout << ptHatWeights_PythHyd[iter] << std::endl;
+      std::cout << ptHatWeights_PYTHHYD[iter] << std::endl;
     }
   }
 
@@ -892,9 +903,6 @@ int runMakeDiJetIniHist(std::string fList = "", const char* outFileName = "raw_r
   makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu5PF", isPbPb);
   makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs5Calo", isPbPb);
   makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu5Calo", isPbPb);
-
-  runPlotDiJetIniHist_PYTH(Form("%s.root", outFileName));
-  runPlotDiJetIniHist_PYTHHYD(Form("%s.root", outFileName));
 
   /*
   makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs4PF", isPbPb);
