@@ -7,7 +7,13 @@
 #include "TChain.h"
 #include "TMath.h"
 
-void derivePtHatWeights(std::string fList = "", Bool_t isPbPb = false)
+Float_t ptHatCuts_PYTH[6] = {30, 50, 80, 120, 170, 1000000};
+Float_t crossSections_PYTH[6] = {.01075, .001025, .00009865, .00001129, .000001465, 0.000000000};
+
+Float_t ptHatCuts_PYTHHYD[9] = {15, 30, 50, 80, 120, 220, 280, 370, 1000000};
+Float_t crossSections_PYTHHYD[9] = {.20340, .01075, .001025, .00009865, .00001129, .0000002837, .00000005323, .000000005934, .0000000000};
+
+void derivePtHatWeights(const Int_t numCut,Float_t ptHatCuts[], Float_t crossSect[], std::string fList = "")
 {
   std::string buffer;
   std::vector<std::string> listOfFiles;
@@ -46,42 +52,30 @@ void derivePtHatWeights(std::string fList = "", Bool_t isPbPb = false)
   Int_t nEntries = ptHatChain_p->GetEntries();
   std::cout << nEntries << std::endl;
 
-  Int_t hatEntries[5] = {0, 0, 0, 0, 0};
-  Int_t ptHatCuts[6] = {30, 50, 80, 120, 170, 100000};
-  Float_t crossSections[6] = {.01075, .001025, .00009865, .00001129, .000001448, 0.000000000};
-  Float_t hatWeight[5] = {0, 0, 0, 0, 0};
+  Int_t hatEntries[numCut];
+  Float_t hatWeight[numCut];
+
+  for(Int_t iter = 0; iter < numCut; iter++){
+    hatEntries[iter] = 0;
+    hatWeight[iter] = 0;
+  }
 
   for(Int_t evtIter = 0; evtIter < nEntries; evtIter++){
     ptHatChain_p->GetEntry(evtIter);
 
-    for(Int_t hatIter = 0; hatIter < 5; hatIter++){
+    for(Int_t hatIter = 0; hatIter < numCut; hatIter++){
       if(ptHat_ > ptHatCuts[hatIter] && ptHat_ < ptHatCuts[hatIter+1]){
 	hatEntries[hatIter]++;
 	break;
       }
     }
   }
-
-  if(!isPbPb){
-    for(Int_t hatIter = 0; hatIter < 5; hatIter++){
-      std::cout << hatIter << std::endl;
-      std::cout << "  hatEntries: " << hatEntries[hatIter] << std::endl;
-      hatWeight[hatIter] = (crossSections[hatIter] - crossSections[hatIter+1])/hatEntries[hatIter];
-      std::cout << "  hatWeight: " << hatWeight[hatIter] << std::endl;
-    }
-  }
-  else{
-    for(Int_t hatIter = 0; hatIter < 3; hatIter++){
-      std::cout << hatIter << std::endl;
-      std::cout << "  hatEntries: " << hatEntries[hatIter] << std::endl;
-      hatWeight[hatIter] = (crossSections[hatIter] - crossSections[hatIter+1])/hatEntries[hatIter];
-      std::cout << "  hatWeight: " << hatWeight[hatIter] << std::endl;
-    }
-
-    std::cout << 3 << std::endl;
-    std::cout << "  hatEntries: " << hatEntries[3] + hatEntries[4] << std::endl;
-    hatWeight[3] = crossSections[3]/(hatEntries[3] + hatEntries[4]);
-    std::cout << "  hatWeight: " << hatWeight[3] << std::endl;
+  
+  for(Int_t hatIter = 0; hatIter < numCut; hatIter++){
+    std::cout << hatIter << std::endl;
+    std::cout << "  hatEntries: " << hatEntries[hatIter] << std::endl;
+    hatWeight[hatIter] = (crossSect[hatIter] - crossSect[hatIter+1])/hatEntries[hatIter];
+    std::cout << "  hatWeight: " << hatWeight[hatIter] << std::endl;    
   }
 
   return;
