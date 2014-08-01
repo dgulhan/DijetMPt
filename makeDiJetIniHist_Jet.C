@@ -28,6 +28,7 @@ Int_t ptHatCuts_PYTHHYD[9] = {15, 30, 50, 80, 120, 220, 280, 370, 1000000};
 Float_t ptHatWeights_PYTHHYD[8] = {.611066, .0399951, .00243874, .000241009, .0000273228, .00000147976, .000000618337, .000000250369};
 
 Int_t centCutArray[9] = {0, 10, 20, 40, 60, 80, 100, 140, 200};
+Float_t centCutArray_F[9] = {0, 10, 20, 40, 60, 80, 100, 140, 200};
 
 Int_t pcollisionEventSelection_;
 Float_t vz_;
@@ -46,7 +47,12 @@ Float_t genpt_[maxJets];
 Float_t geneta_[maxJets];
 Int_t genmatchindex_[maxJets];
 
-Float_t jtPtCut = 20.0;
+const Float_t jtPtCut = 20.0;
+
+const std::string PtEtaString[2] = {"Pt", "Eta"};
+const std::string MeanResString[2] = {"Mean", "Res"};
+const std::string PFCaloString[2] = {"PF", "Calo"};
+const std::string PuVsString[3] = {"", "Pu", "Vs"};
 
 void BookChain(Bool_t isPbPb)
 {
@@ -132,28 +138,6 @@ void CleanChain()
 }
 
 
-void setHatWeights()
-{
-  Float_t denom = 0;
-  Float_t denom_PbPb = 0;
-  for(Int_t iter = 0; iter < 5; iter++){
-    denom += ptHatWeights_PYTH[iter];
-  }
-  for(Int_t iter = 0; iter < 5; iter++){
-    ptHatWeights_PYTH[iter] = ptHatWeights_PYTH[iter]/denom;
-  }
-
-  for(Int_t iter = 0; iter < 5; iter++){
-    denom_PbPb += ptHatWeights_PYTHHYD[iter];
-  }
-  for(Int_t iter = 0; iter < 8; iter++){
-    ptHatWeights_PYTHHYD[iter] = ptHatWeights_PYTHHYD[iter]/denom_PbPb;
-  }
-
-  return;
-}
-
-
 Float_t getHatWeight(Float_t inHat, Bool_t isPbPb)
 {
   if(isPbPb){
@@ -209,24 +193,6 @@ void getEtaBins(const Float_t lower, const Float_t higher, const Int_t nBins, Fl
 }
 
 
-std::string getCentString(Bool_t isPbPb, Int_t centLow, Int_t centHi)
-{
-  if(isPbPb) return Form("%d%d", (Int_t)(centLow*.5), (Int_t)((centHi)*.5));
-  else return "PP";
-}
-
-
-Int_t getCentPos(Int_t inHiBin)
-{
-  for(Int_t centIter = 0; centIter < 9; centIter++){
-    if(inHiBin >= centCutArray[centIter] && inHiBin < centCutArray[centIter+1])
-      return centIter;
-  }
-  std::cout << "Uh oh, no known centrality, getCentPos, return -1" << std::endl;
-  return -1;
-}
-
-
 Int_t posSearch(Float_t val, Int_t arrSize, Float_t arr[])
 {
   Int_t pos = arrSize/2;
@@ -243,13 +209,38 @@ Int_t posSearch(Float_t val, Int_t arrSize, Float_t arr[])
     if(val < arr[pos]) high = pos;
     else low = pos;
     pos = (high+low)/2;
-
-    if(iter > 100){
-      std::cout << iter << ", " << val << ", " << pos << ", " << arr[pos] << std::endl;
-    }
   }
 
   return pos;
+}
+
+
+std::string getCentString(Bool_t isPbPb, Int_t centLow, Int_t centHi)
+{
+  if(isPbPb) return Form("%d%d", (Int_t)(centLow*.5), (Int_t)((centHi)*.5));
+  else return "PP";
+}
+
+
+void InitHist(TH1F* inHist_p, const std::string PtEta, const std::string MeanRes)
+{
+  handsomeTH1(inHist_p);
+  inHist_p->GetXaxis()->SetTitleOffset(.75);
+  if(!strcmp(PtEta.c_str(), "Pt")) inHist_p->SetXTitle("p_{T}^{gen}");
+  else inHist_p->SetXTitle("#eta_{gen}");
+
+  if(!strcmp(MeanRes.c_str(), "Mean")) inHist_p->SetYTitle("<p_{T}^{jet}/p_{T}^{gen}>");
+  else if(!strcmp(MeanRes.c_str(), "Res")) inHist_p->SetYTitle("#sigma_{reco/gen}");
+  else inHist_p->SetYTitle("Efficiency");
+
+  return;
+}
+
+
+void CleanTH1(TH1F* cleanHist_p)
+{
+  delete cleanHist_p;
+  cleanHist_p = 0;
 }
 
 
@@ -291,6 +282,8 @@ void makeDiJetIniHist(std::vector<std::string> inList, const std::string outName
   getLogBins(ptLower, ptHigher, nPtBins, ptBins);
   getEtaBins(etaLower, etaHigher, nEtaBins, etaBins);
 
+  Float_t effBinning[3] = {-.5, .5, 1.5};
+
   TH1F* pthatNoWeight_p = new TH1F("pthatNoWeight_h", "pthatNoWeight_h", 50, 0, 500);
   TH1F* pthatWeight_p = new TH1F("pthatWeight_h", "pthatWeight_h", 50, 0, 500);
   TH1F* temp_jetOverGen_Pt_p[nCentBins][nPtBins];
@@ -298,16 +291,13 @@ void makeDiJetIniHist(std::vector<std::string> inList, const std::string outName
   TH1F* temp_genEff_Pt_p[nCentBins][nPtBins];
   TH1F* temp_genEff_Eta_p[nCentBins][nPtBins];
 
-  Float_t effBinning[3] = {-.5, .5, 1.5};
-
   for(Int_t centIter = 0; centIter < nCentBins; centIter++){
     for(Int_t iter = 0; iter < nPtBins; iter++){
-      temp_jetOverGen_Pt_p[centIter][iter] = new TH1F(Form("%s_tempJetHist_Pt_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), Form("%s_tempJetHist_Pt_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), 200, 0, 2);
-      temp_jetOverGen_Eta_p[centIter][iter] = new TH1F(Form("%s_tempJetHist_Eta_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), Form("%s_tempJetHist_Eta_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), 200, 0, 2);
+      temp_jetOverGen_Pt_p[centIter][iter] = new TH1F(Form("%s_tempJetHist_Pt_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), Form("%s_tempJetHist_Pt_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), 200, 0, 5);
+      temp_jetOverGen_Eta_p[centIter][iter] = new TH1F(Form("%s_tempJetHist_Eta_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), Form("%s_tempJetHist_Eta_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), 200, 0, 5);
 
       temp_genEff_Pt_p[centIter][iter] = new TH1F(Form("%s_tempGenEffHist_Pt_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), Form("%s_tempGenEffHist_Pt_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), 2, effBinning);
       temp_genEff_Eta_p[centIter][iter] = new TH1F(Form("%s_tempGenEffHist_Eta_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), Form("%s_tempGenEffHist_Eta_%s_%d", alg.c_str(), centString[centIter].c_str(), iter), 2, effBinning);
-
     }
   }
 
@@ -320,40 +310,18 @@ void makeDiJetIniHist(std::vector<std::string> inList, const std::string outName
 
   for(Int_t centIter = 0; centIter < nCentBins; centIter++){
     jetOverGenMean_Pt_p[centIter] = new TH1F(Form("%s_jetOverGenMean_Pt_%s_h", alg.c_str(), centString[centIter].c_str()), Form("%s_jetOverGenMean_Pt_%s_h", alg.c_str(), centString[centIter].c_str()), nPtBins, ptBins);
-    handsomeTH1(jetOverGenMean_Pt_p[centIter]);
-    jetOverGenMean_Pt_p[centIter]->SetXTitle("p_{T}^{gen}");
-    jetOverGenMean_Pt_p[centIter]->GetXaxis()->SetTitleOffset(.75);
-    jetOverGenMean_Pt_p[centIter]->SetYTitle("<p_{T}^{jet}/p_{T}^{gen}>");
-
     jetOverGenMean_Eta_p[centIter] = new TH1F(Form("%s_jetOverGenMean_Eta_%s_h", alg.c_str(), centString[centIter].c_str()), Form("%s_jetOverGenMean_Eta_%s_h", alg.c_str(), centString[centIter].c_str()), nEtaBins, etaBins);
-    handsomeTH1(jetOverGenMean_Eta_p[centIter]);
-    jetOverGenMean_Eta_p[centIter]->SetXTitle("#eta_{gen}");
-    jetOverGenMean_Eta_p[centIter]->GetXaxis()->SetTitleOffset(.75);
-    jetOverGenMean_Eta_p[centIter]->SetYTitle("<p_{T}^{jet}/p_{T}^{gen}>");
-
     jetOverGenRes_Pt_p[centIter] = new TH1F(Form("%s_jetOverGenRes_Pt_%s_h", alg.c_str(), centString[centIter].c_str()), Form("%s_jetOverGenRes_Pt_%s_h", alg.c_str(), centString[centIter].c_str()), nPtBins, ptBins);
-    handsomeTH1(jetOverGenRes_Pt_p[centIter]);
-    jetOverGenRes_Pt_p[centIter]->SetXTitle("p_{T}^{gen}");
-    jetOverGenRes_Pt_p[centIter]->GetXaxis()->SetTitleOffset(.75);
-    jetOverGenRes_Pt_p[centIter]->SetYTitle("#sigma_{reco/gen}");
-
     jetOverGenRes_Eta_p[centIter] = new TH1F(Form("%s_jetOverGenRes_Eta_%s_h", alg.c_str(), centString[centIter].c_str()), Form("%s_jetOverGenRes_Eta_%s_h", alg.c_str(), centString[centIter].c_str()), nEtaBins, etaBins);
-    handsomeTH1(jetOverGenRes_Eta_p[centIter]);
-    jetOverGenRes_Eta_p[centIter]->SetXTitle("#eta_{gen}");
-    jetOverGenRes_Eta_p[centIter]->GetXaxis()->SetTitleOffset(.75);
-    jetOverGenRes_Eta_p[centIter]->SetYTitle("#sigma_{reco/gen}");
-
     genEff_Pt_p[centIter] = new TH1F(Form("%s_genEff_Pt_%s_h", alg.c_str(), centString[centIter].c_str()), Form("%s_genEff_Pt_%s_h", alg.c_str(), centString[centIter].c_str()), nPtBins, ptBins);
-    handsomeTH1(genEff_Pt_p[centIter]);
-    genEff_Pt_p[centIter]->SetXTitle("p_{T}^{gen}");
-    genEff_Pt_p[centIter]->GetXaxis()->SetTitleOffset(.75);
-    genEff_Pt_p[centIter]->SetYTitle("Efficiency");
-
     genEff_Eta_p[centIter] = new TH1F(Form("%s_genEff_Eta_%s_h", alg.c_str(), centString[centIter].c_str()), Form("%s_genEff_Eta_%s_h", alg.c_str(), centString[centIter].c_str()), nEtaBins, etaBins);
-    handsomeTH1(genEff_Eta_p[centIter]);
-    genEff_Eta_p[centIter]->SetXTitle("#eta_{gen}");
-    genEff_Eta_p[centIter]->GetXaxis()->SetTitleOffset(.75);
-    genEff_Eta_p[centIter]->SetYTitle("Efficiency");
+
+    InitHist(jetOverGenMean_Pt_p[centIter], "Pt", "Mean");
+    InitHist(jetOverGenMean_Eta_p[centIter], "Eta", "Mean");
+    InitHist(jetOverGenRes_Pt_p[centIter], "Pt", "Res");
+    InitHist(jetOverGenRes_Eta_p[centIter], "Eta", "Res");
+    InitHist(genEff_Pt_p[centIter], "Pt", "Eff");
+    InitHist(genEff_Eta_p[centIter], "Eta", "Eff");
   }
 
   for(Int_t jEntry = 0; jEntry <  getChain_p[0]->GetEntries(); jEntry++){
@@ -367,7 +335,7 @@ void makeDiJetIniHist(std::vector<std::string> inList, const std::string outName
 
     Float_t hatWeight = getHatWeight(pthat_, isPbPb);
     Int_t centPos = 0;
-    if(isPbPb) centPos = getCentPos(hiBin_);
+    if(isPbPb) centPos = posSearch(hiBin_, 9, centCutArray_F);
 
     pthatNoWeight_p->Fill(pthat_);
     pthatWeight_p->Fill(pthat_, hatWeight);
@@ -406,35 +374,29 @@ void makeDiJetIniHist(std::vector<std::string> inList, const std::string outName
 
   for(Int_t centIter = 0; centIter < nCentBins; centIter++){
     for(Int_t rawIter = 0; rawIter < nPtBins; rawIter++){
-
       if(temp_jetOverGen_Pt_p[centIter][rawIter]->GetEntries() != 0){
-	temp_jetOverGen_Pt_p[centIter][rawIter]->Fit("gaus", "Q WL");
+	Float_t minPt = temp_jetOverGen_Pt_p[centIter][rawIter]->GetMean() - temp_jetOverGen_Pt_p[centIter][rawIter]->GetRMS()*2;
+	Float_t maxPt = temp_jetOverGen_Pt_p[centIter][rawIter]->GetMean() + temp_jetOverGen_Pt_p[centIter][rawIter]->GetRMS()*2;
+	temp_jetOverGen_Pt_p[centIter][rawIter]->Fit("gaus", "Q WL R", "", minPt, maxPt);
 	jetOverGenMean_Pt_p[centIter]->SetBinContent(rawIter+1, temp_jetOverGen_Pt_p[centIter][rawIter]->GetFunction("gaus")->GetParameter(1));
 	jetOverGenRes_Pt_p[centIter]->SetBinContent(rawIter+1, temp_jetOverGen_Pt_p[centIter][rawIter]->GetFunction("gaus")->GetParameter(2));
-	
+
 	if(temp_jetOverGen_Pt_p[centIter][rawIter]->GetEntries() != 1){
 	  jetOverGenMean_Pt_p[centIter]->SetBinError(rawIter+1, temp_jetOverGen_Pt_p[centIter][rawIter]->GetFunction("gaus")->GetParError(1));
-	  jetOverGenRes_Pt_p[centIter]->SetBinError(rawIter+1, temp_jetOverGen_Pt_p[centIter][rawIter]->GetFunction("gaus")->GetParError(2));
-	  
-	  if(jetOverGenMean_Pt_p[centIter]->GetBinError(rawIter+1) > .05){
-	    std::cout << rawIter << ", " << ptBins[rawIter] << ", " << ptBins[rawIter+1] << ", " << jetOverGenMean_Pt_p[centIter]->GetBinContent(rawIter + 1) << ", " << jetOverGenMean_Pt_p[centIter]->GetBinError(rawIter+1) << std::endl;
-	  }
+	  jetOverGenRes_Pt_p[centIter]->SetBinError(rawIter+1, temp_jetOverGen_Pt_p[centIter][rawIter]->GetFunction("gaus")->GetParError(2));	 
 	}
       }
 
       if(temp_jetOverGen_Eta_p[centIter][rawIter]->GetEntries() != 0){
-        temp_jetOverGen_Eta_p[centIter][rawIter]->Fit("gaus", "Q WL");
+	Float_t minEta = temp_jetOverGen_Eta_p[centIter][rawIter]->GetMean() - temp_jetOverGen_Eta_p[centIter][rawIter]->GetRMS()*2;
+	Float_t maxEta = temp_jetOverGen_Eta_p[centIter][rawIter]->GetMean() + temp_jetOverGen_Eta_p[centIter][rawIter]->GetRMS()*2;
+        temp_jetOverGen_Eta_p[centIter][rawIter]->Fit("gaus", "Q WL R", "", minEta, maxEta);
         jetOverGenMean_Eta_p[centIter]->SetBinContent(rawIter+1, temp_jetOverGen_Eta_p[centIter][rawIter]->GetFunction("gaus")->GetParameter(1));
         jetOverGenRes_Eta_p[centIter]->SetBinContent(rawIter+1, temp_jetOverGen_Eta_p[centIter][rawIter]->GetFunction("gaus")->GetParameter(2));
 
         if(temp_jetOverGen_Eta_p[centIter][rawIter]->GetEntries() != 1){
           jetOverGenMean_Eta_p[centIter]->SetBinError(rawIter+1, temp_jetOverGen_Eta_p[centIter][rawIter]->GetFunction("gaus")->GetParError(1));
           jetOverGenRes_Eta_p[centIter]->SetBinError(rawIter+1, temp_jetOverGen_Eta_p[centIter][rawIter]->GetFunction("gaus")->GetParError(2));
-
-
-          if(jetOverGenMean_Eta_p[centIter]->GetBinError(rawIter+1) > .05){
-	    std::cout << rawIter << ", " << ptBins[rawIter] << ", " << ptBins[rawIter+1] << ", " << jetOverGenMean_Eta_p[centIter]->GetBinContent(rawIter + 1) << ", " << jetOverGenMean_Eta_p[centIter]->GetBinError(rawIter+1) << std::endl;
-          }
         }
       }
 
@@ -465,7 +427,7 @@ void makeDiJetIniHist(std::vector<std::string> inList, const std::string outName
     pthatWeight_p->SetXTitle("p_{T}^{#hat}");
     pthatWeight_p->GetXaxis()->SetTitleOffset(1.15);
     pthatWeight_p->SetYTitle("Event Fraction");
-    pthatWeight_p->Write();
+    pthatWeight_p->Write("", TObject::kOverwrite);
 
     pthatNoWeight_p->Scale(1./pthatNoWeight_p->Integral());
     handsomeTH1(pthatNoWeight_p);
@@ -473,60 +435,37 @@ void makeDiJetIniHist(std::vector<std::string> inList, const std::string outName
     pthatNoWeight_p->SetXTitle("p_{T}^{#hat}");
     pthatNoWeight_p->GetXaxis()->SetTitleOffset(1.15);
     pthatNoWeight_p->SetYTitle("Event Fraction");
-    pthatNoWeight_p->Write();
+    pthatNoWeight_p->Write("", TObject::kOverwrite);
   }
   for(Int_t centIter = 0; centIter < nCentBins; centIter++){
-    jetOverGenMean_Pt_p[centIter]->Write();
-    jetOverGenMean_Eta_p[centIter]->Write();
-    jetOverGenRes_Pt_p[centIter]->Write();
-    jetOverGenRes_Eta_p[centIter]->Write();
-    genEff_Pt_p[centIter]->Write();
-    genEff_Eta_p[centIter]->Write();
+    jetOverGenMean_Pt_p[centIter]->Write("", TObject::kOverwrite);
+    jetOverGenMean_Eta_p[centIter]->Write("", TObject::kOverwrite);
+    jetOverGenRes_Pt_p[centIter]->Write("", TObject::kOverwrite);
+    jetOverGenRes_Eta_p[centIter]->Write("", TObject::kOverwrite);
+    genEff_Pt_p[centIter]->Write("", TObject::kOverwrite);
+    genEff_Eta_p[centIter]->Write("", TObject::kOverwrite);
   }
   out->Close();
   delete out;
 
   for(Int_t centIter = 0; centIter < nCentBins; centIter++){
-    delete jetOverGenMean_Pt_p[centIter];
-    jetOverGenMean_Pt_p[centIter] = 0;
+    CleanTH1(jetOverGenMean_Pt_p[centIter]);
+    CleanTH1(jetOverGenMean_Eta_p[centIter]);
+    CleanTH1(jetOverGenRes_Pt_p[centIter]);
+    CleanTH1(jetOverGenRes_Eta_p[centIter]);
+    CleanTH1(genEff_Pt_p[centIter]);
+    CleanTH1(genEff_Eta_p[centIter]);
 
-    delete jetOverGenMean_Eta_p[centIter];
-    jetOverGenMean_Eta_p[centIter] = 0;
-
-    delete jetOverGenRes_Pt_p[centIter];
-    jetOverGenRes_Pt_p[centIter] = 0;
-
-    delete jetOverGenRes_Eta_p[centIter];
-    jetOverGenRes_Eta_p[centIter] = 0;
-
-    delete genEff_Pt_p[centIter];
-    genEff_Pt_p[centIter] = 0;
-
-    delete genEff_Eta_p[centIter];
-    genEff_Eta_p[centIter] = 0;
-  }
-
-  for(Int_t centIter = 0; centIter < nCentBins; centIter++){
     for(Int_t rawIter = 0; rawIter < nPtBins; rawIter++){
-      delete temp_jetOverGen_Pt_p[centIter][rawIter];
-      temp_jetOverGen_Pt_p[centIter][rawIter] = 0;   
-
-      delete temp_jetOverGen_Eta_p[centIter][rawIter];
-      temp_jetOverGen_Eta_p[centIter][rawIter] = 0;   
-
-      delete temp_genEff_Pt_p[centIter][rawIter];
-      temp_genEff_Pt_p[centIter][rawIter] = 0;
-
-      delete temp_genEff_Eta_p[centIter][rawIter];
-      temp_genEff_Eta_p[centIter][rawIter] = 0;
+      CleanTH1(temp_jetOverGen_Pt_p[centIter][rawIter]);
+      CleanTH1(temp_jetOverGen_Eta_p[centIter][rawIter]);
+      CleanTH1(temp_genEff_Pt_p[centIter][rawIter]);
+      CleanTH1(temp_genEff_Eta_p[centIter][rawIter]);
     }
   }
 
-  delete pthatWeight_p;
-  pthatWeight_p = 0;
-
-  delete pthatNoWeight_p;
-  pthatNoWeight_p = 0;
+  CleanTH1(pthatWeight_p);
+  CleanTH1(pthatNoWeight_p);
 
   CleanChain();
 
@@ -574,32 +513,6 @@ void drawLine(const std::string MeanRes, const std::string PtEta)
 }
 
 
-void plotDiJetIniHistRatVsPu(const char* histFileName, const char* PFCalo = "PF")
-{
-  TH1::SetDefaultSumw2();
-
-  TFile *f = new TFile(histFileName, "READ");
-  TH1F* getHist_p = (TH1F*)f->Get(Form("ak3%s_rawVsOverPu_h", PFCalo));
-  getHist_p->DrawCopy();
-  //  drawLine();
-
-  return;
-}
-
-
-void plotDiJetIniHistRatPFCalo(const char* histFileName, const char* VsPu = "Vs")
-{
-  TH1::SetDefaultSumw2();
-
-  TFile *f = new TFile(histFileName, "READ");
-  TH1F* getHist_p = (TH1F*)f->Get(Form("ak3%s_PFOverCalo_h", VsPu));
-  getHist_p->DrawCopy();
-  //  drawLine();
-
-  return;
-}
-
-
 void plotInitHist(TH1F* inHist_p)
 {
   inHist_p->GetXaxis()->SetTitleSize(0.07);
@@ -639,62 +552,39 @@ void plotDiJetIniHist_PYTH(const std::string histFileName, const std::string VsP
   TH1::SetDefaultSumw2();
   TFile *f = new TFile(histFileName.c_str(), "UPDATE");
 
-  std::cout << Form("ak%s3%s_jetOverGen%s_%s_PP_h", VsPu.c_str(), PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()) << std::endl;
-
   Float_t max = getHistMax(MeanRes);
   Float_t min = getHistMin(MeanRes);
 
-  TH1F* getHist2_p = (TH1F*)f->Get(Form("ak%s2%s_jetOverGen%s_%s_PP_h", VsPu.c_str(), PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()));
-  getHist2_p->SetMaximum(max);
-  getHist2_p->SetMinimum(min);
+  TH1F* getHist_p[4];
 
-  TH1F* getHist3_p = (TH1F*)f->Get(Form("ak%s3%s_jetOverGen%s_%s_PP_h", VsPu.c_str(), PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()));
-  getHist3_p->SetMaximum(max);
-  getHist3_p->SetMinimum(min);
-
-  TH1F* getHist4_p = (TH1F*)f->Get(Form("ak%s4%s_jetOverGen%s_%s_PP_h", VsPu.c_str(), PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()));
-  getHist4_p->SetMaximum(max);
-  getHist4_p->SetMinimum(min);
-
-  TH1F* getHist5_p = (TH1F*)f->Get(Form("ak%s5%s_jetOverGen%s_%s_PP_h", VsPu.c_str(), PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()));
-  getHist5_p->SetMaximum(max);
-  getHist5_p->SetMinimum(min);
+  for(Int_t iter = 0; iter < 4; iter++){
+    getHist_p[iter] = (TH1F*)f->Get(Form("ak%s%d%s_jetOverGen%s_%s_PP_h", VsPu.c_str(), iter+2, PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()));
+    getHist_p[iter]->SetMaximum(max);
+    getHist_p[iter]->SetMinimum(min);
+    plotInitHist(getHist_p[iter]);
+  }
 
   TCanvas* plotCanv_p = new TCanvas(Form("ak%s%s_jetOverGen%s_%s_PP_c", VsPu.c_str(), PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()), Form("ak%s%s_jetOverGen%s_%s_PP_c", VsPu.c_str(), PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()), 4*300, 1*350);
   plotCanv_p->Divide(4, 1, 0.0, 0.0);
-
-  plotInitHist(getHist2_p);
-  plotInitHist(getHist3_p);
-  plotInitHist(getHist4_p);
-  plotInitHist(getHist5_p);
-
-  plotCanv_p->cd(1);
-  drawGenHist(getHist2_p, MeanRes, PtEta);
 
   TLatex* label_p = new TLatex();
   label_p->SetNDC();
   label_p->SetTextFont(43);
   label_p->SetTextSizePixels(23);
 
-  label_p->DrawLatex(.5, .9, Form("ak%s2%s", VsPu.c_str(), PFCalo.c_str()));
+  for(Int_t iter = 0; iter < 4; iter++){
+    plotCanv_p->cd(iter+1);
+    drawGenHist(getHist_p[iter], MeanRes, PtEta);
+    label_p->DrawLatex(.5, .9, Form("ak%s%d%s", VsPu.c_str(), iter+2, PFCalo.c_str()));
 
-  if(!strcmp(PtEta.c_str(), "Pt")) label_p->DrawLatex(.5, .80, Form("p_{T}^{gen} > 20 GeV/c"));
-  else label_p->DrawLatex(.5, .80, Form("p_{T}^{gen} > 50 GeV/c"));
+    if(iter == 0){
+      if(!strcmp(PtEta.c_str(), "Pt")) label_p->DrawLatex(.5, .80, Form("p_{T}^{gen} > 20 GeV/c"));
+      else label_p->DrawLatex(.5, .80, Form("p_{T}^{gen} > 50 GeV/c"));
+    }
 
-  plotCanv_p->cd(2);
-  drawGenHist(getHist3_p, MeanRes, PtEta);
-  label_p->DrawLatex(.5, .9, Form("ak%s3%s", VsPu.c_str(), PFCalo.c_str()));
-  label_p->DrawLatex(.5, .80, Form("|#eta| < 2.0"));
-
-  plotCanv_p->cd(3);
-  drawGenHist(getHist4_p, MeanRes, PtEta);
-  label_p->DrawLatex(.6, .9, Form("ak%s4%s", VsPu.c_str(), PFCalo.c_str()));
-  label_p->DrawLatex(.6, .80, "PYTHIA");
-
-  plotCanv_p->cd(4);
-  drawGenHist(getHist5_p, MeanRes, PtEta);
-  label_p->DrawLatex(.6, .9, Form("ak%s5%s", VsPu.c_str(), PFCalo.c_str()));
-  label_p->DrawLatex(.6, .80, "PYTHIA");
+    if(iter == 1) label_p->DrawLatex(.5, .80, Form("|#eta| < 2.0"));
+    if(iter == 2) label_p->DrawLatex(.6, .80, "PYTHIA");
+  }
 
   plotCanv_p->Write("", TObject::kOverwrite);
   claverCanvasSaving(plotCanv_p, Form("pdfDir/ak%s%s_jetOverGen%s_%s_PP", VsPu.c_str(), PFCalo.c_str(), MeanRes.c_str(), PtEta.c_str()), "pdf");
@@ -724,60 +614,26 @@ void plotDiJetIniHist_PYTHHYD(const std::string histFileName, const std::string 
   TCanvas* plotCanv_p = new TCanvas(Form("%s_jetOverGen%s_%s_PbPb_c", alg.c_str(), MeanRes.c_str(), PtEta.c_str()), Form("%s_jetOverGen%s_%s_PbPb_c", alg.c_str(), MeanRes.c_str(), PtEta.c_str()), 4*300, 2*350);
   plotCanv_p->Divide(4, 2, 0.0, 0.0);
 
-  for(Int_t iter = 0; iter < 8; iter++){
-    plotInitHist(getHist_p[iter]);
-  }
-
-  plotCanv_p->cd(1);
-  drawGenHist(getHist_p[7], MeanRes, PtEta);
-
   TLatex* label_p = new TLatex();
   label_p->SetNDC();
   label_p->SetTextFont(43);
   label_p->SetTextSizePixels(23);
 
-  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
-  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[7]/2, centCutArray[8]/2));
-  if(!strcmp(PtEta.c_str(), "Pt")) label_p->DrawLatex(.5, .70, Form("p_{T}^{gen} > 20 GeV/c"));
-  else label_p->DrawLatex(.5, .70, Form("p_{T}^{gen} > 50 GeV/c"));
+  for(Int_t iter = 0; iter < 8; iter++){
+    plotInitHist(getHist_p[iter]);
+    plotCanv_p->cd(iter+1);
+    drawGenHist(getHist_p[7-iter], MeanRes, PtEta);
+    label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
+    label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[7-iter]/2, centCutArray[8-iter]/2));
 
-  plotCanv_p->cd(2);
-  drawGenHist(getHist_p[6], MeanRes, PtEta);
-  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
-  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[6]/2, centCutArray[7]/2));
-  label_p->DrawLatex(.5, .70, Form("|#eta| < 2.0"));
+    if(iter == 0){
+      if(!strcmp(PtEta.c_str(), "Pt")) label_p->DrawLatex(.5, .70, Form("p_{T}^{gen} > 20 GeV/c"));
+      else label_p->DrawLatex(.5, .70, Form("p_{T}^{gen} > 50 GeV/c"));
+    }
 
-  plotCanv_p->cd(3);
-  drawGenHist(getHist_p[5], MeanRes, PtEta);
-  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
-  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[5]/2, centCutArray[6]/2));
-  label_p->DrawLatex(.5, .70, "PYT+HYD");
-
-  plotCanv_p->cd(4);
-  drawGenHist(getHist_p[4], MeanRes, PtEta);
-  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
-  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[4]/2, centCutArray[5]/2));
-
-  plotCanv_p->cd(5);
-  drawGenHist(getHist_p[3], MeanRes, PtEta);
-  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
-  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[3]/2, centCutArray[4]/2));
-
-  plotCanv_p->cd(6);
-  drawGenHist(getHist_p[2], MeanRes, PtEta);
-  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
-  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[2]/2, centCutArray[3]/2));
-
-  plotCanv_p->cd(7);
-  drawGenHist(getHist_p[1], MeanRes, PtEta);
-  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
-  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[1]/2, centCutArray[2]/2));
-
-  plotCanv_p->cd(8);
-  drawGenHist(getHist_p[0], MeanRes, PtEta);
-  label_p->DrawLatex(.5, .90, Form("%s", alg.c_str()));
-  label_p->DrawLatex(.5, .80, Form("%d-%d%%", centCutArray[0]/2, centCutArray[1]/2));
-
+    if(iter == 1) label_p->DrawLatex(.5, .70, Form("|#eta| < 2.0"));
+    if(iter == 2) label_p->DrawLatex(.5, .70, "PYT+HYD");
+  }
 
   plotCanv_p->Write("", TObject::kOverwrite);
   claverCanvasSaving(plotCanv_p, Form("pdfDir/%s_jetOverGen%s_%s", alg.c_str(), MeanRes.c_str(), PtEta.c_str()), "pdf");
@@ -790,109 +646,34 @@ void plotDiJetIniHist_PYTHHYD(const std::string histFileName, const std::string 
 }
 
 
-void plotDiJetIniHistCent(const char* histFileName, const char* VsPu = "Vs", const char* PFCalo = "Calo")
-{
-  TH1::SetDefaultSumw2();
-
-  TFile *f = new TFile(histFileName, "READ");
-
-  TH1F* get3Hist_p = (TH1F*)f->Get(Form("ak%s3%s_cent_h", VsPu, PFCalo));
-  TH1F* get4Hist_p = (TH1F*)f->Get(Form("ak%s4%s_cent_h", VsPu, PFCalo));
-  TH1F* get5Hist_p = (TH1F*)f->Get(Form("ak%s5%s_cent_h", VsPu, PFCalo));
-
-  get3Hist_p->SetMaximum(1.0);
-  get3Hist_p->SetMinimum(0.6);
-  get3Hist_p->SetXTitle("hiBin");
-  get3Hist_p->GetXaxis()->SetTitleOffset(.75);
-  get3Hist_p->SetYTitle("p^{raw}_{T}/p^{gen}_{T}");
-  TCanvas* plotCanv_p = new TCanvas(Form("eqCheck_ak%s#%s", VsPu, PFCalo), Form("eqCheck_ak%s%s", VsPu, PFCalo), 1);
-  get3Hist_p->DrawCopy();
-
-  get4Hist_p->SetMarkerColor(kRed);
-  get4Hist_p->SetLineColor(kRed);
-  get4Hist_p->DrawCopy("SAME");
-
-  get5Hist_p->SetMarkerColor(kBlue);
-  get5Hist_p->SetLineColor(kBlue);
-  get5Hist_p->DrawCopy("SAME");
-
-  TLegend* leg = new TLegend(.6, .6, .8, .8);
-  leg->SetFillColor(0);
-  leg->SetFillStyle(0);
-  leg->SetTextFont(43);
-  leg->SetTextSizePixels(28);
-  leg->SetBorderSize(0);			
-
-  leg->AddEntry(get3Hist_p, "R = 0.3");
-  leg->AddEntry(get4Hist_p, "R = 0.4");
-  leg->AddEntry(get5Hist_p, "R = 0.5");
-
-  leg->Draw("SAME");
-
-  TLatex* label_p = new TLatex();
-  label_p->SetNDC();
-  label_p->SetTextFont(43);
-  label_p->SetTextSizePixels(28);
-
-  label_p->DrawLatex(.6, .82, Form("ak%s#%s", VsPu, PFCalo));  
-
-  claverCanvasSaving(plotCanv_p, Form("pdfDir/eqCheck_ak%s%s", VsPu, PFCalo), "pdf");
-
-  return;
-}
-
-
 void runPlotDiJetIniHist_PYTH(const std::string histFileName)
 {
-  const std::string PtEta[2] = {"Pt", "Eta"};
-  const std::string MeanRes[2] = {"Mean", "Res"};
-
-  for(Int_t ptEtaIter = 0; ptEtaIter < 2; ptEtaIter++){
-    for(Int_t meanResIter = 0; meanResIter < 2; meanResIter++){
-      plotDiJetIniHist_PYTH(histFileName, "", "PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTH(histFileName, "", "Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      
-      plotDiJetIniHist_PYTH(histFileName, "Vs", "PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTH(histFileName, "Vs", "Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      
-      plotDiJetIniHist_PYTH(histFileName, "Pu", "PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTH(histFileName, "Pu", "Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);
+  for(Int_t pfCaloIter = 0; pfCaloIter < 2; pfCaloIter++){
+    for(Int_t ptEtaIter = 0; ptEtaIter < 2; ptEtaIter++){
+      for(Int_t meanResIter = 0; meanResIter < 2; meanResIter++){
+	for(Int_t puVsIter = 0; puVsIter < 3; puVsIter++){
+	  plotDiJetIniHist_PYTH(histFileName, PuVsString[puVsIter], PFCaloString[pfCaloIter], MeanResString[meanResIter], PtEtaString[ptEtaIter]);
+	}
+      }
     }
   }
-
   return;
 }
 
 
 void runPlotDiJetIniHist_PYTHHYD(const std::string histFileName)
 {
-  const std::string PtEta[2] = {"Pt", "Eta"};
-  const std::string MeanRes[2] = {"Mean", "Res"};
-
   for(Int_t ptEtaIter = 0; ptEtaIter < 2; ptEtaIter++){
     for(Int_t meanResIter = 0; meanResIter < 2; meanResIter++){
-      plotDiJetIniHist_PYTHHYD(histFileName, "akVs3PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTHHYD(histFileName, "akVs3Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);      
-      plotDiJetIniHist_PYTHHYD(histFileName, "akPu3PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTHHYD(histFileName, "akPu3Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);
-
-      plotDiJetIniHist_PYTHHYD(histFileName, "akVs3PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTHHYD(histFileName, "akVs3Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);      
-      plotDiJetIniHist_PYTHHYD(histFileName, "akPu3PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTHHYD(histFileName, "akPu3Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);
-
-      plotDiJetIniHist_PYTHHYD(histFileName, "akVs4PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTHHYD(histFileName, "akVs4Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);      
-      plotDiJetIniHist_PYTHHYD(histFileName, "akPu4PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTHHYD(histFileName, "akPu4Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      
-      plotDiJetIniHist_PYTHHYD(histFileName, "akVs5PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTHHYD(histFileName, "akVs5Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);      
-      plotDiJetIniHist_PYTHHYD(histFileName, "akPu5PF", MeanRes[meanResIter], PtEta[ptEtaIter]);
-      plotDiJetIniHist_PYTHHYD(histFileName, "akPu5Calo", MeanRes[meanResIter], PtEta[ptEtaIter]);
-    }    
+      for(Int_t puVsIter = 0; puVsIter < 2; puVsIter++){
+	for(Int_t pfCaloIter = 0; pfCaloIter < 2; pfCaloIter++){
+	  for(Int_t numIter = 1; numIter < 2; numIter++){
+	    plotDiJetIniHist_PYTHHYD(histFileName, Form("ak%s%d%s", PuVsString[puVsIter+1].c_str(), numIter+2, PFCaloString[pfCaloIter].c_str()), MeanResString[meanResIter], PtEtaString[ptEtaIter]);
+	  }
+	}
+      }    
+    }
   }
-
   return;
 }
 
@@ -927,50 +708,19 @@ int runMakeDiJetIniHist(std::string fList = "", const char* outFileName = "raw_r
     }
   }
   else{
-    for(Int_t iter = 0; iter < 4; iter++){
+    for(Int_t iter = 0; iter < 8; iter++){
       std::cout << ptHatWeights_PYTHHYD[iter] << std::endl;
     }
   }
 
-  if(!isPbPb){
-    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak2PF", isPbPb);
-    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak2Calo", isPbPb);
+  for(Int_t numIter = 1; numIter < 2; numIter++){
+    for(Int_t pfCaloIter = 0; pfCaloIter < 2; pfCaloIter++){
+      if(!isPbPb) makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), Form("ak%d%s", numIter+2, PFCaloString[pfCaloIter].c_str()), isPbPb);
+      
+      makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), Form("akVs%d%s", numIter+2, PFCaloString[pfCaloIter].c_str()), isPbPb);
+      makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), Form("akPu%d%s", numIter+2, PFCaloString[pfCaloIter].c_str()), isPbPb);
+    }    
   }
-  
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs2PF", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu2PF", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs2Calo", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu2Calo", isPbPb);
-
-  if(!isPbPb){
-    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak3PF", isPbPb);
-    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak3Calo", isPbPb);
-  }
-  
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs3PF", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu3PF", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs3Calo", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu3Calo", isPbPb);
-
-  if(!isPbPb){
-    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak4PF", isPbPb);
-    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak4Calo", isPbPb);
-  }
-
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs4PF", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu4PF", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs4Calo", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu4Calo", isPbPb);
-
-  if(!isPbPb){
-    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak5PF", isPbPb);
-    makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "ak5Calo", isPbPb);
-  }
-
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs5PF", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu5PF", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akVs5Calo", isPbPb);
-  makeDiJetIniHist(listOfFiles, Form("%s.root", outFileName), "akPu5Calo", isPbPb);
 
   return(0);
 }
