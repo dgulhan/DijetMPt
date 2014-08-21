@@ -138,14 +138,19 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     return 1;
   }
   else{
-    while(!inFile.eof()){
+    while(true){
       inFile >> buffer;
+      if(inFile.eof()) break;
       listOfFiles.push_back(buffer);
       nLines++;
     }
   }
 
   std::cout << "FileList Loaded" << std::endl;
+
+  for(Int_t iter = 0; iter < (Int_t)(listOfFiles.size()); iter++){
+    std::cout << listOfFiles[iter] << std::endl;
+  }
 
   //Setup correction tables
 
@@ -158,7 +163,9 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     InitCorrHists(sType);
   }
 
-  HiForest *c = new HiForest(listOfFiles[0].data(), "Forest", cType, montecarlo);
+  std::cout << "JobFile: " << listOfFiles[num] << std::endl;
+
+  HiForest *c = new HiForest(listOfFiles[num].data(), "Forest", cType, montecarlo);
 
   c->InitTree();
 
