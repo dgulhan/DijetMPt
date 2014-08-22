@@ -14,7 +14,11 @@
 #include "TComplex.h"
 
 
-int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETANASKIM.root", Int_t num = 0, Bool_t justJt = false)
+Int_t pthatCuts_PYTH_HITrk[10] = {15, 30, 50, 80, 120, 170, 220, 280, 370, 10000000};
+Float_t pthatWeights_PYTH_HITrk[9] = {.551019, .034814, .00242254, .000304825, .0000426788, .00000492814, .000000879673, .00000017353, .0000000292439};
+
+
+int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETANASKIM.root", Int_t num = 0, Bool_t justJt = false, Bool_t isHITrk = false)
 {
   //Define MC or Data
   Bool_t montecarlo = isMonteCarlo(sType);
@@ -36,8 +40,9 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
     return 1;
   }
   else{
-    while(!inFile.eof()){
+    while(true){
       inFile >> buffer;
+      if(inFile.eof()) break;
       listOfFiles.push_back(buffer);
       nLines++;
     }
@@ -45,7 +50,13 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 
   std::cout << "FileList Loaded" << std::endl;
 
-  TFile* iniSkim_p = new TFile(listOfFiles[0].data(), "READ");
+  for(Int_t iter = 0; iter < (Int_t)(listOfFiles.size()); iter++){
+    std::cout << listOfFiles[iter] << std::endl;
+  }
+
+  std::cout << "FileJob: " << listOfFiles[num] << std::endl;
+
+  TFile* iniSkim_p = new TFile(listOfFiles[num].data(), "READ");
 
   GetDiJetIniSkim(iniSkim_p, sType, justJt);
 
@@ -53,7 +64,7 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 
   //Setup correction tables
 
-  InitCorrFiles(sType);
+  InitCorrFiles(sType, isHITrk);
   InitCorrHists(sType);
 
   TFile *centHistFile_80_p = new TFile("centHist_eventSet_80.root", "READ");
@@ -129,13 +140,10 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
       psin_ = psinIni_;
     }
 
-    if(montecarlo){
-      Float_t pthatWeights[5] = {4.29284e-01, 2.99974e-02, 3.38946e-04, 1.06172e-04, 2.79631e-05};
-      Float_t pthatCuts[6] = {30, 50, 80, 100, 120, 100000};
-
-      for(Int_t hatIter = 0; hatIter < 5; hatIter++){
-	if(pthat_ > pthatCuts[hatIter] && pthat_ < pthatCuts[hatIter + 1]){
-	  pthatWeight_ = pthatWeights[hatIter];
+    if(montecarlo && isHITrk){
+      for(Int_t hatIter = 0; hatIter < 9; hatIter++){
+	if(pthat_ > pthatCuts_PYTH_HITrk[hatIter] && pthat_ < pthatCuts_PYTH_HITrk[hatIter + 1]){
+	  pthatWeight_ = pthatWeights_PYTH_HITrk[hatIter];
 	  break;
 	}
       }
@@ -256,15 +264,15 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 
 int main(int argc, char *argv[])
 {
-  if(argc != 6)
+  if(argc != 7)
     {
-      std::cout << "Usage: sortForest <inputFile> <sampleType> <outputFile> <#> <justJtBool>" << std::endl;
+      std::cout << "Usage: sortForest <inputFile> <sampleType> <outputFile> <#> <justJtBool> <isHITrk>" << std::endl;
       return 1;
     }
 
   int rStatus = -1;
 
-  rStatus = makeDiJetAnaSkim(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]), Bool_t(atoi(argv[5])));
+  rStatus = makeDiJetAnaSkim(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]), Bool_t(atoi(argv[5])), Bool_t(atoi(argv[6])));
 
   return rStatus;
 }

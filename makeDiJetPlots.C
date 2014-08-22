@@ -931,7 +931,7 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
   for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
       for(Int_t corrIter = 0; corrIter < 2; corrIter++){
-	for(Int_t CNCRIter = 0; CNCRIter < 3; CNCRIter++){
+	for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1)
 	    continue;
 

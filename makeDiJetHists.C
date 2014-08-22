@@ -1,4 +1,4 @@
-//=============================================                                                
+ //=============================================                                                
 // Author: Chris McGinn                                                                        
 //                                                                                             
 // DiJet Histogram Maker, Missing Pt                                                              
@@ -8,7 +8,7 @@
 #include "TTree.h"
 #include "TDatime.h"
 #include "TFile.h"
-#include "diJetFileTag_EXP.h"
+#include "diJetFileTag.h"
 #include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_12_patch3/src/DijetAnalysisSkim/cfmDiJetAnaSkim.h"
 #include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_12_patch3/src/DijetInitialSkim/cfmVectFunc.h"
 
@@ -94,6 +94,37 @@ Bool_t isEventCut(Int_t setNum, sampleType sType, Int_t centLow, Int_t centHi, B
   if(isMonteCarlo(sType) && pthat_ < 80) return true;
 
   return false;
+}
+
+
+void makeMultAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t centLow, Int_t centHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+{
+  Int_t setCorrNum = setNum;
+  if(!strcmp("Corr", Corr))
+    setCorrNum = setNum + 3;
+
+  const Int_t nBins = retBinNumber(Tight);
+  Float_t xArr[nBins+1];
+  Float_t xArrCut[nBins+1];
+
+  if(nBins == 4) getBinArr(nBins, xArr, xArrCut, loose);
+  else if(nBins == 8) getBinArr(nBins, xArr, xArrCut, tight);
+
+  const char* centString = getCentString(sType, centLow, centHi);
+
+  const char* title = Form("r%sMultA%s%s_%s_%s_h", algType[setNum], Corr, Tight, centString, fileTag);
+  TH1F* rMultAHist_p = 0;
+  rMultAHist_p = new TH1F(Form("rMultAHist_p"), Form("rMultAHist_p"), nBins, xArr);
+  rMultAHist_p->GetXaxis()->SetLimits(0.00, 0.50);
+  niceTH1(rMultAHist_p, niceNumCNC[0], niceNumCNC[1], niceNumCNC[2], niceNumCNC[3]);
+  std::vector<Float_t>* mean_rMultA_p[nBins];
+ 
+  for(Int_t iter = 0; iter < nBins; iter++){
+    mean_rMultA_p[iter] = new std::vector<Float_t>;
+  }
+
+
+
 }
 
 
@@ -420,7 +451,7 @@ void makeImbARHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t ce
 }
 
 
-int makeDiJetHists_EXP(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+int makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
   TH1::SetDefaultSumw2();
   Bool_t montecarlo = isMonteCarlo(sType);

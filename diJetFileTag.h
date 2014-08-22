@@ -6,23 +6,6 @@
 #include "TH1F.h"
 #include "TCut.h"
 
-enum sampleType{
-  kHIDATA, //0                                                                                                  
-  kHIMC,   //1                                                                                               
-  kPPDATA, //2                                                                                                  
-  kPPMC,   //3                                                                                                
-  kPADATA, //4                                                                                                   
-  kPAMC    //5                                                                                                  
-};
-
-enum AlgoType_PbPb{
-  PuCalo, //0
-  VsCalo, //1
-  T       //3
-};
-
-const char* algType[3] = {"PuCalo", "VsCalo", "T"};
-
 const char* fileTag;
 
 const char* Di30a = "HydjetDrum_Pyquen_Dijet30_FOREST_Track8_Jet24_FixedPtHatJES_v0_0_CFMSKIM_20140423_0.root";
@@ -68,23 +51,16 @@ const char* DataF_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4-merg
 const char* DataG_JtCutDown = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMSKIM_20140508_jtCutDown_0.root";
 
 
-const char* TESTPbPb = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_CFMANASKIM_20140612_0.root";
+const char* TESTMixing = "testJtANA_30CHECK_3rdJet_0.root";
+const char* TESTPbPb = "HIRun2011-14Mar2014-v2-6lumi-jet80-forest-v4ANDv9-merged_0_DIJETANASKIM_20140619_CHECK_0.root";
 const char* TESTPP = "HiForest_pp_Jet80_v8_PP2013_HiForest_PromptReco_JsonPP_Jet80_PPReco_merged_forest_0_CFMANASKIM_20140612_0.root";
+
+const char* TESTPbPbMC = "HydjetDrum_Pyquen_DijetMerge_FOREST_Track8_Jet24_FixedPtHatJES_v0_0_CFMANASKIM_20140618_0.root";
+const char* TESTPPMC = "HiForest_pt80_PYTHIA_ppReco_JECv85_merged_forest_0_DIJETANASKIM_20140618_0.root";
+const char* TESTPPMCGEN = "pt80_pp2013_P01_prod22_v81_merged_forest_0_DIJETANASKIM_20140703_0.root";
 
 const char* name1[10] = {"0(10000, -10000, 10000)", "1(10000, -10000, 10000)", "2(10000, -10000, 10000)", "3(10000, -10000, 10000)", "4(10000, -10000, 10000)", "5(10000, -10000, 10000)", "6(10000, -10000, 10000)", "7(10000, -1000, 10000)", "8(10000, -1000, 10000)", "9(10000, -1000, 10000)"};
 const char* name2[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-
-Float_t leadJtCut = 120.;
-Float_t subLeadJtCut = 50.;
-
-TCut setCut = "";
-TCut centCut = "";
-TCut etaCut = "";
-TCut phiCut = "";
-TCut jetLCut = "";
-TCut jetSLCut = "";
-TCut pthat = "";
-TCut trkCut = "";
 
 void setFileTag(const char* inName)
 {
@@ -212,6 +188,10 @@ void setFileTag(const char* inName)
     std::cout << DataG_JtCutDown << std::endl;
     fileTag = "DataG_JtCutDown";
   }
+  else if(!strcmp(inName, TESTMixing)){
+    std::cout << TESTMixing << std::endl;
+    fileTag = "TESTMixing";
+  }
   else if(!strcmp(inName, TESTPbPb)){
     std::cout << TESTPbPb << std::endl;
     fileTag = "TESTPbPb";
@@ -220,30 +200,22 @@ void setFileTag(const char* inName)
     std::cout << TESTPP << std::endl;
     fileTag = "TESTPP";
   }
+  else if(!strcmp(inName, TESTPbPbMC)){
+    std::cout << TESTPbPbMC << std::endl;
+    fileTag = "TESTPbPbMC";
+  }
+  else if(!strcmp(inName, TESTPPMC)){
+    std::cout << TESTPPMC << std::endl;
+    fileTag = "TESTPPMC";
+  }
+  else if(!strcmp(inName, TESTPPMCGEN)){
+    std::cout << TESTPPMCGEN << std::endl;
+    fileTag = "TESTPPMCGEN";
+  }
 
   std::cout << "fileTag is: " << fileTag << std::endl;
 
   return;
-}
-
-
-Float_t getDPHI( Float_t phi1, Float_t phi2){
-  Float_t dphi = phi1 - phi2;
-
-  if(dphi > TMath::Pi())
-    dphi = dphi - 2.*(TMath::Pi());
-  if(dphi <= -(TMath::Pi()) )
-    dphi = dphi + 2.*(TMath::Pi());
-
-  if(TMath::Abs(dphi) > TMath::Pi())
-    std::cout << " commonUtility::getDPHI error!!! dphi is bigger than TMath::Pi() " << std::endl;
-
-  return dphi;
-}
-
-
-Float_t getAbsDphi(Float_t phi1, Float_t phi2){
-  return TMath::Abs(getDPHI(phi1, phi2));
 }
 
 
@@ -285,7 +257,7 @@ void niceTH1N(TH1F* uglyTH1, float max, float min, float ndivX, float ndivY, Int
 
 Bool_t checkSetRange(Int_t setNum)
 {
-  if(setNum > 2 || setNum < 0){
+  if(setNum > 4 || setNum < 0){
     std::cout << "checkSetRange: setNum must be between 0-2, empty cut returned" << std::endl;
     return false;
   }
@@ -300,138 +272,6 @@ Bool_t checkCentRange(Int_t centLow, Int_t centHi){
     std::cout << "checkCentRange: centLow/centHi incorrectly specified, empty cut returned" << std::endl;
     return false;
   }
-}
-
-
-TCut makeSetCut(Int_t setNum)
-{
-  if(!checkSetRange(setNum))
-    return "";
-
-  return Form("eventSet[%d]", setNum);
-}
-
-
-TCut makeCentCut(Int_t centLow, Int_t centHi)
-{
-  if(checkCentRange(centLow, centHi))
-    return Form("hiBin >= %d && hiBin <= %d", centLow, centHi);
-  else{
-    std::cout << "makeCentCut: centLow/centHi incorrectly specified, empty cut returned" << std::endl;
-    return "";
-  }
-}
-
-
-TCut makeAsymmCut(Int_t setNum, Float_t asymmLow, Float_t asymmHi)
-{
-  if(!checkSetRange(setNum))
-    return "";
-
-  const char* cutVar = Form("AlgJtAsymm[%d]", setNum);
-
-  if(asymmLow >= .00 && asymmHi >= asymmLow && asymmHi <= 1.)
-    return Form("%s > %f && %s < %f ", cutVar, asymmLow, cutVar, asymmHi);
-  else{
-    std::cout << "makeAsymmCut: asymmLow/asymmHi incorrectly specified, empty cut returned" << std::endl;
-    return "";
-  }
-}
-
-
-void setAsymmPercBins(Float_t asymmArr[], Int_t centLow, Int_t centHi, sampleType sType = kHIDATA, const char* Tight = "")
-{
-  if(!checkCentRange(centLow, centHi))
-    return;
-
-  Float_t AjTightPP[7] = {.0408, .0790, .1183, .1609, .2097, .2662, .3403};
-  Float_t AjTight010[7] = {.0566, .1078, .1582, .2083, .2626, .3223, .3888};
-  Float_t AjTight1030[7] = {.0527, .1012, .1460, .1954, .2494, .3089, .3817};
-  Float_t AjTight3050[7] = {.0487, .0911, .1354, .1808, .2317, .2916, .3635};
-  Float_t AjTight50100[7] = {.0463, .0854, .1228, .1644, .2173, .2772, .3509};
-  Float_t AjTight030[7] = {.0543, .1042, .1514, .2011, .2554, .3149, .3848};
-  Float_t AjTight30100[7] = {.0480, .0893, .1311, .1757, .2278, .2891, .3611};
-
-  Int_t AjBins = 3;
-
-  if(!strcmp(Tight, "Tight"))
-    AjBins = 7;
-
-  for(Int_t AjIter = 0; AjIter < AjBins; AjIter++){
-    Int_t AjIter2 = AjIter;
-    if(!strcmp(Tight, ""))
-      AjIter2 = AjIter*2 + 1;
-
-    if(sType == kPPDATA || sType == kPPMC)
-      asymmArr[AjIter+1] = AjTightPP[AjIter2];
-    else if(centLow == 0 && centHi == 19)
-      asymmArr[AjIter+1] = AjTight010[AjIter2];
-    else if(centLow == 20 && centHi == 59)
-      asymmArr[AjIter+1] = AjTight1030[AjIter2];
-    else if(centLow == 60 && centHi == 99)
-      asymmArr[AjIter+1] = AjTight3050[AjIter2];
-    else if(centLow == 100 && centHi == 199)
-      asymmArr[AjIter+1] = AjTight50100[AjIter2];
-    else if(centLow == 0 && centHi == 59)
-      asymmArr[AjIter+1] = AjTight030[AjIter2];
-    else if(centLow == 60 && centHi == 199)
-      asymmArr[AjIter+1] = AjTight30100[AjIter2];
-  }
-
-  return;
-}
-
-
-TCut makeEtaCut(Int_t setNum, Float_t overallCut = 2.0)
-{
-  if(!checkSetRange(setNum))
-    return "";
-
-  const char* leadJt = Form("AlgJtEta[%d][0]", setNum);
-  const char* subLeadJt = Form("AlgJtEta[%d][1]", setNum);
-
-  return Form("TMath::Abs(%s) < %f && TMath::Abs(%s) < %f", leadJt, overallCut, subLeadJt, overallCut);
-}
-
-
-TCut makeDelPhiCut(Int_t setNum, Float_t delPhiLow = 0)
-{
-  if(!checkSetRange(setNum))
-    return "";
-
-  const char* jtDelPhi = Form("AlgJtDelPhi[%d]", setNum);
-
-  return Form("%s > %f", jtDelPhi, delPhiLow);
-}
-
-
-void InitCuts()
-{
-  setCut = "";
-  centCut = "";
-  etaCut = "";
-  phiCut = "";
-  jetLCut = "";
-  jetSLCut = "";
-  pthat = "";
-  trkCut = "";
-
-  return;
-}
-
-
-void SetCuts(Int_t setNum, sampleType sType = kHIDATA, Int_t centLow = 0, Int_t centHi = 199, Bool_t isHighPtTrk = false, Float_t etaNum = 1.6, Float_t phiNum = 5*TMath::Pi()/6, Float_t LJtNum = 120., Float_t SLJtNum = 50.)
-{
-  setCut = makeSetCut(setNum);
-  if(sType == kHIDATA || sType == kHIMC)  centCut = makeCentCut(centLow, centHi);
-  etaCut = makeEtaCut(setNum, etaNum);
-  phiCut = makeDelPhiCut(setNum, phiNum);
-  jetLCut = Form("AlgJtPt[%d][0] > %f", setNum, LJtNum);
-  jetSLCut = Form("AlgJtPt[%d][1] > %f", setNum, SLJtNum);
-  if(sType == kHIMC || sType == kPPMC) pthat = "pthat > 80";
-  if(isHighPtTrk) trkCut = Form("AlgJtTrkMax[%d][0] > 8 && AlgJtTrkMax[%d][1] > 8", setNum, setNum);
-
-  return;
 }
 
 
