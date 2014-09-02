@@ -20,7 +20,7 @@ TFile* histFile_p = 0;
 
 TFile* plotFile_p = 0;
 
-const char* algType[3] = {"PuCalo", "VsCalo", "T"};
+const char* algType[3] = {"PuCalo", "Vs3Calo", "T"};
 
 
 Bool_t sameSign(Double_t num1, Double_t num2)
@@ -262,12 +262,21 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
   else if(strcmp(Tight, "") != 0)
     nBins = 8;
 
+  std::cout << "A" << std::endl;
+
   for(Int_t iter = 0; iter < nBins; iter++){
+    std::cout << "A1" << std::endl;
     h_p[0]->SetBinContent(iter + 1, sumYForPTStack(h_p[0]->GetBinContent(iter+1), h_p[1]->GetBinContent(iter+1), h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
+
+    std::cout << "A2" << std::endl;
 
     h_p[1]->SetBinContent(iter + 1, sumYForPTStack(h_p[1]->GetBinContent(iter+1), h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
 
+    std::cout << "A3" << std::endl;
+
     h_p[2]->SetBinContent(iter + 1, sumYForPTStack(h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
+
+    std::cout << "A4" << std::endl;
 
     h_p[3]->SetBinContent(iter + 1, sumYForPTStack(h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
   }
@@ -552,14 +561,18 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
   for(Int_t histIter = 0; histIter < 6; histIter++){
-    if(strcmp(fileTagPP, "") != 0)
+    if(strcmp(fileTagPP, "") != 0){
       histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%sImbProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPP));
+      std::cout << Form("%s%sImbProjA%s%s%s%s_PP_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPP) << std::endl;
+    }
 
     if(!strcmp(CNCR, "")){
       hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_50100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
       hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_3050_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
       hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_1030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
       hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_010_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+
+      std::cout << Form("%s%sImbProjA%s%s%s%s_50100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb) << std::endl;
     }
     else{
       hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_30100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
@@ -569,6 +582,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   std::cout << "1" << std::endl;
   makeHistForPtStack(histPP_p, 1, Tight, CNCR);
+  std::cout << "2" << std::endl;
 
   TCanvas* profPanel_p;
 
@@ -930,7 +944,7 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
-      for(Int_t corrIter = 0; corrIter < 2; corrIter++){
+      for(Int_t corrIter = 1; corrIter < 2; corrIter++){
 	for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1)
 	    continue;

@@ -1,21 +1,23 @@
- //=============================================                                                
+//=============================================                                                
 // Author: Chris McGinn                                                                        
 //                                                                                             
 // DiJet Histogram Maker, Missing Pt                                                              
 //                                                                                             
 //=============================================     
 
+#include <string>
+
 #include "TTree.h"
 #include "TDatime.h"
 #include "TFile.h"
 #include "diJetFileTag.h"
-#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_12_patch3/src/DijetAnalysisSkim/cfmDiJetAnaSkim.h"
-#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_12_patch3/src/DijetInitialSkim/cfmVectFunc.h"
+#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_20/src/DijetAnalysisSkim/cfmDiJetAnaSkim.h"
+#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_20/src/DijetInitialSkim/cfmVectFunc.h"
 
 TFile* inFile_p = 0;
 TFile* outFile_p = 0;
 
-const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
+const std::string FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
 
 const Float_t leadJtCut = 120.;
 const Float_t subLeadJtCut = 50.;
@@ -27,9 +29,9 @@ const Float_t niceNumCNC[4] = {59.999, -60, 505, 406};
 const Float_t niceNumR[4] = {19.999, -40, 505, 403};
 
 
-Int_t retBinNumber(const char* Tight)
+Int_t retBinNumber(const std::string Tight)
 {
-  if(!strcmp(Tight, "")) return 4;
+  if(!strcmp(Tight.c_str(), "")) return 4;
   else return 8;
 }
 
@@ -48,7 +50,7 @@ void getBinArr(const Int_t nBins, Float_t bins[], Float_t cuts[], const Float_t 
 }
 
 
-const char* getCentString(sampleType sType, Int_t centLow, Int_t centHi)
+std::string getCentString(sampleType sType, Int_t centLow, Int_t centHi)
 {
   if(isHI(sType)) return Form("%d%d", (Int_t)(centLow*.5), (Int_t)((centHi+1)*.5));
   else return "PP";
@@ -63,10 +65,10 @@ void InitHist(TH1F* inHist_p[6])
 }
 
 
-void BookHist(TH1F* inHist_p[6], const char* CNCR, const Int_t nBins, Float_t xArr[], Float_t upBound, const Float_t niceNum[4])
+void BookHist(TH1F* inHist_p[6], const std::string CNCR, const Int_t nBins, Float_t xArr[], Float_t upBound, const Float_t niceNum[4])
 {
   for(Int_t iter = 0; iter < 6; iter++){
-    inHist_p[iter] = new TH1F(Form("rImbA%sHist_%d_p", CNCR, iter), Form("rImbA%sHist_%d_p", CNCR, iter), nBins, xArr);
+    inHist_p[iter] = new TH1F(Form("rImbA%sHist_%d_p", CNCR.c_str(), iter), Form("rImbA%sHist_%d_p", CNCR.c_str(), iter), nBins, xArr);
 
     inHist_p[iter]->GetXaxis()->SetLimits(0.00, upBound);
     niceTH1(inHist_p[iter], niceNum[0], niceNum[1], niceNum[2], niceNum[3]);
@@ -87,7 +89,7 @@ Bool_t isEventCut(Int_t setNum, sampleType sType, Int_t centLow, Int_t centHi, B
 
   if(TMath::Abs(AlgJtEta_[setNum][0]) > 1.6 || TMath::Abs(AlgJtEta_[setNum][1]) > 1.6) return true;
 
-  if(AlgJtDelPhi_[setNum] < 5.0*TMath::Pi()/6.0) return true;
+  if(AlgJtDelPhi12_[setNum] < 5.0*TMath::Pi()/6.0) return true;
 
   if(isHighPtTrk && (AlgJtTrkMax_[setNum][0] < trkMaxCut || AlgJtTrkMax_[setNum][1] < trkMaxCut)) return true;
 
@@ -96,11 +98,11 @@ Bool_t isEventCut(Int_t setNum, sampleType sType, Int_t centLow, Int_t centHi, B
   return false;
 }
 
-
-void makeMultAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t centLow, Int_t centHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+/*
+void makeMultAHist(TTree* anaTree_p, const std::string outName, Int_t setNum, Int_t centLow, Int_t centHi, const std::string Corr = "", const std::string Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
   Int_t setCorrNum = setNum;
-  if(!strcmp("Corr", Corr))
+  if(!strcmp("Corr", Corr.c_str()))
     setCorrNum = setNum + 3;
 
   const Int_t nBins = retBinNumber(Tight);
@@ -110,9 +112,9 @@ void makeMultAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t ce
   if(nBins == 4) getBinArr(nBins, xArr, xArrCut, loose);
   else if(nBins == 8) getBinArr(nBins, xArr, xArrCut, tight);
 
-  const char* centString = getCentString(sType, centLow, centHi);
+  const std::string centString = getCentString(sType, centLow, centHi);
 
-  const char* title = Form("r%sMultA%s%s_%s_%s_h", algType[setNum], Corr, Tight, centString, fileTag);
+  std::string title = Form("r%sMultA%s%s_%s_%s_h", algType[setNum], Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag);
   TH1F* rMultAHist_p = 0;
   rMultAHist_p = new TH1F(Form("rMultAHist_p"), Form("rMultAHist_p"), nBins, xArr);
   rMultAHist_p->GetXaxis()->SetLimits(0.00, 0.50);
@@ -123,18 +125,17 @@ void makeMultAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t ce
     mean_rMultA_p[iter] = new std::vector<Float_t>;
   }
 
-
-
+  return;
 }
+*/
 
-
-void makeImbAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t centLow, Int_t centHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+void makeImbAHist(TTree* anaTree_p, const std::string outName, Int_t setNum, Int_t centLow, Int_t centHi, const std::string Corr = "", const std::string Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
   //  Bool_t montecarlo = isMonteCarlo(sType);
 
   Int_t setCorrNum = setNum;
-  if(!strcmp("Corr", Corr))
-    setCorrNum = setNum + 3;
+  if(!strcmp("Corr", Corr.c_str()))
+    setCorrNum = setNum + 6;
 
   const Int_t nBins = retBinNumber(Tight);
   Float_t xArr[nBins+1];
@@ -143,9 +144,9 @@ void makeImbAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t cen
   if(nBins == 4) getBinArr(nBins, xArr, xArrCut, loose);
   else if(nBins == 8) getBinArr(nBins, xArr, xArrCut, tight);
 
-  const char* centString = getCentString(sType, centLow, centHi);
+  const std::string centString = getCentString(sType, centLow, centHi);
 
-  const char* title[6];
+  std::string title[6];
   TH1F* rImbAHist_p[6];
   std::vector<Float_t>* mean_rProjA_p[6][nBins];
   
@@ -153,7 +154,7 @@ void makeImbAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t cen
   BookHist(rImbAHist_p, "", nBins, xArr, 0.50, niceNumCNC);
 
   for(Int_t iter = 0; iter < 6; iter++){
-    title[iter] = Form("r%sImbProjA%s%s%s_%s_%s_h", algType[setNum], FPT[iter], Corr, Tight, centString, fileTag);
+    title[iter] = Form("r%sImbProjA%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       mean_rProjA_p[iter][iter2] = new std::vector<Float_t>;
     }
@@ -192,11 +193,11 @@ void makeImbAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t cen
     }
   }
   
-  outFile_p = new TFile(outName, "UPDATE");
+  outFile_p = new TFile(outName.c_str(), "UPDATE");
   std::cout << outName << std::endl;
 
   for(Int_t iter = 0; iter < 6; iter++){
-    rImbAHist_p[iter]->Write(title[iter]);
+    rImbAHist_p[iter]->Write(title[iter].c_str());
   }
 
   outFile_p->Close();
@@ -216,14 +217,13 @@ void makeImbAHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t cen
 }
 
 
-
-void makeImbACNCHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t centLow, Int_t centHi, const char* Corr = "", const char* Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, Int_t centLow, Int_t centHi, const std::string Corr = "", const std::string Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
   //  Bool_t montecarlo = isMonteCarlo(sType);
 
   Int_t setCorrNum = setNum;
-  if(!strcmp("Corr", Corr))
-    setCorrNum = setNum + 3;
+  if(!strcmp("Corr", Corr.c_str()))
+    setCorrNum = setNum + 6;
 
   const Int_t nBins = retBinNumber(Tight);
   Float_t xArr[nBins+1];
@@ -232,10 +232,10 @@ void makeImbACNCHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t 
   if(nBins == 4) getBinArr(nBins, xArr, xArrCut, loose);
   else if(nBins == 8) getBinArr(nBins, xArr, xArrCut, tight);
 
-  const char* centString = getCentString(sType, centLow, centHi);
+  const std::string centString = getCentString(sType, centLow, centHi);
 
-  const char* titleC[6];
-  const char* titleNC[6];
+  std::string titleC[6];
+  std::string titleNC[6];
 
   TH1F* rImbACHist_p[6];
   std::vector<Float_t>* mean_rProjAC_p[6][nBins];
@@ -250,8 +250,8 @@ void makeImbACNCHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t 
   BookHist(rImbANCHist_p, "NC", nBins, xArr, 0.50, niceNumCNC);
 
   for(Int_t iter = 0; iter < 6; iter++){
-    titleC[iter] = Form("r%sImbProjAC%s%s%s_%s_%s_h", algType[setNum], FPT[iter], Corr, Tight, centString, fileTag);
-    titleNC[iter] = Form("r%sImbProjANC%s%s%s_%s_%s_h", algType[setNum], FPT[iter], Corr, Tight, centString, fileTag);
+    titleC[iter] = Form("r%sImbProjAC%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
+    titleNC[iter] = Form("r%sImbProjANC%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
 
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       mean_rProjAC_p[iter][iter2] = new std::vector<Float_t>;
@@ -299,12 +299,12 @@ void makeImbACNCHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t 
     }
   }
   
-  outFile_p = new TFile(outName, "UPDATE");
+  outFile_p = new TFile(outName.c_str(), "UPDATE");
   std::cout << outName << std::endl;
 
   for(Int_t iter = 0; iter < 6; iter++){
-    rImbACHist_p[iter]->Write(titleC[iter]);
-    rImbANCHist_p[iter]->Write(titleNC[iter]);
+    rImbACHist_p[iter]->Write(titleC[iter].c_str());
+    rImbANCHist_p[iter]->Write(titleNC[iter].c_str());
   }
 
   outFile_p->Close();
@@ -329,26 +329,26 @@ void makeImbACNCHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t 
 
 
 
-void makeImbARHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t centLow, Int_t centHi, const char* Corr = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+void makeImbARHist(TTree* anaTree_p, const std::string outName, Int_t setNum, Int_t centLow, Int_t centHi, const std::string Corr = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
   //  Bool_t montecarlo = isMonteCarlo(sType);                                                                                                          
 
   Int_t setCorrNum = setNum;
-  if(!strcmp("Corr", Corr))
-    setCorrNum = setNum + 3;
+  if(!strcmp("Corr", Corr.c_str()))
+    setCorrNum = setNum + 6;
 
   const Int_t nBins = 10;
   Float_t rBins[11] = {0.0001, 0.20, 0.40, 0.60, 0.80, 1.00, 1.20, 1.40, 1.60, 1.80, 1.999};
 
-  const char* centString = getCentString(sType, centLow, centHi);
+  const std::string centString = getCentString(sType, centLow, centHi);
 
-  const char* titleR[6];
+  std::string titleR[6];
   TH1F* rImbARHist_p[6];
   std::vector<Float_t>* mean_rProjAR_p[6][nBins];
-  const char* titleRD[6];
+  std::string titleRD[6];
   TH1F* rImbARDHist_p[6];
   std::vector<Float_t>* mean_rProjARD_p[6][nBins];
-  const char* titleRU[6];
+  std::string titleRU[6];
   TH1F* rImbARUHist_p[6];
   std::vector<Float_t>* mean_rProjARU_p[6][nBins];
 
@@ -362,9 +362,9 @@ void makeImbARHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t ce
 
 
   for(Int_t iter = 0; iter < 6; iter++){
-    titleR[iter] = Form("r%sImbProjAR%s%s_%s_%s_h", algType[setNum], FPT[iter], Corr, centString, fileTag);
-    titleRD[iter] = Form("r%sImbProjARD%s%s_%s_%s_h", algType[setNum], FPT[iter], Corr, centString, fileTag);
-    titleRU[iter] = Form("r%sImbProjARU%s%s_%s_%s_h", algType[setNum], FPT[iter], Corr, centString, fileTag);
+    titleR[iter] = Form("r%sImbProjAR%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
+    titleRD[iter] = Form("r%sImbProjARD%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
+    titleRU[iter] = Form("r%sImbProjARU%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
 
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       mean_rProjAR_p[iter][iter2] = new std::vector<Float_t>;
@@ -416,13 +416,13 @@ void makeImbARHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t ce
     }
   }
 
-  outFile_p = new TFile(outName, "UPDATE");
+  outFile_p = new TFile(outName.c_str(), "UPDATE");
   std::cout << outName << std::endl;
 
   for(Int_t iter = 0; iter < 6; iter++){
-    rImbARHist_p[iter]->Write(titleR[iter]);
-    rImbARDHist_p[iter]->Write(titleRD[iter]);
-    rImbARUHist_p[iter]->Write(titleRU[iter]);
+    rImbARHist_p[iter]->Write(titleR[iter].c_str());
+    rImbARDHist_p[iter]->Write(titleRD[iter].c_str());
+    rImbARUHist_p[iter]->Write(titleRU[iter].c_str());
   } 
 
   outFile_p->Close();
@@ -451,14 +451,14 @@ void makeImbARHist(TTree* anaTree_p, const char* outName, Int_t setNum, Int_t ce
 }
 
 
-int makeDiJetHists(const char* inName, const char* outName, sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+int makeDiJetHists(const std::string inName, const std::string outName, sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
   TH1::SetDefaultSumw2();
   Bool_t montecarlo = isMonteCarlo(sType);
 
   setFileTag(inName);
 
-  inFile_p = new TFile(inName, "READ");
+  inFile_p = new TFile(inName.c_str(), "READ");
   GetDiJetAnaSkim(inFile_p, sType);
 
   std::cout << "AnaSkim Loaded" << std::endl;
@@ -468,21 +468,23 @@ int makeDiJetHists(const char* inName, const char* outName, sampleType sType = k
 
   jetTreeAna_p->AddFriend(trackTreeAna_p);
 
-  const char* Corr[2] = {"", "Corr"};
-  const char* Tight[2] = {"", "Tight"};
+  const std::string Corr[2] = {"", "Corr"};
+  const std::string Tight[2] = {"", "Tight"};
 
-  for(Int_t corrIter = 0; corrIter < 2; corrIter++){
+  for(Int_t corrIter = 1; corrIter < 2; corrIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
-      makeImbAHist(jetTreeAna_p, outName, 1, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-      makeImbAHist(jetTreeAna_p, outName, 1, 20, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-      makeImbAHist(jetTreeAna_p, outName, 1, 60, 99, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-      makeImbAHist(jetTreeAna_p, outName, 1, 100, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-      
-      makeImbACNCHist(jetTreeAna_p, outName, 1, 0, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-      makeImbACNCHist(jetTreeAna_p, outName, 1, 60, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);      
-
-      makeImbARHist(jetTreeAna_p, outName, 1, 0, 59, Corr[corrIter], sType, isHighPtTrk);
-      makeImbARHist(jetTreeAna_p, outName, 1, 60, 199, Corr[corrIter], sType, isHighPtTrk);
+      for(Int_t algIter = 1; algIter < 5; algIter++){
+	makeImbAHist(jetTreeAna_p, outName, algIter, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	makeImbAHist(jetTreeAna_p, outName, algIter, 20, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	makeImbAHist(jetTreeAna_p, outName, algIter, 60, 99, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	makeImbAHist(jetTreeAna_p, outName, algIter, 100, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	
+	makeImbACNCHist(jetTreeAna_p, outName, algIter, 0, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	makeImbACNCHist(jetTreeAna_p, outName, algIter, 60, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);      
+	
+	makeImbARHist(jetTreeAna_p, outName, algIter, 0, 59, Corr[corrIter], sType, isHighPtTrk);
+	makeImbARHist(jetTreeAna_p, outName, algIter, 60, 199, Corr[corrIter], sType, isHighPtTrk);
+      }
     }
   }
 
