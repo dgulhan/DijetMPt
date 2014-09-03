@@ -236,26 +236,54 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
 
   std::string titleC[6];
   std::string titleNC[6];
+  std::string titleC0[6];
+  std::string titleC1[6];
+  std::string titleC2[6];
+  std::string titleC3[6];
 
   TH1F* rImbACHist_p[6];
   std::vector<Float_t>* mean_rProjAC_p[6][nBins];
   TH1F* rImbANCHist_p[6];
   std::vector<Float_t>* mean_rProjANC_p[6][nBins];
-
+  TH1F* rImbAC0Hist_p[6];
+  std::vector<Float_t>* mean_rProjAC0_p[6][nBins];
+  TH1F* rImbAC1Hist_p[6];
+  std::vector<Float_t>* mean_rProjAC1_p[6][nBins];
+  TH1F* rImbAC2Hist_p[6];
+  std::vector<Float_t>* mean_rProjAC2_p[6][nBins];
+  TH1F* rImbAC3Hist_p[6];
+  std::vector<Float_t>* mean_rProjAC3_p[6][nBins];
 
   InitHist(rImbACHist_p);
   InitHist(rImbANCHist_p);
+  InitHist(rImbAC0Hist_p);
+  InitHist(rImbAC1Hist_p);
+  InitHist(rImbAC2Hist_p);
+  InitHist(rImbAC3Hist_p);
 
   BookHist(rImbACHist_p, "C", nBins, xArr, 0.50, niceNumCNC);
   BookHist(rImbANCHist_p, "NC", nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAC0Hist_p, "C0", nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAC1Hist_p, "C1", nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAC2Hist_p, "C2", nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAC3Hist_p, "C3", nBins, xArr, 0.50, niceNumCNC);
 
   for(Int_t iter = 0; iter < 6; iter++){
     titleC[iter] = Form("r%sImbProjAC%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
     titleNC[iter] = Form("r%sImbProjANC%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
+    titleC0[iter] = Form("r%sImbProjAC0%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
+    titleC1[iter] = Form("r%sImbProjAC1%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
+    titleC2[iter] = Form("r%sImbProjAC2%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
+    titleC3[iter] = Form("r%sImbProjAC3%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
+
 
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       mean_rProjAC_p[iter][iter2] = new std::vector<Float_t>;
       mean_rProjANC_p[iter][iter2] = new std::vector<Float_t>;
+      mean_rProjAC0_p[iter][iter2] = new std::vector<Float_t>;
+      mean_rProjAC1_p[iter][iter2] = new std::vector<Float_t>;
+      mean_rProjAC2_p[iter][iter2] = new std::vector<Float_t>;
+      mean_rProjAC3_p[iter][iter2] = new std::vector<Float_t>;
     }
   }    
 
@@ -274,6 +302,13 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
 
 	  mean_rProjAC_p[iter][iter2]->push_back(rAlgImbProjAC_[setCorrNum][iter]);
 	  mean_rProjANC_p[iter][iter2]->push_back(rAlgImbProjANC_[setCorrNum][iter]);
+
+	  if(TMath::Abs(AlgJtEta_[setNum][0]) < 0.5 && TMath::Abs(AlgJtEta_[setNum][1]) < 0.5){
+	    mean_rProjAC0_p[iter][iter2]->push_back(rAlgImbProjAC0_[setCorrNum][iter]);
+	    mean_rProjAC1_p[iter][iter2]->push_back(rAlgImbProjAC1_[setCorrNum][iter]);
+	    mean_rProjAC2_p[iter][iter2]->push_back(rAlgImbProjAC2_[setCorrNum][iter]);
+	    mean_rProjAC3_p[iter][iter2]->push_back(rAlgImbProjAC3_[setCorrNum][iter]);
+	  }
 	}
 
 	break;	
@@ -296,6 +331,30 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
 	rImbANCHist_p[iter]->SetBinError(iter2+1, getError(mean_rProjANC_p[iter][iter2], mean));
       }
 
+      if(mean_rProjAC0_p[iter][iter2]->size() != 0){
+	Float_t mean = getMean(mean_rProjAC0_p[iter][iter2]);
+	rImbAC0Hist_p[iter]->SetBinContent(iter2+1, mean);
+	rImbAC0Hist_p[iter]->SetBinError(iter2+1, getError(mean_rProjAC0_p[iter][iter2], mean));
+      }
+
+      if(mean_rProjAC1_p[iter][iter2]->size() != 0){
+	Float_t mean = getMean(mean_rProjAC1_p[iter][iter2]);
+	rImbAC1Hist_p[iter]->SetBinContent(iter2+1, mean);
+	rImbAC1Hist_p[iter]->SetBinError(iter2+1, getError(mean_rProjAC1_p[iter][iter2], mean));
+      }
+
+      if(mean_rProjAC2_p[iter][iter2]->size() != 0){
+	Float_t mean = getMean(mean_rProjAC2_p[iter][iter2]);
+	rImbAC2Hist_p[iter]->SetBinContent(iter2+1, mean);
+	rImbAC2Hist_p[iter]->SetBinError(iter2+1, getError(mean_rProjAC2_p[iter][iter2], mean));
+      }
+
+      if(mean_rProjAC3_p[iter][iter2]->size() != 0){
+	Float_t mean = getMean(mean_rProjAC3_p[iter][iter2]);
+	rImbAC3Hist_p[iter]->SetBinContent(iter2+1, mean);
+	rImbAC3Hist_p[iter]->SetBinError(iter2+1, getError(mean_rProjAC3_p[iter][iter2], mean));
+      }
+
     }
   }
   
@@ -305,6 +364,11 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
   for(Int_t iter = 0; iter < 6; iter++){
     rImbACHist_p[iter]->Write(titleC[iter].c_str());
     rImbANCHist_p[iter]->Write(titleNC[iter].c_str());
+
+    rImbAC0Hist_p[iter]->Write(titleC0[iter].c_str());
+    rImbAC1Hist_p[iter]->Write(titleC1[iter].c_str());
+    rImbAC2Hist_p[iter]->Write(titleC2[iter].c_str());
+    rImbAC3Hist_p[iter]->Write(titleC3[iter].c_str());
   }
 
   outFile_p->Close();
@@ -317,11 +381,30 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
     delete rImbANCHist_p[iter];
     rImbANCHist_p[iter] = 0;
 
+    delete rImbAC0Hist_p[iter];
+    rImbAC0Hist_p[iter] = 0;
+    delete rImbAC1Hist_p[iter];
+    rImbAC1Hist_p[iter] = 0;
+    delete rImbAC2Hist_p[iter];
+    rImbAC2Hist_p[iter] = 0;
+    delete rImbAC3Hist_p[iter];
+    rImbAC3Hist_p[iter] = 0;
+
+
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       delete mean_rProjAC_p[iter][iter2];
       mean_rProjAC_p[iter][iter2] = 0;
       delete mean_rProjANC_p[iter][iter2];
       mean_rProjANC_p[iter][iter2] = 0;
+
+      delete mean_rProjAC0_p[iter][iter2];
+      mean_rProjAC0_p[iter][iter2] = 0;
+      delete mean_rProjAC1_p[iter][iter2];
+      mean_rProjAC1_p[iter][iter2] = 0;
+      delete mean_rProjAC2_p[iter][iter2];
+      mean_rProjAC2_p[iter][iter2] = 0;
+      delete mean_rProjAC3_p[iter][iter2];
+      mean_rProjAC3_p[iter][iter2] = 0;
     }
   }
 
@@ -473,7 +556,7 @@ int makeDiJetHists(const std::string inName, const std::string outName, sampleTy
 
   for(Int_t corrIter = 1; corrIter < 2; corrIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
-      for(Int_t algIter = 1; algIter < 5; algIter++){
+      for(Int_t algIter = 2; algIter < 3; algIter++){
 	makeImbAHist(jetTreeAna_p, outName, algIter, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
 	makeImbAHist(jetTreeAna_p, outName, algIter, 20, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
 	makeImbAHist(jetTreeAna_p, outName, algIter, 60, 99, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);

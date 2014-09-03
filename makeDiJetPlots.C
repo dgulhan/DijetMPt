@@ -87,6 +87,14 @@ void drawBin(const char* CNCR){
     temp->DrawLatex(.15, .10, "In-cone, #DeltaR < 0.8");
   else if(!strcmp(CNCR, "NC"))
     temp->DrawLatex(.15, .10, "Out-cone, #DeltaR > 0.8");
+  else if(!strcmp(CNCR, "C0"))
+    temp->DrawLatex(.15, .10, "#DeltaR < 0.5");
+  else if(!strcmp(CNCR, "C1"))
+    temp->DrawLatex(.15, .10, "0.5 < #DeltaR < 1.0");
+  else if(!strcmp(CNCR, "C2"))
+    temp->DrawLatex(.15, .10, "1.0 < #DeltaR < 1.5");
+  else if(!strcmp(CNCR, "C3"))
+    temp->DrawLatex(.15, .10, "1.5 < #DeltaR");
 }
 
 
@@ -312,6 +320,8 @@ void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_
   if(isSub){
     if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
       niceTH1(drawHist_p, 4.999, -10., 505, 503);
+    else if(!strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3"))
+      niceTH1(drawHist_p, 9.999, -20., 505, 403);
     else
       niceTH1(drawHist_p, 59.999, -60., 505, 406);
   }
@@ -867,7 +877,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.60, overCoord[3], ppChar[1]);
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU")){
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3")){
     label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<0.5");
     label1_p->DrawLatex(.45, .28, "#Delta#phi_{1,2}>5#pi/6");
   }
@@ -939,13 +949,13 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
     jetAlgMax = 3;
   
   const char* corr[2] = {"", "Corr"};
-  const char* CNCR[6] = {"", "C", "NC", "R", "RD", "RU"};
+  const char* CNCR[10] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU"};
   const char* Tight[2] = {"", "Tight"};
 
   for(Int_t algIter = 1; algIter < jetAlgMax; algIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
       for(Int_t corrIter = 1; corrIter < 2; corrIter++){
-	for(Int_t CNCRIter = 0; CNCRIter < 6; CNCRIter++){
+	for(Int_t CNCRIter = 0; CNCRIter < 10; CNCRIter++){
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1)
 	    continue;
 
