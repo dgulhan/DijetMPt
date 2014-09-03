@@ -8,7 +8,7 @@
 #include "TFile.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
-#include "TMath.h"
+#include "etaPhiFunc.h"
 #include <iostream>
 
 enum sampleType{
@@ -56,33 +56,10 @@ TProfile* FakeCalodelR_p[nHistPP];
 TFile* SecondCaloFile_p;
 TH2D* SecondCaloptEta_p;
 
+TFile* MultrecoCaloFile_p;
+TH2D* MultrecoCaloptEta_p;
 
-Float_t getDPHI(Float_t phi1, Float_t phi2)
-{
-  Float_t dphi = phi1 - phi2;
-
-  if(dphi > TMath::Pi())
-    dphi = dphi - 2. * TMath::Pi();
-  if(dphi <= -TMath::Pi())
-    dphi = dphi + 2. * TMath::Pi();
-
-  if(TMath::Abs(dphi) > TMath::Pi()) {
-    std::cout << " commonUtility::getDPHI error!!! dphi is bigger than TMath::Pi() " << std::endl;
-  }
-
-  return dphi;
-}
-
-
-Float_t getDR(Float_t eta1, Float_t phi1, Float_t eta2, Float_t phi2)
-{
-  Float_t theDphi = getDPHI(phi1, phi2);
-  Float_t theDeta = eta1 - eta2;
-  return TMath::Sqrt(theDphi*theDphi + theDeta*theDeta);
-}
-
-
-void InitCorrFiles(sampleType sType = kHIDATA)
+void InitCorrFiles(sampleType sType = kHIDATA, Bool_t isHITrk = false)
 {
   //File names w/ various binnings, ordered by pt and then centrality. Each Jet Algorithm gets a file array
 
@@ -160,17 +137,32 @@ void InitCorrFiles(sampleType sType = kHIDATA)
     FakeVsCaloFile_p[28] = new TFile("fake_pt800_30000_cent0_100.root", "READ");
   }
   else if(sType == kPPDATA || sType == kPPMC){
-    CaloFile_p[0] = new TFile("eff_pt0_1_ak3Calo_dogenjet0.root", "READ");
-    CaloFile_p[1] = new TFile("eff_pt1_3_ak3Calo_dogenjet0.root", "READ");
-    CaloFile_p[2] = new TFile("eff_pt3_8_ak3Calo_dogenjet0.root", "READ");
-    CaloFile_p[3] = new TFile("eff_pt8_300_ak3Calo_dogenjet0.root", "READ");
-
-    FakeCaloFile_p[0] = new TFile("fake_pt0_1_ak3Calo_dogenjet0.root", "READ");
-    FakeCaloFile_p[1] = new TFile("fake_pt1_3_ak3Calo_dogenjet0.root", "READ");
-    FakeCaloFile_p[2] = new TFile("fake_pt3_8_ak3Calo_dogenjet0.root", "READ");
-    FakeCaloFile_p[3] = new TFile("fake_pt8_300_ak3Calo_dogenjet0.root", "READ");
-
-    SecondCaloFile_p = new TFile("secondary_pp.root", "READ");
+    if(!isHITrk){
+      CaloFile_p[0] = new TFile("eff_pt0_1_ak3Calo_dogenjet0.root", "READ");
+      CaloFile_p[1] = new TFile("eff_pt1_3_ak3Calo_dogenjet0.root", "READ");
+      CaloFile_p[2] = new TFile("eff_pt3_8_ak3Calo_dogenjet0.root", "READ");
+      CaloFile_p[3] = new TFile("eff_pt8_300_ak3Calo_dogenjet0.root", "READ");
+      
+      FakeCaloFile_p[0] = new TFile("fake_pt0_1_ak3Calo_dogenjet0.root", "READ");
+      FakeCaloFile_p[1] = new TFile("fake_pt1_3_ak3Calo_dogenjet0.root", "READ");
+      FakeCaloFile_p[2] = new TFile("fake_pt3_8_ak3Calo_dogenjet0.root", "READ");
+      FakeCaloFile_p[3] = new TFile("fake_pt8_300_ak3Calo_dogenjet0.root", "READ");
+      
+      SecondCaloFile_p = new TFile("secondary_pp.root", "READ");
+    }
+    else{
+      CaloFile_p[0] = new TFile("eff_pt0_1_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
+      CaloFile_p[1] = new TFile("eff_pt1_3_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
+      CaloFile_p[2] = new TFile("eff_pt3_8_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
+      CaloFile_p[3] = new TFile("eff_pt8_300_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
+      
+      FakeCaloFile_p[0] = new TFile("fake_pt0_1_step_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
+      FakeCaloFile_p[1] = new TFile("fake_pt1_3_step_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
+      FakeCaloFile_p[2] = new TFile("fake_pt3_8_step_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
+      FakeCaloFile_p[3] = new TFile("fake_pt8_300_step_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
+      
+      SecondCaloFile_p = new TFile("secondary_pp_HIReco.root", "READ");
+    }
   }
 
   return;

@@ -1,4 +1,5 @@
 #include "TMath.h"
+#include <iostream>
 
 Float_t getDPHI(Float_t phi1, Float_t phi2)
 {
@@ -10,6 +11,7 @@ Float_t getDPHI(Float_t phi1, Float_t phi2)
     dphi = dphi + 2. * TMath::Pi();
 
   if(TMath::Abs(dphi) > TMath::Pi()) {
+    std::cout << phi1 << ", " << phi2 << std::endl;
     std::cout << " commonUtility::getDPHI error!!! dphi is bigger than TMath::Pi() " << std::endl;
   }
 
