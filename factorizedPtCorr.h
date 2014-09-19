@@ -258,12 +258,15 @@ Int_t getPtBin(Float_t pt, sampleType sType = kHIDATA)
 }
 
 
-Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPhi[], Float_t jtEta[])
+Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[])
 {
   Float_t trkRMin = 199;
 
   if(nJt != 0){
     for(Int_t jtEntry = 0; jtEntry < nJt; jtEntry++){
+      if(jtPt[jtEntry] < 50.0) continue;
+      if(TMath::Abs(jtEta[jtEntry]) > 2.0) continue;
+
       if(trkRMin > getDR(trkEta, trkPhi, jtEta[jtEntry], jtPhi[jtEntry]))
         trkRMin = getDR(trkEta, trkPhi, jtEta[jtEntry], jtPhi[jtEntry]);
     }
