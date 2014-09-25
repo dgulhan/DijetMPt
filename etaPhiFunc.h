@@ -1,3 +1,6 @@
+#ifndef etaPhiFunc_h
+#define etaPhiFunc_h
+
 #include "TMath.h"
 #include <iostream>
 
@@ -25,3 +28,5 @@ Float_t getDR(Float_t eta1, Float_t phi1, Float_t eta2, Float_t phi2)
   Float_t theDeta = eta1 - eta2;
   return TMath::Sqrt(theDphi*theDphi + theDeta*theDeta);
 }
+
+#endif
