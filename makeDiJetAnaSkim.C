@@ -19,14 +19,11 @@ const Float_t pthatWeights_PYTH_HITrk[9] = {.551019, .034814, .00242254, .000304
 const Int_t pthatCuts_PYTH_PPTrk[7] = {15, 30, 50, 80, 120, 170, 1000000};
 const Float_t pthatWeights_PYTH_PPTrk[6] = {.161482, .00749461, .000752396, .0000837038, .0000101988, .00000175206};
 
-
-const Int_t pthatCuts_PYTH_HYD[9] = {15, 30, 50, 80, 120, 220, 280, 370, 10000000};
-const Float_t pthatWeights_PYTH_HYD[8] = {.611066, .0399951, .00243874, .000241009, .0000273228, .00000147976, .000000618337, .000000157267};
-
+const Int_t pthatCuts_PYTH_HYD[10] = {15, 30, 50, 80, 120, 170, 220, 280, 370, 10000000};
+const Float_t pthatWeights_PYTH_HYD[9] = {.611066, .0399951, .00243874, .000241009, .0000273235, .00000328804, .00000105782, .000000531469, .000000234991};
 
 
-
-int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETANASKIM.root", Int_t num = 0, Bool_t justJt = false, Bool_t isHITrk = false)
+int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t num = 0, Bool_t justJt = false, Bool_t isHITrk = false)
 {
   //Define MC or Data
   Bool_t montecarlo = isMonteCarlo(sType);
@@ -86,8 +83,31 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
     }
   }
   
+  std::string outName = listOfFiles[num];
+  const std::string cutString = "/";
+  const std::string iniString = "Ini";
+  std::size_t strIndex = 0;
 
-  TFile *outFile = new TFile(Form("%s_%d.root", outName, num), "RECREATE");
+  std::cout << "Cull string" << std::endl;
+
+  while(true){
+    strIndex = outName.find(cutString);
+
+    if(strIndex == std::string::npos) break;
+
+    outName.replace(0, strIndex + 1, "");
+  }
+
+  std::cout << "Replace string" << std::endl;
+
+  strIndex = outName.find(iniString);
+  if(!(strIndex == std::string::npos)){
+    outName.replace(strIndex, iniString.length(), "Ana"); 
+  }
+
+  std::cout << "Output name: " << outName.c_str() << std::endl;
+
+  TFile *outFile = new TFile(outName.c_str(), "RECREATE");
 
   InitDiJetAnaSkim(sType, justJt);
 
@@ -187,7 +207,7 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 	}
       }
       else if(hi){
-	for(Int_t hatIter = 0; hatIter < 8; hatIter++){
+	for(Int_t hatIter = 0; hatIter < 9; hatIter++){
           if(pthat_ >= pthatCuts_PYTH_HYD[hatIter] && pthat_ < pthatCuts_PYTH_HYD[hatIter + 1]){
             pthatWeight_ = pthatWeights_PYTH_HYD[hatIter];
             break;
@@ -209,7 +229,6 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 	centWeight_[algIter] = hist_DataOverMC_p[algIter]->GetBinContent(hist_DataOverMC_p[algIter]->FindBin(hiBin_));
       }
     }
-    
 
     //Iterate over tracks
 
@@ -244,7 +263,8 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 	if(eventSet_[Vs3Calo]) tempRMin[Vs3Calo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
 	if(eventSet_[Vs4Calo]) tempRMin[Vs4Calo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
 	if(eventSet_[Vs5Calo]) tempRMin[Vs5Calo] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
-	if(eventSet_[T]) tempRMin[T] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nT3_, T3Phi_, T3Eta_);
+	if(eventSet_[T]) tempRMin[T] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nT3_, T3Pt_, T3Phi_, T3Eta_);
+
 
 	Float_t tempFact[8] = {0., 0., 0., 0., 0., 0., 0., 0.};
 	Float_t tempCorr[8] = {0., 0., 0., 0., 0., 0., 0., 0.};
@@ -288,14 +308,13 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 	  tempFact[T] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T], sType);
 	  tempCorr[T] = trkPt_[trkEntry]*tempFact[T];
 	}
-
+	
 	for(Int_t jtIter = 0; jtIter < 8; jtIter++){
 	  if(eventSet_[jtIter]) 
-            GetTrkProjPerp(jtIter, jtIter+8, trkPt_[trkEntry], tempCorr[jtIter], trkPhi_[trkEntry], trkEta_[trkEntry]);
-	}
-
+	    GetTrkProjPerp(jtIter, jtIter+8, trkPt_[trkEntry], tempCorr[jtIter], trkPhi_[trkEntry], trkEta_[trkEntry]);
+	}	
       }
-   
+    
       if(montecarlo){
 	//Iterate over Truth
 
@@ -305,7 +324,6 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 	      GetGenProjPerp(jtIter, genPt_[genEntry], genPhi_[genEntry], genEta_[genEntry]);
 	  }
 	}
-
       }
 
     }
@@ -346,15 +364,15 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, const c
 
 int main(int argc, char *argv[])
 {
-  if(argc != 7)
+  if(argc != 6)
     {
-      std::cout << "Usage: sortForest <inputFile> <sampleType> <outputFile> <#> <justJtBool> <isHITrk>" << std::endl;
+      std::cout << "Usage: sortForest <inputFile> <sampleType> <#> <justJtBool> <isHITrk>" << std::endl;
       return 1;
     }
 
   int rStatus = -1;
 
-  rStatus = makeDiJetAnaSkim(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]), Bool_t(atoi(argv[5])), Bool_t(atoi(argv[6])));
+  rStatus = makeDiJetAnaSkim(argv[1], sampleType(atoi(argv[2])), atoi(argv[3]), Bool_t(atoi(argv[4])), Bool_t(atoi(argv[5])));
 
   return rStatus;
 }

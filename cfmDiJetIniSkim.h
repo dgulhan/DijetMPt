@@ -465,7 +465,7 @@ void GetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     trackTreeIni_p->SetBranchAddress("trkPt", trkPt_);
     trackTreeIni_p->SetBranchAddress("trkPhi", trkPhi_);
     trackTreeIni_p->SetBranchAddress("trkEta", trkEta_);
-    
+
     pfCandTreeIni_p->SetBranchAddress("nPF", &nPF_);
     pfCandTreeIni_p->SetBranchAddress("pfPt", pfPt_);
     pfCandTreeIni_p->SetBranchAddress("pfPhi", pfPhi_);
@@ -526,8 +526,6 @@ void GetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     jetTreeIni_p->SetBranchAddress("Pu5CaloRefEta", Pu5CaloRefEta_);
     jetTreeIni_p->SetBranchAddress("Pu5CaloRefPart", Pu5CaloRefPart_);
   }
-
-  std::cout << "A2" << std::endl;
 
   jetTreeIni_p->SetBranchAddress("nVs2Calo", &nVs2Calo_);
   jetTreeIni_p->SetBranchAddress("Vs2CaloPt", Vs2CaloPt_);
@@ -684,7 +682,7 @@ void GetDiJetIniSkim(TFile* iniFile_p, sampleType sType = kHIDATA, Bool_t justJt
   std::cout << "Get DiJet IniSkim" << std::endl;
 
   if(!justJt) trackTreeIni_p = (TTree*)iniFile_p->Get("trackTreeIni");
-  //  if(!justJt) pfCandTreeIni_p = (TTree*)iniFile_p->Get("pfCandTreeIni");
+  if(!justJt) pfCandTreeIni_p = (TTree*)iniFile_p->Get("pfCandTreeIni");
   jetTreeIni_p = (TTree*)iniFile_p->Get("jetTreeIni");
   if(isMonteCarlo(sType) && !justJt) genTreeIni_p = (TTree*)iniFile_p->Get("genTreeIni");
 

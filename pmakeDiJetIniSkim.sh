@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ $# -ne 5 ]
 then 
   echo "Usage: ./pmakeDiJetIniSkim.sh <inputList> <sampleType> <outName> <outDir> <justJtBool>"
@@ -14,7 +15,7 @@ cp ptCorrDirPP/*.tar.gz $now
 cp $1 $now
 
 NAME="makeDiJetIniSkim.C"
-g++ $NAME $(root-config --cflags --libs) -Werror -Wall -O2 -o "${NAME/%.C/}.exe" `/net/hisrv0001/home/cfmcginn/FastJet/CMSSW_5_3_12_patch3/src/fastjet-install/bin/fastjet-config --cxxflags --libs --plugins`
+g++ $NAME $(root-config --cflags --libs) -Werror -Wall -O2 -o "${NAME/%.C/}.exe" `/net/hisrv0001/home/cfmcginn/FastJet/CMSSW_5_3_20/src/fastjet-install/bin/fastjet-config --cxxflags --libs --plugins`
 
 cp makeDiJetIniSkim.exe $now
 

@@ -7,11 +7,18 @@
 #ifndef cfmDiJetAnaSkim_h
 #define cfmDiJetAnaSkim_h
 
-#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_12_patch3/src/DijetInitialSkim/cfmDiJetIniSkim.h"
+#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_20/src/DijetInitialSkim/cfmDiJetIniSkim.h"
+#include <string>
 
 TTree* trackTreeAna_p = 0;
 TTree* jetTreeAna_p = 0;
 TTree* genTreeAna_p = 0;
+
+const Int_t nJtAlg = 10;
+const Int_t nJtMax = 4;
+const Int_t nSumAlg = 8;
+const Int_t nPtBins = 6;
+const Int_t nRBins = 10;
 
 //Track Tree Variables
 
@@ -19,15 +26,21 @@ TTree* genTreeAna_p = 0;
 
 //2nd Dim 0 == 0_1, 1 == 1_2 ... 5 == F
 
-Float_t rAlgJtMult_[6][2];
+Float_t rAlgJtMult_[2*nSumAlg][2];
 
-Float_t rAlgImbProjA_[6][6];
-Float_t rAlgImbProjAC_[6][6];
-Float_t rAlgImbProjANC_[6][6];
+Float_t rAlgImbProjA_[2*nSumAlg][nPtBins];
+Float_t rAlgImbProjAC_[2*nSumAlg][nPtBins];
+Float_t rAlgImbProjANC_[2*nSumAlg][nPtBins];
+
+Float_t rAlgImbProjAC0_[2*nSumAlg][nPtBins];
+Float_t rAlgImbProjAC1_[2*nSumAlg][nPtBins];
+Float_t rAlgImbProjAC2_[2*nSumAlg][nPtBins];
+Float_t rAlgImbProjAC3_[2*nSumAlg][nPtBins];
 
 //DelR ProjA
 
-Float_t rAlgImbProjAR_[6][6][10];
+Float_t rAlgImbProjAR_[2*nSumAlg][nPtBins][nRBins];
+Float_t rAlgImbRawAR_[2*nSumAlg][nPtBins][nRBins];
 
 //Jet Tree Variables
 
@@ -45,34 +58,38 @@ Float_t psin_;
 
 //Event Set Bool array, [0] == PuPF, [1] == PuCalo, .etc according to enum
 
-Bool_t eventSet_[5];
-Float_t centWeight_80_[5];
-Float_t centWeight_Merge_[5];
+Bool_t eventSet_[nJtAlg];
+Float_t centWeight_[nJtAlg];
+Float_t centWeight_Merge_[nJtAlg];
 
-Bool_t isQuarkJet_[5];
-Bool_t isGluonJet_[5];
+Bool_t isQuarkJet_[nJtAlg];
+Bool_t isGluonJet_[nJtAlg];
 
 Float_t pthatWeight_;
 
 //Jet Set, Array by algorithm, according to enum above, 2nd, 0 = lead, 1 =sublead etc.
 
-Float_t AlgJtPt_[5][4];
-Float_t AlgJtPhi_[5][4];
-Float_t AlgJtEta_[5][4];
-Float_t AlgJtTrkMax_[5][4];
-Float_t AlgJtRawPt_[5][4];
+Float_t AlgJtPt_[nJtAlg][nJtMax];
+Float_t AlgJtPhi_[nJtAlg][nJtMax];
+Float_t AlgJtEta_[nJtAlg][nJtMax];
+Float_t AlgJtTrkMax_[nJtAlg][nJtMax];
+Float_t AlgJtRawPt_[nJtAlg][nJtMax];
 
-Float_t AlgJtAvePhi_[5];
-Float_t AlgJtDelPhi_[5];
-Float_t AlgJtAsymm_[5];
+Float_t AlgJtAvePhi_[nJtAlg];
+Float_t AlgJtDelPhi12_[nJtAlg];
+Float_t AlgJtDelPhi13_[nJtAlg];
+Float_t AlgJtDelPhi23_[nJtAlg];
+Float_t AlgJtAsymm_[nJtAlg];
 
-Float_t AlgRefPt_[5][4];
-Float_t AlgRefPhi_[5][4];
-Float_t AlgRefEta_[5][4];
+Float_t AlgRefPt_[nJtAlg][nJtMax];
+Float_t AlgRefPhi_[nJtAlg][nJtMax];
+Float_t AlgRefEta_[nJtAlg][nJtMax];
 
-Float_t AlgRefAvePhi_[5];
-Float_t AlgRefDelPhi_[5];
-Float_t AlgRefAsymm_[5];
+Float_t AlgRefAvePhi_[nJtAlg];
+Float_t AlgRefDelPhi12_[nJtAlg];
+Float_t AlgRefDelPhi13_[nJtAlg];
+Float_t AlgRefDelPhi23_[nJtAlg];
+Float_t AlgRefAsymm_[nJtAlg];
 
 Float_t eventPt_[2];
 
@@ -80,16 +97,17 @@ Float_t eventPt_[2];
 
 //Gen. proj. onto Jets, ordered by algorithm according to enum, PuPF == [0], PuCalo == [1], etc.
 
-Float_t gAlgJtMult_[3][2];
+Float_t gAlgJtMult_[nSumAlg][2];
 
-Float_t gAlgImbProjA_[3][6];
-Float_t gAlgImbProjAC_[3][6];
-Float_t gAlgImbProjANC_[3][6];
+Float_t gAlgImbProjA_[nSumAlg][nPtBins];
+Float_t gAlgImbProjAC_[nSumAlg][nPtBins];
+Float_t gAlgImbProjANC_[nSumAlg][nPtBins];
 
 //truth delRs
 //ProjA delR
 
-Float_t gAlgImbProjAR_[3][6][10];
+Float_t gAlgImbProjAR_[nSumAlg][nPtBins][nRBins];
+Float_t gAlgImbRawAR_[nSumAlg][nPtBins][nRBins];
 
 
 //Cut var
@@ -97,7 +115,7 @@ const Float_t leadJtPtCut = 120.;
 const Float_t subLeadJtPtCut = 50.;
 const Float_t jtDelPhiCut = 0;
 const Float_t jtEtaCut = 2.0; // Default Max at 2.4 to avoid transition junk, otherwise vary as needed                                                 
-const char* algType[5] = {"PuCalo", "VsCalo", "T", "PuPF", "VsPF"};
+const std::string algType[nJtAlg] = {"Pu3Calo", "Pu4Calo", "Pu5Calo", "Vs2Calo", "Vs3Calo", "Vs4Calo", "Vs5Calo", "T", "PuPF", "VsPF"};
 
 
 void SetAnaBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
@@ -111,15 +129,21 @@ void SetAnaBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
 
   //Tracks proj. onto Alg, ordered according to enum above, All, Cone, and NotCone
 
-  trackTreeAna_p->Branch("rAlgJtMult", rAlgJtMult_, "rAlgJtMult[6][2]/F");
+  trackTreeAna_p->Branch("rAlgJtMult", rAlgJtMult_, Form("rAlgJtMult[%d][2]/F", 2*nSumAlg));
 
-  trackTreeAna_p->Branch("rAlgImbProjA", rAlgImbProjA_, "rAlgImbProjA[6][6]/F");
-  trackTreeAna_p->Branch("rAlgImbProjAC", rAlgImbProjAC_, "rAlgImbProjAC[6][6]/F");
-  trackTreeAna_p->Branch("rAlgImbProjANC", rAlgImbProjANC_, "rAlgImbProjANC[6][6]/F");
+  trackTreeAna_p->Branch("rAlgImbProjA", rAlgImbProjA_, Form("rAlgImbProjA[%d][%d]/F", 2*nSumAlg, nPtBins));
+  trackTreeAna_p->Branch("rAlgImbProjAC", rAlgImbProjAC_, Form("rAlgImbProjAC[%d][%d]/F", 2*nSumAlg, nPtBins));
+  trackTreeAna_p->Branch("rAlgImbProjANC", rAlgImbProjANC_, Form("rAlgImbProjANC[%d][%d]/F", 2*nSumAlg, nPtBins));
   
+  trackTreeAna_p->Branch("rAlgImbProjAC0", rAlgImbProjAC0_, Form("rAlgImbProjAC0[%d][%d]/F", 2*nSumAlg, nPtBins));
+  trackTreeAna_p->Branch("rAlgImbProjAC1", rAlgImbProjAC1_, Form("rAlgImbProjAC1[%d][%d]/F", 2*nSumAlg, nPtBins));
+  trackTreeAna_p->Branch("rAlgImbProjAC2", rAlgImbProjAC2_, Form("rAlgImbProjAC2[%d][%d]/F", 2*nSumAlg, nPtBins));
+  trackTreeAna_p->Branch("rAlgImbProjAC3", rAlgImbProjAC3_, Form("rAlgImbProjAC3[%d][%d]/F", 2*nSumAlg, nPtBins));
+
   //ProjA DelRs
   
-  trackTreeAna_p->Branch("rAlgImbProjAR", rAlgImbProjAR_, "rAlgImbProjAR[6][6][10]/F");
+  trackTreeAna_p->Branch("rAlgImbProjAR", rAlgImbProjAR_, Form("rAlgImbProjAR[%d][%d][%d]/F", 2*nSumAlg, nPtBins, nRBins));
+  trackTreeAna_p->Branch("rAlgImbRawAR", rAlgImbRawAR_, Form("rAlgImbRawAR[%d][%d][%d]/F", 2*nSumAlg, nPtBins, nRBins));
 
   //Jet Tree Branches
 
@@ -133,30 +157,31 @@ void SetAnaBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     jetTreeAna_p->Branch("psin", &psin_, "psin/F");
   }
 
-  jetTreeAna_p->Branch("eventSet", eventSet_, "eventSet[5]/O");
+  jetTreeAna_p->Branch("eventSet", eventSet_, Form("eventSet[%d]/O", nJtAlg));
 
   if(sType == kHIMC){
-    jetTreeAna_p->Branch("centWeight_80", centWeight_80_, "centWeight_80[5]/F");
-    jetTreeAna_p->Branch("centWeight_Merge", centWeight_Merge_, "centWeight_Merge[5]/F");
+    jetTreeAna_p->Branch("centWeight", centWeight_, Form("centWeight[%d]/F", nJtAlg));
+    jetTreeAna_p->Branch("centWeight_Merge", centWeight_Merge_, Form("centWeight_Merge[%d]/F", nJtAlg));
   }
 
-  jetTreeAna_p->Branch("AlgJtPt", AlgJtPt_, "AlgJtPt[5][4]/F");
-  jetTreeAna_p->Branch("AlgJtPhi", AlgJtPhi_, "AlgJtPhi[5][4]/F");
-  jetTreeAna_p->Branch("AlgJtEta", AlgJtEta_, "AlgJtEta[5][4]/F");
-  jetTreeAna_p->Branch("AlgJtTrkMax", AlgJtTrkMax_, "AlgJtTrkMax[5][4]/F");
-  jetTreeAna_p->Branch("AlgJtRawPt", AlgJtRawPt_, "AlgJtRawPt[5][4]/F");
+  jetTreeAna_p->Branch("AlgJtPt", AlgJtPt_, Form("AlgJtPt[%d][%d]/F", nJtAlg, nJtMax));
+  jetTreeAna_p->Branch("AlgJtPhi", AlgJtPhi_, Form("AlgJtPhi[%d][%d]/F", nJtAlg, nJtMax));
+  jetTreeAna_p->Branch("AlgJtEta", AlgJtEta_, Form("AlgJtEta[%d][%d]/F", nJtAlg, nJtMax));
+  jetTreeAna_p->Branch("AlgJtTrkMax", AlgJtTrkMax_, Form("AlgJtTrkMax[%d][%d]/F", nJtAlg, nJtMax));
+  jetTreeAna_p->Branch("AlgJtRawPt", AlgJtRawPt_, Form("AlgJtRawPt[%d][%d]/F", nJtAlg, nJtMax));
 
-  jetTreeAna_p->Branch("AlgJtAvePhi", AlgJtAvePhi_, "AlgJtAvePhi[5]/F");
-  jetTreeAna_p->Branch("AlgJtDelPhi", AlgJtDelPhi_, "AlgJtDelPhi[5]/F");
-  jetTreeAna_p->Branch("AlgJtAsymm", AlgJtAsymm_, "AlgJtAsymm[5]/F");
+  jetTreeAna_p->Branch("AlgJtAvePhi", AlgJtAvePhi_, Form("AlgJtAvePhi[%d]/F", nJtAlg));
+  jetTreeAna_p->Branch("AlgJtDelPhi12", AlgJtDelPhi12_, Form("AlgJtDelPhi12[%d]/F", nJtAlg));
+  jetTreeAna_p->Branch("AlgJtDelPhi13", AlgJtDelPhi13_, Form("AlgJtDelPhi13[%d]/F", nJtAlg));
+  jetTreeAna_p->Branch("AlgJtDelPhi23", AlgJtDelPhi23_, Form("AlgJtDelPhi23[%d]/F", nJtAlg));
+  jetTreeAna_p->Branch("AlgJtAsymm", AlgJtAsymm_, Form("AlgJtAsymm[%d]/F", nJtAlg));
 
   if(montecarlo){
-    jetTreeAna_p->Branch("isQuarkJet", isQuarkJet_, "isQuarkJet[5]/O");
-    jetTreeAna_p->Branch("isGluonJet", isGluonJet_, "isGluonJet[5]/O");
+    jetTreeAna_p->Branch("isQuarkJet", isQuarkJet_, Form("isQuarkJet[%d]/O", nJtAlg));
+    jetTreeAna_p->Branch("isGluonJet", isGluonJet_, Form("isGluonJet[%d]/O", nJtAlg));
   }
 
-  if(sType == kHIMC)
-    jetTreeAna_p->Branch("pthatWeight", &pthatWeight_, "pthatWeight/F");
+  jetTreeAna_p->Branch("pthatWeight", &pthatWeight_, "pthatWeight/F");
 
   if(justJt)
     jetTreeAna_p->Branch("eventPt", eventPt_, "eventPt[2]/F");
@@ -165,27 +190,30 @@ void SetAnaBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     jetTreeAna_p->Branch("pthat", &pthat_, "pthat/F");
 
     //refpt for jets immediately above
-    jetTreeAna_p->Branch("AlgRefPt", AlgRefPt_, "AlgRefPt[5][4]/F");
-    jetTreeAna_p->Branch("AlgRefPhi", AlgRefPhi_, "AlgRefPhi[5][4]/F");
-    jetTreeAna_p->Branch("AlgRefEta", AlgRefEta_, "AlgRefEta[5][4]/F");
+    jetTreeAna_p->Branch("AlgRefPt", AlgRefPt_, Form("AlgRefPt[%d][%d]/F", nJtAlg, nJtMax));
+    jetTreeAna_p->Branch("AlgRefPhi", AlgRefPhi_, Form("AlgRefPhi[%d][%d]/F", nJtAlg, nJtMax));
+    jetTreeAna_p->Branch("AlgRefEta", AlgRefEta_, Form("AlgRefEta[%d][%d]/F", nJtAlg, nJtMax));
 
-    jetTreeAna_p->Branch("AlgRefAvePhi", AlgRefAvePhi_, "AlgRefAvePhi[5]/F");
-    jetTreeAna_p->Branch("AlgRefDelPhi", AlgRefDelPhi_, "AlgRefDelPhi[5]/F");
-    jetTreeAna_p->Branch("AlgRefAsymm", AlgRefAsymm_, "AlgRefAsymm[5]/F");
+    jetTreeAna_p->Branch("AlgRefAvePhi", AlgRefAvePhi_, Form("AlgRefAvePhi[%d]/F", nJtAlg));
+    jetTreeAna_p->Branch("AlgRefDelPhi12", AlgRefDelPhi12_, Form("AlgRefDelPhi12[%d]/F", nJtAlg));
+    jetTreeAna_p->Branch("AlgRefDelPhi13", AlgRefDelPhi13_, Form("AlgRefDelPhi13[%d]/F", nJtAlg));
+    jetTreeAna_p->Branch("AlgRefDelPhi23", AlgRefDelPhi23_, Form("AlgRefDelPhi23[%d]/F", nJtAlg));
+    jetTreeAna_p->Branch("AlgRefAsymm", AlgRefAsymm_, Form("AlgRefAsymm[%d]/F", nJtAlg));
 
 
     //Gen. proj. onto jetAlg, array ordered according to enum
 
     if(!justJt){
-      genTreeAna_p->Branch("gAlgJtMult", gAlgJtMult_, "gAlgJtMult[3][2]/F");
-      genTreeAna_p->Branch("gAlgImbProjA", gAlgImbProjA_, "gAlgImbProjA[3][6]/F");
-      genTreeAna_p->Branch("gAlgImbProjAC", gAlgImbProjAC_, "gAlgImbProjAC[3][6]/F");
-      genTreeAna_p->Branch("gAlgImbProjANC", gAlgImbProjANC_, "gAlgImbProjANC[3][6]/F");
+      genTreeAna_p->Branch("gAlgJtMult", gAlgJtMult_, Form("gAlgJtMult[%d][2]/F", nSumAlg));
+      genTreeAna_p->Branch("gAlgImbProjA", gAlgImbProjA_, Form("gAlgImbProjA[%d][%d]/F", nSumAlg, nPtBins));
+      genTreeAna_p->Branch("gAlgImbProjAC", gAlgImbProjAC_, Form("gAlgImbProjAC[%d][%d]/F", nSumAlg, nPtBins));
+      genTreeAna_p->Branch("gAlgImbProjANC", gAlgImbProjANC_, Form("gAlgImbProjANC[%d][%d]/F", nSumAlg, nPtBins));
       
       //Truth Del Rs, Proj
       //Proj A's
       
-      genTreeAna_p->Branch("gAlgImbProjAR", gAlgImbProjAR_, "gAlgImbProjAR[3][6][10]/F");
+      genTreeAna_p->Branch("gAlgImbProjAR", gAlgImbProjAR_, Form("gAlgImbProjAR[%d][%d][%d]/F", nSumAlg, nPtBins, nRBins));
+      genTreeAna_p->Branch("gAlgImbRawAR", gAlgImbRawAR_, Form("gAlgImbRawAR[%d][%d][%d]/F", nSumAlg, nPtBins, nRBins));
     }
   }
 }
@@ -195,81 +223,90 @@ void GetAnaBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
   Bool_t hi = isHI(sType);
-
+  
   std::cout << "Get Branches" << std::endl;
-
+  
   //Track Tree Branches
-
+  
   trackTreeAna_p->SetBranchAddress("rAlgJtMult", rAlgJtMult_);
   trackTreeAna_p->SetBranchAddress("rAlgImbProjA", rAlgImbProjA_);
   trackTreeAna_p->SetBranchAddress("rAlgImbProjAC", rAlgImbProjAC_);
   trackTreeAna_p->SetBranchAddress("rAlgImbProjANC", rAlgImbProjANC_);
   trackTreeAna_p->SetBranchAddress("rAlgImbProjAR", rAlgImbProjAR_);    
+  trackTreeAna_p->SetBranchAddress("rAlgImbRawAR", rAlgImbRawAR_);    
+  
+  trackTreeAna_p->SetBranchAddress("rAlgImbProjAC0", rAlgImbProjAC0_);
+  trackTreeAna_p->SetBranchAddress("rAlgImbProjAC1", rAlgImbProjAC1_);
+  trackTreeAna_p->SetBranchAddress("rAlgImbProjAC2", rAlgImbProjAC2_);
+  trackTreeAna_p->SetBranchAddress("rAlgImbProjAC3", rAlgImbProjAC3_);
   
   //Jet Tree Branches
+  
+  jetTreeAna_p->SetBranchAddress("run", &run_);
+  jetTreeAna_p->SetBranchAddress("evt", &evt_);
+  jetTreeAna_p->SetBranchAddress("lumi", &lumi_);
+  
+  if(montecarlo)
+    jetTreeAna_p->SetBranchAddress("pthat", &pthat_);
+  
+  if(hi){
+    jetTreeAna_p->SetBranchAddress("hiBin", &hiBin_);
+    jetTreeAna_p->SetBranchAddress("hiEvtPlane", &hiEvtPlane_);
+    jetTreeAna_p->SetBranchAddress("psin", &psin_);
+  }
+  
+  jetTreeAna_p->SetBranchAddress("eventSet", eventSet_);
+  
+  if(sType == kHIMC){
+    jetTreeAna_p->SetBranchAddress("centWeight", centWeight_);
+    jetTreeAna_p->SetBranchAddress("centWeight_Merge", centWeight_Merge_);
+  }
+  
+  if(montecarlo){
+    jetTreeAna_p->SetBranchAddress("isQuarkJet", isQuarkJet_);
+    jetTreeAna_p->SetBranchAddress("isGluonJet", isGluonJet_);
+  }     
 
-   jetTreeAna_p->SetBranchAddress("run", &run_);
-   jetTreeAna_p->SetBranchAddress("evt", &evt_);
-   jetTreeAna_p->SetBranchAddress("lumi", &lumi_);
-
-   if(montecarlo)
-     jetTreeAna_p->SetBranchAddress("pthat", &pthat_);
-
-   if(hi){
-     jetTreeAna_p->SetBranchAddress("hiBin", &hiBin_);
-     jetTreeAna_p->SetBranchAddress("hiEvtPlane", &hiEvtPlane_);
-     jetTreeAna_p->SetBranchAddress("psin", &psin_);
-   }
-
-   jetTreeAna_p->SetBranchAddress("eventSet", eventSet_);
-
-   if(sType == kHIMC){
-     jetTreeAna_p->SetBranchAddress("centWeight_80", centWeight_80_);
-     jetTreeAna_p->SetBranchAddress("centWeight_Merge", centWeight_Merge_);
-   }
-
-   if(montecarlo){
-     jetTreeAna_p->SetBranchAddress("isQuarkJet", isQuarkJet_);
-     jetTreeAna_p->SetBranchAddress("isGluonJet", isGluonJet_);
-   }     
-
-   if(sType == kHIMC)
-     jetTreeAna_p->SetBranchAddress("pthatWeight", &pthatWeight_);
-
-   jetTreeAna_p->SetBranchAddress("AlgJtPt", AlgJtPt_);
-   jetTreeAna_p->SetBranchAddress("AlgJtPhi", AlgJtPhi_);
-   jetTreeAna_p->SetBranchAddress("AlgJtEta", AlgJtEta_);
-   jetTreeAna_p->SetBranchAddress("AlgJtTrkMax", AlgJtTrkMax_);
-   jetTreeAna_p->SetBranchAddress("AlgJtRawPt", AlgJtRawPt_);
-
-   jetTreeAna_p->SetBranchAddress("AlgJtAvePhi", AlgJtAvePhi_);
-   jetTreeAna_p->SetBranchAddress("AlgJtDelPhi", AlgJtDelPhi_);
-   jetTreeAna_p->SetBranchAddress("AlgJtAsymm", AlgJtAsymm_);
-
-
-   if(justJt)
-     jetTreeAna_p->SetBranchAddress("eventPt", eventPt_);
-
-   if(montecarlo){
-     jetTreeAna_p->SetBranchAddress("AlgRefPt", AlgRefPt_);
-     jetTreeAna_p->SetBranchAddress("AlgRefPhi", AlgRefPhi_);
-     jetTreeAna_p->SetBranchAddress("AlgRefEta", AlgRefEta_);
-     
-     jetTreeAna_p->SetBranchAddress("AlgRefAvePhi", AlgRefAvePhi_);
-     jetTreeAna_p->SetBranchAddress("AlgRefDelPhi", AlgRefDelPhi_);
-     jetTreeAna_p->SetBranchAddress("AlgRefAsymm", AlgRefAsymm_);
-
-     //Gen Tree Variables
-
-     if(!justJt){
-       genTreeAna_p->SetBranchAddress("gAlgJtMult", gAlgJtMult_);
-       genTreeAna_p->SetBranchAddress("gAlgImbProjA", gAlgImbProjA_);     
-       genTreeAna_p->SetBranchAddress("gAlgImbProjAC", gAlgImbProjAC_);     
-       genTreeAna_p->SetBranchAddress("gAlgImbProjANC", gAlgImbProjANC_);     
-       
-       genTreeAna_p->SetBranchAddress("gAlgImbProjAR", gAlgImbProjAR_);     
-     }
-   }
+  jetTreeAna_p->SetBranchAddress("pthatWeight", &pthatWeight_);
+  
+  jetTreeAna_p->SetBranchAddress("AlgJtPt", AlgJtPt_);
+  jetTreeAna_p->SetBranchAddress("AlgJtPhi", AlgJtPhi_);
+  jetTreeAna_p->SetBranchAddress("AlgJtEta", AlgJtEta_);
+  jetTreeAna_p->SetBranchAddress("AlgJtTrkMax", AlgJtTrkMax_);
+  jetTreeAna_p->SetBranchAddress("AlgJtRawPt", AlgJtRawPt_);
+  
+  jetTreeAna_p->SetBranchAddress("AlgJtAvePhi", AlgJtAvePhi_);
+  jetTreeAna_p->SetBranchAddress("AlgJtDelPhi12", AlgJtDelPhi12_);
+  jetTreeAna_p->SetBranchAddress("AlgJtDelPhi13", AlgJtDelPhi13_);
+  jetTreeAna_p->SetBranchAddress("AlgJtDelPhi23", AlgJtDelPhi23_);
+  jetTreeAna_p->SetBranchAddress("AlgJtAsymm", AlgJtAsymm_);
+  
+  if(justJt)
+    jetTreeAna_p->SetBranchAddress("eventPt", eventPt_);
+  
+  if(montecarlo){
+    jetTreeAna_p->SetBranchAddress("AlgRefPt", AlgRefPt_);
+    jetTreeAna_p->SetBranchAddress("AlgRefPhi", AlgRefPhi_);
+    jetTreeAna_p->SetBranchAddress("AlgRefEta", AlgRefEta_);
+    
+    jetTreeAna_p->SetBranchAddress("AlgRefAvePhi", AlgRefAvePhi_);
+    jetTreeAna_p->SetBranchAddress("AlgRefDelPhi12", AlgRefDelPhi12_);
+    jetTreeAna_p->SetBranchAddress("AlgRefDelPhi13", AlgRefDelPhi13_);
+    jetTreeAna_p->SetBranchAddress("AlgRefDelPhi23", AlgRefDelPhi23_);
+    jetTreeAna_p->SetBranchAddress("AlgRefAsymm", AlgRefAsymm_);
+    
+    //Gen Tree Variables
+    
+    if(!justJt){
+      genTreeAna_p->SetBranchAddress("gAlgJtMult", gAlgJtMult_);
+      genTreeAna_p->SetBranchAddress("gAlgImbProjA", gAlgImbProjA_);     
+      genTreeAna_p->SetBranchAddress("gAlgImbProjAC", gAlgImbProjAC_);     
+      genTreeAna_p->SetBranchAddress("gAlgImbProjANC", gAlgImbProjANC_);     
+      
+      genTreeAna_p->SetBranchAddress("gAlgImbProjAR", gAlgImbProjAR_);
+      genTreeAna_p->SetBranchAddress("gAlgImbRawAR", gAlgImbRawAR_);
+    }
+  }
 }
 
 
@@ -298,7 +335,7 @@ void GetDiJetAnaSkim(TFile* anaFile_p, sampleType sType = kHIDATA, Bool_t justJt
 
   if(!justJt) trackTreeAna_p = (TTree*)anaFile_p->Get("trackTreeAna");
   jetTreeAna_p = (TTree*)anaFile_p->Get("jetTreeAna");
-  if(isMonteCarlo(sType) && !justJt) genTreeIni_p = (TTree*)anaFile_p->Get("genTreeAna");
+  if(isMonteCarlo(sType) && !justJt) genTreeAna_p = (TTree*)anaFile_p->Get("genTreeAna");
 
   GetAnaBranches(sType, justJt);
 }
@@ -376,15 +413,15 @@ void InitJetVar(sampleType sType = kHIDATA)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
 
-  for(Int_t initIter = 0; initIter < 5; initIter++){
+  for(Int_t initIter = 0; initIter < nJtAlg; initIter++){
     eventSet_[initIter] = false;
 
     if(sType == kHIMC){
-      centWeight_80_[initIter] = 1;    
+      centWeight_[initIter] = 1;    
       centWeight_Merge_[initIter] = 1;    
     }
 
-    for(Int_t initIter2 = 0; initIter2 < 4; initIter2++){
+    for(Int_t initIter2 = 0; initIter2 < nJtMax; initIter2++){
       AlgJtPt_[initIter][initIter2] = -10;
       AlgJtPhi_[initIter][initIter2] = -10;
       AlgJtEta_[initIter][initIter2] = -10;
@@ -393,7 +430,9 @@ void InitJetVar(sampleType sType = kHIDATA)
     }
 
     AlgJtAvePhi_[initIter] = -10;
-    AlgJtDelPhi_[initIter] = -10;
+    AlgJtDelPhi12_[initIter] = -10;
+    AlgJtDelPhi13_[initIter] = -10;
+    AlgJtDelPhi23_[initIter] = -10;
     AlgJtAsymm_[initIter] = -10;
 
     if(montecarlo){
@@ -402,14 +441,16 @@ void InitJetVar(sampleType sType = kHIDATA)
 
       pthatWeight_ = -10;
 
-      for(Int_t initIter2 = 0; initIter2 < 4; initIter2++){
+      for(Int_t initIter2 = 0; initIter2 < nJtMax; initIter2++){
 	AlgRefPt_[initIter][initIter2] = -10;
 	AlgRefPhi_[initIter][initIter2] = -10;
 	AlgRefEta_[initIter][initIter2] = -10;
       }
 
       AlgRefAvePhi_[initIter] = -10;
-      AlgRefDelPhi_[initIter] = -10;
+      AlgRefDelPhi12_[initIter] = -10;
+      AlgRefDelPhi13_[initIter] = -10;
+      AlgRefDelPhi23_[initIter] = -10;
       AlgRefAsymm_[initIter] = -10;
     }
   }
@@ -419,32 +460,39 @@ void InitProjPerp(sampleType sType = kHIDATA)
 {
   //Tracks proj. onto Alg, ordered according to enum above, corr in the back 5, All, Cone, and NotCone
 
-  for(Int_t initIter = 0; initIter < 6; initIter++){
-    for(Int_t initIter2 = 0; initIter2 < 6; initIter2++){
+  for(Int_t initIter = 0; initIter < 2*nSumAlg; initIter++){
+    for(Int_t initIter2 = 0; initIter2 < nPtBins; initIter2++){
       if(initIter2 < 2) rAlgJtMult_[initIter][initIter2] = 0;
 
       rAlgImbProjA_[initIter][initIter2] = 0;
       rAlgImbProjAC_[initIter][initIter2] = 0;
       rAlgImbProjANC_[initIter][initIter2] = 0;
 
-      for(Int_t initIter3 = 0; initIter3 < 10; initIter3++){
+      rAlgImbProjAC0_[initIter][initIter2] = 0;
+      rAlgImbProjAC1_[initIter][initIter2] = 0;
+      rAlgImbProjAC2_[initIter][initIter2] = 0;
+      rAlgImbProjAC3_[initIter][initIter2] = 0;
+
+      for(Int_t initIter3 = 0; initIter3 < nRBins; initIter3++){
 	rAlgImbProjAR_[initIter][initIter2][initIter3] = 0;
+	rAlgImbRawAR_[initIter][initIter2][initIter3] = 0;
       }
     }
   }
 
   if(isMonteCarlo(sType)){
     //Gen. proj. onto Truth
-    for(Int_t initIter = 0; initIter < 3; initIter++){
-      for(Int_t initIter2 = 0; initIter2 < 6; initIter2++){
+    for(Int_t initIter = 0; initIter < nSumAlg; initIter++){
+      for(Int_t initIter2 = 0; initIter2 < nPtBins; initIter2++){
 	if(initIter2 < 2) gAlgJtMult_[initIter][initIter2] = 0;
 
 	gAlgImbProjA_[initIter][initIter2] = 0;
 	gAlgImbProjAC_[initIter][initIter2] = 0;
 	gAlgImbProjANC_[initIter][initIter2] = 0;
 
-	for(Int_t initIter3 = 0; initIter3 < 10; initIter3++){
+	for(Int_t initIter3 = 0; initIter3 < nRBins; initIter3++){
 	  gAlgImbProjAR_[initIter][initIter2][initIter3] = 0;
+	  gAlgImbRawAR_[initIter][initIter2][initIter3] = 0;
 	}
       }
     }    
@@ -460,7 +508,7 @@ void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float
   eventSet_[algNum] = true;
 
   Int_t iterMax = nJt;
-  if(nJt > 4) iterMax = 4;
+  if(nJt > nJtMax) iterMax = nJtMax;
 
   for(Int_t leadIter = 0; leadIter < iterMax; leadIter++){
     AlgJtPt_[algNum][leadIter] = jtPt[leadIter];
@@ -480,18 +528,33 @@ void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float
   }
 
   AlgJtAvePhi_[algNum] = getAvePhi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][1]);
-  AlgJtDelPhi_[algNum] = getAbsDphi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][1]);
+  AlgJtDelPhi12_[algNum] = getAbsDphi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][1]);
+  
+  if(AlgJtPt_[algNum][2] > 30 && TMath::Abs(AlgJtEta_[algNum][2]) < 2.0){
+    AlgJtDelPhi13_[algNum] = getAbsDphi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][2]);
+    AlgJtDelPhi23_[algNum] = getAbsDphi(AlgJtPhi_[algNum][1], AlgJtPhi_[algNum][2]);
+  }
+  
   AlgJtAsymm_[algNum] = (AlgJtPt_[algNum][0] - AlgJtPt_[algNum][1])/(AlgJtPt_[algNum][0] + AlgJtPt_[algNum][1]);
-
+    
   if(montecarlo && algNum != 2){
-    if(AlgRefPhi_[algNum][0] > -10 && AlgRefPhi_[algNum][1] > -10){
+    if(AlgRefPhi_[algNum][0] > -9 && AlgRefPhi_[algNum][1] > -9){
       AlgRefAvePhi_[algNum] = getAvePhi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][1]);
-      AlgRefDelPhi_[algNum] = getAbsDphi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][1]);
+
+      AlgRefDelPhi12_[algNum] = getAbsDphi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][1]);
+
+      if(AlgRefPhi_[algNum][2] > -9){
+	AlgRefDelPhi13_[algNum] = getAbsDphi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][2]);
+	AlgRefDelPhi23_[algNum] = getAbsDphi(AlgRefPhi_[algNum][1], AlgRefPhi_[algNum][2]);
+      }
+
       AlgRefAsymm_[algNum] = (AlgRefPt_[algNum][0] - AlgRefPt_[algNum][1])/(AlgRefPt_[algNum][0] + AlgRefPt_[algNum][1]);
     }
     else{
       AlgRefAvePhi_[algNum] = -10;
-      AlgRefDelPhi_[algNum] = -10;
+      AlgRefDelPhi12_[algNum] = -10;
+      AlgRefDelPhi13_[algNum] = -10;
+      AlgRefDelPhi23_[algNum] = -10;
       AlgRefAsymm_[algNum] = -10;
     }
   }
@@ -529,9 +592,30 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
       rAlgImbProjANC_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
     }
 
+    if(tempLeadDelR < 0.5 || tempSubLeadDelR < 0.5){
+      rAlgImbProjAC0_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC0_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+    }
+    else if(tempLeadDelR < 1.0 || tempSubLeadDelR < 1.0){
+      rAlgImbProjAC1_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC1_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+    }
+    else if(tempLeadDelR < 1.5 || tempSubLeadDelR < 1.5){
+      rAlgImbProjAC2_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC2_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+    }
+    else{
+      rAlgImbProjAC3_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC3_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+    }
+
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	rAlgImbProjAR_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	rAlgImbProjAR_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAR_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
+	rAlgImbProjAR_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+
+	rAlgImbRawAR_[jtAlgCorr][5][rIter] += TMath::Abs(corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])));	
+	rAlgImbRawAR_[jtAlgCorr][ptIter][rIter] += TMath::Abs(corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])));
 	break;
       }
     }
@@ -582,6 +666,9 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
 	gAlgImbProjAR_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
 	gAlgImbProjAR_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+
+	gAlgImbRawAR_[jtAlg][5][rIter] += TMath::Abs(pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])));
+	gAlgImbRawAR_[jtAlg][ptIter][rIter] += TMath::Abs(pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])));
 	break;
       }
     }

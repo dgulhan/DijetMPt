@@ -1,6 +1,8 @@
-if [ $# -ne 7 ]
+#!/bin/bash
+
+if [ $# -ne 6 ]
 then 
-  echo "Usage: ./makeDiJetAnaSkim.sh <inputList> <sType> <outputFile> <outDir> <#> <justJtBool> <isHITrk>"
+  echo "Usage: ./makeDiJetAnaSkim.sh <inputList> <sType> <outDir> <#> <justJtBool> <isHITrk>"
   exit 1
 fi
 
@@ -18,8 +20,13 @@ then
   fi
 fi
 
-echo | awk -v inputList=$1 -v sType=$2 -v outputFile=$3 -v num=$5 -v justJt=$6 -v isHITrk=$7 '{print "./makeDiJetAnaSkim.exe \""inputList"\" \""sType"\" \""outputFile"\" \""num"\" \""justJt"\" \""isHITrk"\""}' | bash
-mv $3_$5.root $4
-rm *.root
+echo | awk -v inputList=$1 -v sType=$2 -v num=$4 -v justJt=$5 -v isHITrk=$6 '{print "./makeDiJetAnaSkim.exe \""inputList"\" \""sType"\" \""num"\" \""justJt"\" \""isHITrk"\""}' | bash
+
+rm cent*.root
+rm hist*.root
+rm eff*.root
+rm fake*.root
+mv *.root $3
+rm *.root 
 
 echo "job done successfully"

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ $# -ne 5 ]
 then 
   echo "Usage: ./pmakeDiJetAnaSkim_MIXING.sh <inputList> <sType> <outName> <outDir> <justJtBool>"
