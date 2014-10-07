@@ -77,7 +77,6 @@ Float_t trkEta_[maxTracks];
 
 Int_t nPF_;
 Float_t pfPt_[maxPF];
-Float_t pfVsIniPt_[maxPF];
 Float_t pfPhi_[maxPF];
 Float_t pfEta_[maxPF];
 
@@ -260,7 +259,6 @@ void SetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
 
     pfCandTreeIni_p->Branch("nPF", &nPF_, "nPF/I");
     pfCandTreeIni_p->Branch("pfPt", &pfPt_, "pfPt[nPF]/F");
-    pfCandTreeIni_p->Branch("pfVsIniPt", &pfVsIniPt_, "pfVsIniPt[nPF]/F");
     pfCandTreeIni_p->Branch("pfPhi", &pfPhi_, "pfPhi[nPF]/F");
     pfCandTreeIni_p->Branch("pfEta", &pfEta_, "pfEta[nPF]/F");
   } 
@@ -467,13 +465,11 @@ void GetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     trackTreeIni_p->SetBranchAddress("trkPt", trkPt_);
     trackTreeIni_p->SetBranchAddress("trkPhi", trkPhi_);
     trackTreeIni_p->SetBranchAddress("trkEta", trkEta_);
-    /*
+    
     pfCandTreeIni_p->SetBranchAddress("nPF", &nPF_);
     pfCandTreeIni_p->SetBranchAddress("pfPt", pfPt_);
-    pfCandTreeIni_p->SetBranchAddress("pfVsIniPt", pfVsIniPt_);
     pfCandTreeIni_p->SetBranchAddress("pfPhi", pfPhi_);
-    pfCandTreeIni_p->SetBranchAddress("pfEta", pfEta_);
-    */
+    pfCandTreeIni_p->SetBranchAddress("pfEta", pfEta_);    
   }
 
   //Jet Tree Branches
