@@ -72,6 +72,7 @@ Int_t nTrk_;
 Float_t trkPt_[maxTracks];
 Float_t trkPhi_[maxTracks];
 Float_t trkEta_[maxTracks];
+Float_t trkCorr_[maxTracks];
 
 //PFCand Tree Variables
 
@@ -254,6 +255,7 @@ void SetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     trackTreeIni_p->Branch("trkPt", trkPt_, "trkPt[nTrk]/F");
     trackTreeIni_p->Branch("trkPhi", trkPhi_, "trkPhi[nTrk]/F");
     trackTreeIni_p->Branch("trkEta", trkEta_, "trkEta[nTrk]/F");
+    trackTreeIni_p->Branch("trkCorr", trkCorr_, "trkCorr[nTrk]/F");
 
     //PF Cand Tree Branches
 
@@ -465,6 +467,7 @@ void GetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     trackTreeIni_p->SetBranchAddress("trkPt", trkPt_);
     trackTreeIni_p->SetBranchAddress("trkPhi", trkPhi_);
     trackTreeIni_p->SetBranchAddress("trkEta", trkEta_);
+    trackTreeIni_p->SetBranchAddress("trkCorr", trkCorr_);
 
     pfCandTreeIni_p->SetBranchAddress("nPF", &nPF_);
     pfCandTreeIni_p->SetBranchAddress("pfPt", pfPt_);
@@ -694,9 +697,9 @@ void InitTrkJts(Bool_t justJt = false)
 {
   if(justJt){
     for(Int_t jtIter = 0; jtIter < 5; jtIter++){
-      TrkJtPt_[jtIter] = -10;
-      TrkJtPhi_[jtIter] = -10;
-      TrkJtEta_[jtIter] = -10;
+      TrkJtPt_[jtIter] = -999;
+      TrkJtPhi_[jtIter] = -999;
+      TrkJtEta_[jtIter] = -999;
     }
   }
 }

@@ -115,8 +115,6 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 
   std::cout << nentries << std::endl;
 
-  std::cout << "Cuts, Lead/Sublead Pt, delphi, eta: " << leadJtPtCut << ", " << subLeadJtPtCut << ", " << jtDelPhiCut << ", " << jtEtaCut << std::endl; 
-
   for(Long64_t jentry = 0; jentry < nentries; jentry++){
     jetTreeIni_p->GetEntry(jentry);
 
@@ -228,6 +226,9 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
       for(Int_t algIter = 0; algIter < 7; algIter++){
 	centWeight_[algIter] = hist_DataOverMC_p[algIter]->GetBinContent(hist_DataOverMC_p[algIter]->FindBin(hiBin_));
       }
+      centWeight_[7] = hist_DataOverMC_p[4]->GetBinContent(hist_DataOverMC_p[4]->FindBin(hiBin_));
+      centWeight_[8] = hist_DataOverMC_p[4]->GetBinContent(hist_DataOverMC_p[4]->FindBin(hiBin_));
+      centWeight_[9] = hist_DataOverMC_p[4]->GetBinContent(hist_DataOverMC_p[4]->FindBin(hiBin_));
     }
 
     //Iterate over tracks

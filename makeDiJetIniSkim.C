@@ -21,8 +21,14 @@
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/ClusterSequenceArea.hh"
 
-const Float_t leadJtPtCut = 120.;
-const Float_t subLeadJtPtCut = 50.;
+/*
+const Float_t leadJtPtCut[10] = {120., 120., 120., 117.448, 120., 123.66, 127.89, 120., 120., 120.};
+const Float_t subLeadJtPtCut[10] = {50., 50., 50., 48.9367, 50.0001, 51.5252, 53.2873, 50., 50., 50.};
+*/
+
+const Float_t leadJtPtCut[10] = {120., 120., 120., 120., 120., 120., 120., 120., 120., 120.};
+const Float_t subLeadJtPtCut[10] = {50., 50., 50., 50., 50., 50., 50., 50., 50., 50.};
+
 const Float_t jtDelPhiCut = 0;
 const Float_t jtEtaCut = 2.0; // Default Max at 2.4 to avoid transition junk, otherwise vary as needed
 
@@ -62,7 +68,7 @@ void setJtBranches(TTree* inJtTree, Bool_t montecarlo = false, Bool_t isGen = fa
 }
 
 
-Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
+Bool_t passesDijet(Jets jtCollection, Int_t algNum, Int_t &lPtCut, Int_t &sLPtCut)
 {
   Int_t leadJtIndex = -1;
   Int_t subLeadJtIndex = -1;
@@ -78,7 +84,7 @@ Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
 
   for(Int_t jtEntry = 0; jtEntry < jtCollection.nref; jtEntry++){
     if(leadJtIndex < 0){
-      if(jtCollection.jtpt[jtEntry] > leadJtPtCut){
+      if(jtCollection.jtpt[jtEntry] > leadJtPtCut[algNum]){
 	if(TMath::Abs(jtCollection.jteta[jtEntry]) < jtEtaCut)
 	  leadJtIndex = jtEntry;
       }
@@ -88,7 +94,7 @@ Bool_t passesDijet(Jets jtCollection, Int_t &lPtCut, Int_t &sLPtCut)
       }
     }
     else if(subLeadJtIndex < 0){
-      if(jtCollection.jtpt[jtEntry] > subLeadJtPtCut){
+      if(jtCollection.jtpt[jtEntry] > subLeadJtPtCut[algNum]){
 	if(TMath::Abs(jtCollection.jteta[jtEntry]) < jtEtaCut)
 	  subLeadJtIndex = jtEntry;
       }
@@ -228,12 +234,10 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     setJtBranches(c->akPu3CaloJetTree, montecarlo);
     setJtBranches(c->akPu4CaloJetTree, montecarlo);
     setJtBranches(c->akPu5CaloJetTree, montecarlo);
-
     setJtBranches(c->akVs2CaloJetTree, montecarlo);
     setJtBranches(c->akVs3CaloJetTree, montecarlo);
     setJtBranches(c->akVs4CaloJetTree, montecarlo);
     setJtBranches(c->akVs5CaloJetTree, montecarlo);
-
     setJtBranches(c->akPu3PFJetTree, montecarlo, true);
     setJtBranches(c->akVs3PFJetTree, montecarlo);
   }
@@ -243,7 +247,6 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     setJtBranches(c->akPu3CaloJetTree, montecarlo);
     setJtBranches(c->akPu4CaloJetTree, montecarlo);
     setJtBranches(c->akPu5CaloJetTree, montecarlo);
-
     setJtBranches(c->ak2CaloJetTree, montecarlo);
     setJtBranches(c->ak3CaloJetTree, montecarlo);
     setJtBranches(c->ak4CaloJetTree, montecarlo);
@@ -309,11 +312,8 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   TFile *outFile = new TFile(Form("%s_%d_%d.root", outName, num, 0), "RECREATE");
   InitDiJetIniSkim(sType, justJt);
 
-  if(justJt){
-    InitCorrFiles(sType);
-    InitCorrHists(sType);
-  }
-
+  InitCorrFiles(sType);
+  InitCorrHists(sType);
 
   Int_t totEv = 0;
   Int_t selectCut = 0;
@@ -321,8 +321,6 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   Int_t AlgLeadJtPtCut[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   Int_t AlgSubLeadJtPtCut[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-  std::cout << "Cuts, Lead/Sublead Pt, delphi, eta: " << leadJtPtCut << ", " << subLeadJtPtCut << ", " << jtDelPhiCut << ", " << jtEtaCut << std::endl; 
 
   for(Long64_t jentry = 0; jentry < nentries; jentry++){
     c->hasTrackTree = false;
@@ -379,7 +377,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       if(algIter == 7)
 	continue;
 
-      algPasses[algIter] = passesDijet(AlgJtCollection[algIter], AlgLeadJtPtCut[algIter], AlgSubLeadJtPtCut[algIter]);
+      algPasses[algIter] = passesDijet(AlgJtCollection[algIter], algIter, AlgLeadJtPtCut[algIter], AlgSubLeadJtPtCut[algIter]);
     }
 
     //truth, doesn't work w/ getLeadJt because truth doesnt get its own tree
@@ -399,7 +397,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       else{
 	for(Int_t jtEntry = 0; jtEntry < c->akPu3PF.ngen; jtEntry++){
 	  if(leadJtIndex < 0){
-	    if(c->akPu3PF.genpt[jtEntry] > leadJtPtCut){
+	    if(c->akPu3PF.genpt[jtEntry] > leadJtPtCut[7]){
 	      if(TMath::Abs(c->akPu3PF.geneta[jtEntry]) < jtEtaCut)
 		leadJtIndex = jtEntry;
 	    }
@@ -409,7 +407,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	    }
 	  }
 	  else if(subLeadJtIndex < 0){
-	    if(c->akPu3PF.genpt[jtEntry] > subLeadJtPtCut){
+	    if(c->akPu3PF.genpt[jtEntry] > subLeadJtPtCut[7]){
 	      if(TMath::Abs(c->akPu3PF.geneta[jtEntry]) < jtEtaCut)
 		subLeadJtIndex = jtEntry;
 	    }
@@ -456,7 +454,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     if(novaBool && !montecarlo) continue;
-*/
+    */
 
     if(kHIMC == sType) pthatIni_ = c->akPu3PF.pthat;
     else if(kPPMC == sType) pthatIni_ = c->ak3Calo.pthat;
@@ -476,6 +474,8 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(hi)
       hiBinIni_ = c->evt.hiBin;
 
+    InitPosArrPbPb(hiBinIni_);
+
     //Iterate over jets
 
     nPu3Calo_ = 0;
@@ -489,6 +489,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     nPu3PF_ = 0;
     nVs3PF_ = 0;
 
+    
     for(Int_t Pu3CaloIter = 0; Pu3CaloIter < AlgJtCollection[0].nref; Pu3CaloIter++){
       if(AlgJtCollection[0].jtpt[Pu3CaloIter] < 30.0)
 	break;
@@ -649,7 +650,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
       nVs5Calo_++;
     }
-
+    
     if(montecarlo){
       for(Int_t T3Iter = 0; T3Iter < c->akPu3PF.ngen; T3Iter++){
 	if(c->akPu3PF.genpt[T3Iter] < 30.0)
@@ -713,6 +714,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	nVs3PF_++;
       }
     }
+    
 
     //Iterate over tracks
 
@@ -726,23 +728,17 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     
     for(Int_t trkEntry = 0; trkEntry < trkCollection.nTrk; trkEntry++){
       
-      if(TMath::Abs(trkCollection.trkEta[trkEntry]) > 2.4)
-	continue;
+      if(TMath::Abs(trkCollection.trkEta[trkEntry]) > 2.4) continue;
       
-      if(trkCollection.trkPt[trkEntry] <= 0.5)
-	continue;
+      if(trkCollection.trkPt[trkEntry] <= 0.5) continue;
 	
-      if(!trkCollection.highPurity[trkEntry])
-	continue;
+      if(!trkCollection.highPurity[trkEntry]) continue;
 	
-      if(TMath::Abs(trkCollection.trkDz1[trkEntry]/trkCollection.trkDzError1[trkEntry]) > 3)
-	continue;
+      if(TMath::Abs(trkCollection.trkDz1[trkEntry]/trkCollection.trkDzError1[trkEntry]) > 3) continue;
 	
-      if(TMath::Abs(trkCollection.trkDxy1[trkEntry]/trkCollection.trkDxyError1[trkEntry]) > 3)
-	continue;
+      if(TMath::Abs(trkCollection.trkDxy1[trkEntry]/trkCollection.trkDxyError1[trkEntry]) > 3) continue;
 	
-      if(trkCollection.trkPtError[trkEntry]/trkCollection.trkPt[trkEntry] > 0.1)
-	continue;
+      if(trkCollection.trkPtError[trkEntry]/trkCollection.trkPt[trkEntry] > 0.1) continue;
 	
       trkPt_[nTrk_] = trkCollection.trkPt[trkEntry];
       trkPhi_[nTrk_] = trkCollection.trkPhi[trkEntry];
@@ -750,6 +746,9 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       tempTL.SetPtEtaPhiM(trkCollection.trkPt[trkEntry], trkCollection.trkEta[trkEntry], trkCollection.trkPhi[trkEntry], 0);
       jtVect_p->push_back(tempTL);
 	
+      Float_t tempRMin = getTrkRMin(trkPhi_[nTrk_], trkEta_[nTrk_], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
+      trkCorr_[nTrk_] = factorizedPtCorr(getPtBin(trkPt_[nTrk_], sType), hiBinIni_, trkPt_[nTrk_], trkPhi_[nTrk_], trkEta_[nTrk_], tempRMin, sType);
+
       //Grab proj. Pt Spectra For Tracks in each Event Subset    
 	
       nTrk_++;
@@ -760,7 +759,6 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     nPF_ = 0;
-
     PFs pf = c->pf;
 
     for(Int_t pfIter = 0; pfIter < pf.nPFpart; pfIter++){
@@ -788,8 +786,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
     InitTrkJts(justJt);
-    if(hi)
-      InitPosArrPbPb(hiBinIni_);
+    if(hi) InitPosArrPbPb(hiBinIni_);
 
     if(justJt && algPasses[1] == true){
       fastjet::ClusterSequence cs(*jtVect_p, jetDef);

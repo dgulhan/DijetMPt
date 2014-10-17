@@ -22,10 +22,10 @@ TFile* histFile_p = 0;
 
 TFile* plotFile_p = 0;
 
-const char* algType[7] = {"Pu3Calo", "Pu4Calo", "Pu5Calo", "Vs2Calo", "Vs3Calo", "Vs4Calo", "Vs5Calo"};
-const char* algTypePP[7] = {"Vs3Calo", "Vs4Calo", "Vs5Calo", "Vs2Calo", "Vs3Calo", "Vs4Calo", "Vs5Calo"};
-const char* radString[7] = {"0.3", "0.4", "0.5", "0.2", "0.3", "0.4", "0.5"};
-const char* puVsString[7] = {"Pu", "Pu", "Pu", "Vs", "Vs", "Vs", "Vs"};
+const char* algType[8] = {"Pu3Calo", "Pu4Calo", "Pu5Calo", "Vs2Calo", "Vs3Calo", "Vs4Calo", "Vs5Calo", "T"};
+const char* algTypePP[8] = {"Vs3Calo", "Vs4Calo", "Vs5Calo", "Vs2Calo", "Vs3Calo", "Vs4Calo", "Vs5Calo", "T"};
+const char* radString[8] = {"0.3", "0.4", "0.5", "0.2", "0.3", "0.4", "0.5", "0.3"};
+const char* puVsString[8] = {"Pu", "Pu", "Pu", "Vs", "Vs", "Vs", "Vs", "T"};
 
 Bool_t sameSign(Double_t num1, Double_t num2)
 {
@@ -53,7 +53,7 @@ void drawPatch(float x1, float y1, float x2, float y2){
 
 
 void makePatch(const char* CNCR){
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD"))
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi"))
     drawPatch(.74, .001, .90, .25);
   else if(!strcmp(CNCR, "C") || !strcmp(CNCR, "NC"))
     drawPatch(.74, .001, .90, .25);
@@ -269,7 +269,7 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 {
   Int_t nBins = 4;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi"))
     nBins = 10;
   else if(strcmp(Tight, "") != 0)
     nBins = 8;
@@ -283,10 +283,10 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 
   const char* xTitle;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
-    xTitle = "#DeltaR";
-  else
-    xTitle = "A_{J}";
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU")) xTitle = "#DeltaR";
+  else if(!strcmp(CNCR, "Eta")) xTitle = "#Delta#eta";
+  else if(!strcmp(CNCR, "Phi")) xTitle = "#Delta#phi";
+  else xTitle = "A_{J}";
 
   h_p[4]->SetXTitle(xTitle);
   h_p[3]->SetXTitle(xTitle);
@@ -310,7 +310,7 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_t isSub = false, const char* CNCR = "")
 {
   if(isSub){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi"))
       niceTH1(drawHist_p, 4.999, -10., 505, 503);
     else if(!strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3"))
       niceTH1(drawHist_p, 9.999, -20., 505, 403);
@@ -349,7 +349,7 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, I
   h_p[5]->DrawCopy("SAME E1");
 
   if(isSub == false){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")){
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")){
       for(Int_t hIter = 0; hIter < 9; hIter++){
 	h_p[5]->SetBinContent(hIter+2, h_p[5]->GetBinContent(hIter+1) + h_p[5]->GetBinContent(hIter+2));
       }
@@ -599,7 +599,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   TLegend* legA_p = new TLegend(0.25, 0.18, 0.99, 0.88);
   TLegend* legB_p;
   TLegend* legC_p;
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")){
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")){
     legB_p = new TLegend(0.45, 0.1, 0.75, 0.40);
     legC_p = new TLegend(.20, .15, .45, .30);
 
@@ -636,7 +636,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   TLine* zeroLine_p;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")) zeroLine_p = new TLine(0., 0., 2.0, 0.);
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")) zeroLine_p = new TLine(0., 0., 2.0, 0.);
   else zeroLine_p = new TLine(0., 0., 0.5, 0.);
 
   zeroLine_p->SetLineColor(1);
@@ -658,14 +658,14 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   }
 
   legB_p->Draw("SAME");
-
   profPanel_p->cd(2);
 
   makeHistForPtStack(hist1_p, 2, Tight, CNCR);
 
   drawFullStack(hist1_p, 0, 28, 0, 2, false, CNCR);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")) histPP_p[5]->DrawCopy("SAME HIST C");
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")) histPP_p[5]->DrawCopy("SAME HIST C");
+
 
   Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
   if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA50100, hist1_p[5]);
@@ -681,7 +681,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.50, overCoord[1], "30-100%");
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")){
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")){
     label1_p->DrawLatex(.20, .05, "#sqrt{s_{NN}} = 2.76 TeV");
     legC_p->AddEntry(histPP_p[5], "pp cumulative", "L");
     legC_p->AddEntry(hist1_p[5], "PbPb cumulative", "L");
@@ -713,7 +713,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   drawFullStack(hist2_p, 0, 28, 0, 3, false, CNCR);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD")) histPP_p[5]->DrawCopy("SAME HIST C");
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")) histPP_p[5]->DrawCopy("SAME HIST C");
 
   Float_t sysA3050[4] = {3.8, 4.4, 5.8, 6.5};
   if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA3050, hist2_p[5]);
@@ -729,7 +729,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.60, overCoord[0], Form("%s", overLabel[2]));
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD"))
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi"))
     label1_p->DrawLatex(.10, .05, Form("anti-k_{T} %sCalo R=%s", puVsString[setNum], radString[setNum]));
   else
     label1_p->DrawLatex(.05, .05, Form("anti-k_{T} %sCalo R=%s", puVsString[setNum], radString[setNum]));
@@ -854,7 +854,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.60, overCoord[3], ppChar[1]);
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3")){
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")){
     label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<0.5");
     label1_p->DrawLatex(.45, .28, "#Delta#phi_{1,2}>5#pi/6");
   }
@@ -923,24 +923,26 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
   Int_t jetAlgMax = 7;
   
   if(montecarlo)
-    jetAlgMax = 7;
+    jetAlgMax = 8;
   
   const char* corr[2] = {"", "Corr"};
-  const char* CNCR[10] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU"};
+  const char* CNCR[12] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU", "Eta", "Phi"};
   const char* Tight[2] = {"", "Tight"};
 
-  for(Int_t algIter = 0; algIter < jetAlgMax; algIter++){
+  for(Int_t algIter = 4; algIter < 5; algIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
       for(Int_t corrIter = 1; corrIter < 2; corrIter++){
-	for(Int_t CNCRIter = 0; CNCRIter < 10; CNCRIter++){
+	for(Int_t CNCRIter = 7; CNCRIter < 12; CNCRIter++){
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1) continue;
 
-	  if(CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5 || CNCRIter == 6) continue;
+	  if(CNCRIter == 1 || CNCRIter == 2 || CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5 || CNCRIter == 6) continue;
 
 	  makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 
+	  /*
 	  if(montecarlo && corrIter > 0)
 	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+	  */
 	}
       }
     }
