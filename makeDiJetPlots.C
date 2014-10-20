@@ -53,12 +53,14 @@ void drawPatch(float x1, float y1, float x2, float y2){
 
 
 void makePatch(const char* CNCR){
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi"))
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU"))
     drawPatch(.74, .001, .90, .25);
   else if(!strcmp(CNCR, "C") || !strcmp(CNCR, "NC"))
     drawPatch(.74, .001, .90, .25);
   else
     drawPatch(.74, .001, .90, .25);
+
+  return;
 }
 
 
@@ -74,6 +76,8 @@ void drawNum(const char* CNCR){
     temp->DrawLatex(.0001, .945, "0.4");
   else
     temp->DrawLatex(.0001, .94, "0.4");
+
+  return;
 }
 
 
@@ -83,22 +87,21 @@ void drawBin(const char* CNCR){
   temp->SetTextFont(43);
   temp->SetTextSizePixels(28);
 
-  if(!strcmp(CNCR, "RU"))
-    temp->DrawLatex(.30, .10, "A_{J} > 0.22");
-  else if(!strcmp(CNCR, "RD"))
-    temp->DrawLatex(.30, .10, "A_{J} < 0.22");
-  else if(!strcmp(CNCR, "C"))
-    temp->DrawLatex(.15, .10, "In-cone, #DeltaR < 0.8");
-  else if(!strcmp(CNCR, "NC"))
-    temp->DrawLatex(.15, .10, "Out-cone, #DeltaR > 0.8");
-  else if(!strcmp(CNCR, "C0"))
-    temp->DrawLatex(.15, .10, "#DeltaR < 0.5");
-  else if(!strcmp(CNCR, "C1"))
-    temp->DrawLatex(.15, .10, "0.5 < #DeltaR < 1.0");
-  else if(!strcmp(CNCR, "C2"))
-    temp->DrawLatex(.15, .10, "1.0 < #DeltaR < 1.5");
-  else if(!strcmp(CNCR, "C3"))
-    temp->DrawLatex(.15, .10, "1.5 < #DeltaR");
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "PhiCut")) temp->DrawLatex(.30, .16, "A_{J} Inclusive");
+  else if(!strcmp(CNCR, "RU") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCutU")) temp->DrawLatex(.30, .16, "A_{J}>0.22");
+  else if(!strcmp(CNCR, "RD") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "PhiCutD")) temp->DrawLatex(.30, .16, "A_{J}<0.22");
+  else if(!strcmp(CNCR, "C")) temp->DrawLatex(.15, .16, "In-cone, #DeltaR < 0.8");
+  else if(!strcmp(CNCR, "NC")) temp->DrawLatex(.15, .16, "Out-cone, #DeltaR > 0.8");
+  else if(!strcmp(CNCR, "C0")) temp->DrawLatex(.15, .16, "#DeltaR < 0.5");
+  else if(!strcmp(CNCR, "C1")) temp->DrawLatex(.15, .16, "0.5 < #DeltaR < 1.0");
+  else if(!strcmp(CNCR, "C2")) temp->DrawLatex(.15, .16, "1.0 < #DeltaR < 1.5");
+  else if(!strcmp(CNCR, "C3")) temp->DrawLatex(.15, .16, "1.5 < #DeltaR");
+
+  if(!strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD")) temp->DrawLatex(.30, .08, "|#Delta#phi(#Delta#eta)|_{trk,jet}<1.0");
+  else if(!strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "EtaCutD")) temp->DrawLatex(.30, .08, "|#Delta#phi|_{trk,jet}<1.0");
+  else if(!strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutU") || !strcmp(CNCR, "PhiCutD")) temp->DrawLatex(.30, .08, "|#Delta#eta|_{trk,jet}<1.0");
+
+  return;
 }
 
 
@@ -265,11 +268,11 @@ Double_t sumYForPTStack(Double_t dIn = 0, Double_t comp1 = 0, Double_t comp2 = 0
 }
 
 
-void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", const char* CNCR = "")
+void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", const char* CNCR = "", const std::string projMult = "")
 {
   Int_t nBins = 4;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi"))
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU"))
     nBins = 10;
   else if(strcmp(Tight, "") != 0)
     nBins = 8;
@@ -283,9 +286,9 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 
   const char* xTitle;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU")) xTitle = "#DeltaR";
-  else if(!strcmp(CNCR, "Eta")) xTitle = "#Delta#eta";
-  else if(!strcmp(CNCR, "Phi")) xTitle = "#Delta#phi";
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU")) xTitle = "#DeltaR";
+  else if(!strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU")) xTitle = "#Delta#eta";
+  else if(!strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")) xTitle = "#Delta#phi";
   else xTitle = "A_{J}";
 
   h_p[4]->SetXTitle(xTitle);
@@ -296,22 +299,35 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
   h_p[5]->SetXTitle(xTitle);
 
   if(pos == 1){
-    h_p[4]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
-    h_p[3]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
-    h_p[2]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
-    h_p[1]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
-    h_p[0]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
-    h_p[5]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
+    if(!strcmp(projMult.c_str(), "ImbProj")){
+      h_p[4]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
+      h_p[3]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
+      h_p[2]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
+      h_p[1]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
+      h_p[0]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
+      h_p[5]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
+    }
+    else if(!strcmp(projMult.c_str(), "Mult")){
+      h_p[4]->SetYTitle("   #Delta_{Mult}");
+      h_p[3]->SetYTitle("   #Delta_{Mult}");
+      h_p[2]->SetYTitle("   #Delta_{Mult}");
+      h_p[1]->SetYTitle("   #Delta_{Mult}");
+      h_p[0]->SetYTitle("   #Delta_{Mult}");
+      h_p[5]->SetYTitle("   #Delta_{Mult}");
+    }
   }
 
   return;
 }
 
-void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_t isSub = false, const char* CNCR = "")
+void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, const std::string projMult, Bool_t isSub = false, const char* CNCR = "")
 {
+  Float_t lowBound = -10;
+  if(!strcmp(projMult.c_str(), "Mult")) lowBound = -5.;
+
   if(isSub){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi"))
-      niceTH1(drawHist_p, 4.999, -10., 505, 503);
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU")|| !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU")|| !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU"))
+      niceTH1(drawHist_p, 4.999, lowBound, 505, 503);
     else if(!strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3"))
       niceTH1(drawHist_p, 9.999, -20., 505, 403);
     else
@@ -328,17 +344,20 @@ void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, Bool_
   return;
 }
 
-void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, Int_t pos = 2, Bool_t isSub = false, const char* CNCR = "")
+void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, const std::string projMult, TLegend* leg_p = 0, Int_t pos = 2, Bool_t isSub = false, const char* CNCR = "")
 {
-  drawHistToPTStack(h_p[0], kBlue - 9, "E1 HIST", isSub, CNCR);
-  drawHistToPTStack(h_p[1], kYellow - 9, "E1 HIST SAME", isSub, CNCR);
-  drawHistToPTStack(h_p[2], kOrange + 1, "E1 HIST SAME", isSub, CNCR);
-  drawHistToPTStack(h_p[3], kGreen + 3, "E1 HIST SAME", isSub, CNCR);
-  drawHistToPTStack(h_p[4], kRed + 1, "E1 HIST SAME", isSub, CNCR);
+  Float_t lowBound = -10;
+  if(!strcmp(projMult.c_str(), "Mult")) lowBound = -5.;
+
+  drawHistToPTStack(h_p[0], kBlue - 9, "E1 HIST", projMult, isSub, CNCR);
+  drawHistToPTStack(h_p[1], kYellow - 9, "E1 HIST SAME", projMult, isSub, CNCR);
+  drawHistToPTStack(h_p[2], kOrange + 1, "E1 HIST SAME", projMult, isSub, CNCR);
+  drawHistToPTStack(h_p[3], kGreen + 3, "E1 HIST SAME", projMult, isSub, CNCR);
+  drawHistToPTStack(h_p[4], kRed + 1, "E1 HIST SAME", projMult, isSub, CNCR);
 
   if(isSub){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU"))
-      niceTH1(h_p[5], 4.999, -10., 505, 403);
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU"))
+      niceTH1(h_p[5], 4.999, lowBound, 505, 403);
     else
       niceTH1(h_p[5], 59.999, -60., 505, 406);
   }
@@ -349,14 +368,14 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, TLegend* leg_p = 0, I
   h_p[5]->DrawCopy("SAME E1");
 
   if(isSub == false){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")){
+    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
       for(Int_t hIter = 0; hIter < 9; hIter++){
 	h_p[5]->SetBinContent(hIter+2, h_p[5]->GetBinContent(hIter+1) + h_p[5]->GetBinContent(hIter+2));
       }
       if(pos == 1)
 	h_p[5]->SetLineStyle(2);
 
-      h_p[5]->DrawCopy("SAME HIST C");
+      if(strcmp(projMult.c_str(), "Mult") != 0) h_p[5]->DrawCopy("SAME HIST C");
     }
   }
 
@@ -526,7 +545,7 @@ void makeMultStack(const char* filePbPbName, const char* fileTagPbPb, const char
 }
 
 
-void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "", Bool_t isHighPtTrk = false)
+void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const std::string projMult, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "", Bool_t isHighPtTrk = false)
 {
   TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
   TFile* histPPFile_p;
@@ -564,42 +583,42 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   for(Int_t histIter = 0; histIter < 6; histIter++){
     if(strcmp(fileTagPP, "") != 0){
-      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%sImbProjA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPP));
+      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPP));
     }
 
     if(!strcmp(CNCR, "")){
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_50100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_3050_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_1030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_010_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_50100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_3050_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_1030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_010_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
     else{
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_30100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
   }
 
-  makeHistForPtStack(histPP_p, 1, Tight, CNCR);
+  makeHistForPtStack(histPP_p, 1, Tight, CNCR, projMult);
 
   TCanvas* profPanel_p;
 
   if(!strcmp(CNCR, "")){
-    profPanel_p = new TCanvas(Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), 5*300, 2*350);
+    profPanel_p = new TCanvas(Form("%s%s%sA%s%s%sPTStackPP_%s_c", gorr, algType[setNum], projMult.c_str(), CNCR, Corr, Tight, fileTagPbPb), Form("%s%s%sA%s%s%sPTStackPP_%s_c", gorr, algType[setNum], projMult.c_str(), CNCR, Corr, Tight, fileTagPbPb), 5*300, 2*350);
     makeMultiPanelCanvas(profPanel_p, 5, 2, 0.0, 0.0, 0.2, 0.2, 0.05);
     std::cout << "FivePanel Init" << std::endl;
   }
   else{
-    profPanel_p = new TCanvas(Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), Form("%s%sImb%s%s%sPTStackPP_%s_c", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), 300*3, 2*350);
+    profPanel_p = new TCanvas(Form("%s%s%sA%s%s%sPTStackPP_%s_c", gorr, algType[setNum], projMult.c_str(), CNCR, Corr, Tight, fileTagPbPb), Form("%s%s%sA%s%s%sPTStackPP_%s_c", gorr, algType[setNum], projMult.c_str(), CNCR, Corr, Tight, fileTagPbPb), 300*3, 2*350);
     makeMultiPanelCanvas(profPanel_p, 3, 2, 0.0, 0.0, 0.2, 0.2, 0.01, CNCR);
     std::cout << "ThreePanel Init" << std::endl;
   }
 
   //Make legend
 
-  TLegend* legA_p = new TLegend(0.25, 0.18, 0.99, 0.88);
+  TLegend* legA_p = new TLegend(0.25, 0.22, 0.99, 0.88);
   TLegend* legB_p;
   TLegend* legC_p;
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")){
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
     legB_p = new TLegend(0.45, 0.1, 0.75, 0.40);
     legC_p = new TLegend(.20, .15, .45, .30);
 
@@ -628,7 +647,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   histPP_p[0]->GetYaxis()->SetTitleOffset(2.2);
 
-  drawFullStack(histPP_p, 0, 25, legA_p, 1, false, CNCR);
+  drawFullStack(histPP_p, 0, 25, projMult, 0, 1, false, CNCR);
   makePatch(CNCR);
 
   Float_t sysAPP[4] = {2.2, 3.3, 4.4, 5.5};
@@ -636,7 +655,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   TLine* zeroLine_p;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")) zeroLine_p = new TLine(0., 0., 2.0, 0.);
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")) zeroLine_p = new TLine(0., 0., 2.0, 0.);
   else zeroLine_p = new TLine(0., 0., 0.5, 0.);
 
   zeroLine_p->SetLineColor(1);
@@ -660,12 +679,13 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   legB_p->Draw("SAME");
   profPanel_p->cd(2);
 
-  makeHistForPtStack(hist1_p, 2, Tight, CNCR);
+  makeHistForPtStack(hist1_p, 2, Tight, CNCR, projMult);
 
-  drawFullStack(hist1_p, 0, 28, 0, 2, false, CNCR);
+  drawFullStack(hist1_p, 0, 28, projMult, 0, 2, false, CNCR);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")) histPP_p[5]->DrawCopy("SAME HIST C");
-
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
+    if(strcmp(projMult.c_str(), "Mult") != 0) histPP_p[5]->DrawCopy("SAME HIST C");
+  }
 
   Float_t sysA50100[4] = {4.3, 4.7, 5.2, 5.8};
   if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA50100, hist1_p[5]);
@@ -681,9 +701,8 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.50, overCoord[1], "30-100%");
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")){
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
     label1_p->DrawLatex(.20, .05, "#sqrt{s_{NN}} = 2.76 TeV");
-    legC_p->AddEntry(histPP_p[5], "pp cumulative", "L");
     legC_p->AddEntry(hist1_p[5], "PbPb cumulative", "L");
     legC_p->Draw("SAME");
   }
@@ -695,25 +714,22 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   else
     profPanel_p->cd(4);
 
-  TH1F* histDum_p = new TH1F("histDum_p", "histDum_p", 10, 0, 1);
-  histDum_p->SetMarkerStyle(28);
-  legA_p->AddEntry(histDum_p, "> 0.5", "p");
-  legB_p->AddEntry(histPP_p[5], "pp", "p");
-  legB_p->AddEntry(histDum_p, "PbPb", "p");
   legA_p->Draw("SAME");
-
+ 
   label1_p->DrawLatex(.30, .92, "p_{T}^{trk} (|#eta|<2.4)");
   drawBin(CNCR);
-
+  
   profPanel_p->cd(3);
 
   //Draw second PbPb hist
 
-  makeHistForPtStack(hist2_p, 3, Tight, CNCR);
+  makeHistForPtStack(hist2_p, 3, Tight, CNCR, projMult);
 
-  drawFullStack(hist2_p, 0, 28, 0, 3, false, CNCR);
+  drawFullStack(hist2_p, 0, 28, projMult, 0, 3, false, CNCR);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")) histPP_p[5]->DrawCopy("SAME HIST C");
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
+    if(strcmp(projMult.c_str(), "Mult") != 0) histPP_p[5]->DrawCopy("SAME HIST C");
+  }
 
   Float_t sysA3050[4] = {3.8, 4.4, 5.8, 6.5};
   if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA3050, hist2_p[5]);
@@ -729,7 +745,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.60, overCoord[0], Form("%s", overLabel[2]));
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi"))
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU"))
     label1_p->DrawLatex(.10, .05, Form("anti-k_{T} %sCalo R=%s", puVsString[setNum], radString[setNum]));
   else
     label1_p->DrawLatex(.05, .05, Form("anti-k_{T} %sCalo R=%s", puVsString[setNum], radString[setNum]));
@@ -743,9 +759,9 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   if(!strcmp(CNCR, "")){
     profPanel_p->cd(4);
 
-    makeHistForPtStack(hist3_p, 4, Tight, CNCR);
+    makeHistForPtStack(hist3_p, 4, Tight, CNCR, projMult);
 
-    drawFullStack(hist3_p, 0, 28, 0, 4, false, CNCR);
+    drawFullStack(hist3_p, 0, 28, projMult, 0, 4, false, CNCR);
 
     Float_t sysA1030[4] = {2.3, 2.9, 3.7, 4.3};
     if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA1030, hist3_p[5]);
@@ -757,9 +773,9 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
     profPanel_p->cd(5);
 
-    makeHistForPtStack(hist4_p, 5, Tight, CNCR);
+    makeHistForPtStack(hist4_p, 5, Tight, CNCR, projMult);
 
-    drawFullStack(hist4_p, 0, 28, 0, 5, false, CNCR);
+    drawFullStack(hist4_p, 0, 28, projMult, 0, 5, false, CNCR);
 
     Float_t sysA010[4] = {3.1, 3.5, 4.2, 5.5};
     if(!montecarlo && !strcmp("", CNCR) && !strcmp(Tight, "")) makeSysError(sysA010, hist4_p[5]);
@@ -770,27 +786,39 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.05, overCoord[1], "0-10%");
   }
 
+
+  histPbPbFile_p->Close();
+  delete histPbPbFile_p;
+  histPbPbFile_p = new TFile(filePbPbName, "READ");
+
+  if(strcmp(fileTagPP, "") != 0){
+    histPPFile_p->Close();
+    delete histPPFile_p;
+    histPPFile_p = new TFile(filePPName, "READ");
+  }
+
   for(Int_t histIter = 0; histIter < 6; histIter++){
     if(strcmp(fileTagPP, "") != 0)
-      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%sImbProjA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPP));
+      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPP));
     
     if(!strcmp(CNCR, "")){
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_50100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_3050_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_1030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_010_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_50100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_3050_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_1030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_010_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
       
       hist3_p[histIter]->Add(histPP_p[histIter], -1);
       hist4_p[histIter]->Add(histPP_p[histIter], -1);
     }
     else{
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_30100_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%sImbProjA%s%s%s%s_030_%s_h", gorr, algType[setNum], CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
+      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
 
     hist1_p[histIter]->Add(histPP_p[histIter], -1);
     hist2_p[histIter]->Add(histPP_p[histIter], -1);
   }
+
 
   Int_t panels;
   Int_t ppStart;
@@ -815,11 +843,19 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     }
   }
 
-
   profPanel_p->cd(ppStart);
-  makeHistForPtStack(hist1_p, ppStart, Tight, CNCR);
-  drawFullStack(hist1_p, 0, 24, 0, ppStart, true, CNCR);
+  makeHistForPtStack(hist1_p, ppStart, Tight, CNCR, projMult);
+  drawFullStack(hist1_p, 0, 24, projMult, legA_p, ppStart, true, CNCR);
   drawNum(CNCR);
+
+  TH1F* histDum_p = new TH1F("histDum_p", "histDum_p", 10, 0, 1);
+  histDum_p->SetMarkerStyle(28);
+  legA_p->AddEntry(histDum_p, "> 0.5", "p");
+  histPP_p[5]->SetMarkerStyle(25);
+  histPP_p[5]->SetLineStyle(2);
+  legB_p->AddEntry(histPP_p[5], "pp", "p");
+  legB_p->AddEntry(histDum_p, "PbPb", "p");
+  legC_p->AddEntry(histPP_p[5], "pp cumulative", "L");
 
   if(!strcmp(CNCR, "")){
     label1_p->DrawLatex(.22, overCoord[2], overLabel[3]);
@@ -842,8 +878,8 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   zeroLine_p->Draw();
 
   profPanel_p->cd(ppStart+1);
-  makeHistForPtStack(hist2_p, ppStart+1, Tight, CNCR);
-  drawFullStack(hist2_p, 0, 24, 0, ppStart+1, true, CNCR);
+  makeHistForPtStack(hist2_p, ppStart+1, Tight, CNCR, projMult);
+  drawFullStack(hist2_p, 0, 24, projMult, 0, ppStart+1, true, CNCR);
 
   if(!strcmp(CNCR, "")){
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
@@ -854,7 +890,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.60, overCoord[3], ppChar[1]);
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi")){
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
     label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<0.5");
     label1_p->DrawLatex(.45, .28, "#Delta#phi_{1,2}>5#pi/6");
   }
@@ -875,8 +911,8 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   if(!strcmp(CNCR, "")){
     profPanel_p->cd(9);
-    makeHistForPtStack(hist3_p, 9, Tight, CNCR);
-    drawFullStack(hist3_p, 0, 24, 0, 9, true, CNCR);
+    makeHistForPtStack(hist3_p, 9, Tight, CNCR, projMult);
+    drawFullStack(hist3_p, 0, 24, projMult, 0, 9, true, CNCR);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "10-30%");
     //    label1_p->DrawLatex(.05, .38, "anti-k_{T} Calo R = 0.3");
@@ -884,8 +920,8 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     zeroLine_p->Draw();
 
     profPanel_p->cd(10);
-    makeHistForPtStack(hist4_p, 10, Tight, CNCR);
-    drawFullStack(hist4_p, 0, 24, 0, 10, true, CNCR);
+    makeHistForPtStack(hist4_p, 10, Tight, CNCR, projMult);
+    drawFullStack(hist4_p, 0, 24, projMult, 0, 10, true, CNCR);
     label1_p->DrawLatex(.05, overCoord[2], overLabel[3]);
     label1_p->DrawLatex(.05, overCoord[3], "0-10%");
 
@@ -898,7 +934,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   TFile* outFile_p = new TFile(outName, "UPDATE");
   profPanel_p->Write();
-  claverCanvasSaving(profPanel_p, Form("pdfDir/%s%sImbProjA%s%s%sPTStack_%s", gorr, algType[setNum], CNCR, Corr, Tight, fileTagPbPb), "pdf");
+  claverCanvasSaving(profPanel_p, Form("pdfDir/%s%s%sA%s%s%sPTStack_%s", gorr, algType[setNum], projMult.c_str(), CNCR, Corr, Tight, fileTagPbPb), "pdf");
   outFile_p->Close();
 
   delete outFile_p;
@@ -926,23 +962,28 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
     jetAlgMax = 8;
   
   const char* corr[2] = {"", "Corr"};
-  const char* CNCR[12] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU", "Eta", "Phi"};
+  const char* CNCR[25] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU", "Eta", "EtaD", "EtaU", "Phi", "PhiD", "PhiU", "RCut", "RCutD", "RCutU", "EtaCut", "EtaCutD", "EtaCutU", "PhiCut", "PhiCutD", "PhiCutU"};
   const char* Tight[2] = {"", "Tight"};
 
-  for(Int_t algIter = 4; algIter < 5; algIter++){
+  for(Int_t algIter = 4; algIter < 8; algIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
       for(Int_t corrIter = 1; corrIter < 2; corrIter++){
-	for(Int_t CNCRIter = 7; CNCRIter < 12; CNCRIter++){
+	for(Int_t CNCRIter = 7; CNCRIter < 25; CNCRIter++){
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1) continue;
 
 	  if(CNCRIter == 1 || CNCRIter == 2 || CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5 || CNCRIter == 6) continue;
 
-	  makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+	  if(algIter ==4){
+	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, "ImbProj", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 
-	  /*
-	  if(montecarlo && corrIter > 0)
-	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
-	  */
+	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, "Mult", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+	  }
+	  
+	  if(montecarlo && corrIter > 0 && algIter == 7){
+	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, "ImbProj", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, "Mult", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+	  }
+	  
 	}
       }
     }

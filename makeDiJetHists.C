@@ -27,6 +27,7 @@ const Float_t loose[5] = {0.00, .11, .22, .33, 1.00};
 const Float_t tight[9] = {0.00, .055, .11, .165, .22, .275, .33, .415, 1.00};
 const Float_t niceNumCNC[4] = {59.999, -60, 505, 406};
 const Float_t niceNumR[4] = {19.999, -40, 505, 403};
+const Float_t niceNumMult[4] = {9.999, -10, 505, 403};
 
 const Int_t evtCutPos[7] = {2, 2, 2, 6, 6, 6, 6};
 const Bool_t inVenn = false;
@@ -53,6 +54,16 @@ void getBinArr(const Int_t nBins, Float_t bins[], Float_t cuts[], const Float_t 
 }
 
 
+void CleanHist(TH1* inHist_p)
+{
+  if(inHist_p!=0){
+    delete inHist_p;
+    inHist_p = 0;
+  }
+  return;
+}
+
+
 std::string getCentString(sampleType sType, Int_t centLow, Int_t centHi)
 {
   if(isHI(sType)) return Form("%d%d", (Int_t)(centLow*.5), (Int_t)((centHi+1)*.5));
@@ -65,18 +76,20 @@ void InitHist(TH1F* inHist_p[6])
   for(Int_t iter = 0; iter < 6; iter++){
     inHist_p[iter] = 0;
   }
+  return;
 }
 
 
-void BookHist(TH1F* inHist_p[6], const std::string gR, const std::string CNCR, const Int_t nBins, Float_t xArr[], Float_t upBound, const Float_t niceNum[4])
+void BookHist(TH1F* inHist_p[6], const std::string gR, const std::string inAlgType, const std::string multProj, const std::string CNCR, const std::string Corr, const std::string centString, const Int_t nBins, Float_t xArr[], Float_t upBound, const Float_t niceNum[4])
 {
   for(Int_t iter = 0; iter < 6; iter++){
-    inHist_p[iter] = new TH1F(Form("%sImbA%sHist_%d_p", gR.c_str(), CNCR.c_str(), iter), Form("%sImbA%sHist_%d_p", gR.c_str(), CNCR.c_str(), iter), nBins, xArr);
+    const std::string title = Form("%s%s%sA%s%s%s_%s_%s_h", gR.c_str(), inAlgType.c_str(), multProj.c_str(), CNCR.c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
+    inHist_p[iter] = new TH1F(title.c_str(), title.c_str(), nBins, xArr);
 
     inHist_p[iter]->GetXaxis()->SetLimits(0.00, upBound);
     niceTH1(inHist_p[iter], niceNum[0], niceNum[1], niceNum[2], niceNum[3]);
-      
   }
+  return;
 }
 
 
@@ -165,15 +178,13 @@ void makeImbAHist(TTree* anaTree_p, const std::string outName, Int_t setNum, Int
 
   const std::string centString = getCentString(sType, centLow, centHi);
 
-  std::string title[6];
   TH1F* rImbAHist_p[6];
   TH1F* mean_rProjA_p[6][nBins];
   
   InitHist(rImbAHist_p);
-  BookHist(rImbAHist_p, "r", "", nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAHist_p, "r", algType[setNum], "ImbProj", "", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
 
   for(Int_t iter = 0; iter < 6; iter++){
-    title[iter] = Form("r%sImbProjA%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       mean_rProjA_p[iter][iter2] = new TH1F(Form("mean_rProjA_%d_%d_h", iter, iter2), Form("mean_rProjA_%d_%d_h", iter, iter2), 100, -2000, 2000);
     }
@@ -221,7 +232,7 @@ void makeImbAHist(TTree* anaTree_p, const std::string outName, Int_t setNum, Int
   std::cout << outName << std::endl;
 
   for(Int_t iter = 0; iter < 6; iter++){
-    rImbAHist_p[iter]->Write(title[iter].c_str(), TObject::kOverwrite);
+    rImbAHist_p[iter]->Write("", TObject::kOverwrite);
   }
 
   outFile_p->Close();
@@ -266,13 +277,6 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
 
   const std::string centString = getCentString(sType, centLow, centHi);
 
-  std::string titleC[6];
-  std::string titleNC[6];
-  std::string titleC0[6];
-  std::string titleC1[6];
-  std::string titleC2[6];
-  std::string titleC3[6];
-
   TH1F* rImbACHist_p[6];
   TH1F* mean_rProjAC_p[6][nBins];
   TH1F* rImbANCHist_p[6];
@@ -293,22 +297,14 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
   InitHist(rImbAC2Hist_p);
   InitHist(rImbAC3Hist_p);
 
-  BookHist(rImbACHist_p, "r", "C", nBins, xArr, 0.50, niceNumCNC);
-  BookHist(rImbANCHist_p, "r", "NC", nBins, xArr, 0.50, niceNumCNC);
-  BookHist(rImbAC0Hist_p, "r", "C0", nBins, xArr, 0.50, niceNumCNC);
-  BookHist(rImbAC1Hist_p, "r", "C1", nBins, xArr, 0.50, niceNumCNC);
-  BookHist(rImbAC2Hist_p, "r", "C2", nBins, xArr, 0.50, niceNumCNC);
-  BookHist(rImbAC3Hist_p, "r", "C3", nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbACHist_p, "r", algType[setNum], "ImbProj", "C", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbANCHist_p, "r", algType[setNum], "ImbProj", "NC", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAC0Hist_p, "r", algType[setNum], "ImbProj", "C0", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAC1Hist_p, "r", algType[setNum], "ImbProj", "C1", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAC2Hist_p, "r", algType[setNum], "ImbProj", "C2", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAC3Hist_p, "r", algType[setNum], "ImbProj", "C3", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
 
   for(Int_t iter = 0; iter < 6; iter++){
-    titleC[iter] = Form("r%sImbProjAC%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
-    titleNC[iter] = Form("r%sImbProjANC%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
-    titleC0[iter] = Form("r%sImbProjAC0%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
-    titleC1[iter] = Form("r%sImbProjAC1%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
-    titleC2[iter] = Form("r%sImbProjAC2%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
-    titleC3[iter] = Form("r%sImbProjAC3%s%s%s_%s_%s_h", algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), Tight.c_str(), centString.c_str(), fileTag.c_str());
-
-
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       mean_rProjAC_p[iter][iter2] = new TH1F(Form("mean_rProjAC_%d_%d_h", iter, iter2), Form("mean_rProjAC_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_rProjANC_p[iter][iter2] = new TH1F(Form("mean_rProjANC_%d_%d_h", iter, iter2), Form("mean_rProjANC_%d_%d_h", iter, iter2), 100, -2000, 2000);
@@ -396,13 +392,13 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
   std::cout << outName << std::endl;
 
   for(Int_t iter = 0; iter < 6; iter++){
-    rImbACHist_p[iter]->Write(titleC[iter].c_str(), TObject::kOverwrite);
-    rImbANCHist_p[iter]->Write(titleNC[iter].c_str(), TObject::kOverwrite);
+    rImbACHist_p[iter]->Write("", TObject::kOverwrite);
+    rImbANCHist_p[iter]->Write("", TObject::kOverwrite);
 
-    rImbAC0Hist_p[iter]->Write(titleC0[iter].c_str(), TObject::kOverwrite);
-    rImbAC1Hist_p[iter]->Write(titleC1[iter].c_str(), TObject::kOverwrite);
-    rImbAC2Hist_p[iter]->Write(titleC2[iter].c_str(), TObject::kOverwrite);
-    rImbAC3Hist_p[iter]->Write(titleC3[iter].c_str(), TObject::kOverwrite);
+    rImbAC0Hist_p[iter]->Write("", TObject::kOverwrite);
+    rImbAC1Hist_p[iter]->Write("", TObject::kOverwrite);
+    rImbAC2Hist_p[iter]->Write("", TObject::kOverwrite);
+    rImbAC3Hist_p[iter]->Write("", TObject::kOverwrite);
   }
 
   outFile_p->Close();
@@ -467,51 +463,198 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   Float_t rBins[11] = {0.0001, 0.20, 0.40, 0.60, 0.80, 1.00, 1.20, 1.40, 1.60, 1.80, 1.999};
   const std::string centString = getCentString(sType, centLow, centHi);
 
-  std::string titleR[6];
   TH1F* imbARHist_p[6];
-  TH1F* mean_projAR_p[6][nBins];
-  std::string titleRD[6];
   TH1F* imbARDHist_p[6];
-  TH1F* mean_projARD_p[6][nBins];
-  std::string titleRU[6];
   TH1F* imbARUHist_p[6];
-  TH1F* mean_projARU_p[6][nBins];
-
-  std::string titleEta[6];
+  TH1F* imbARCutHist_p[6];
+  TH1F* imbARCutDHist_p[6];
+  TH1F* imbARCutUHist_p[6];
   TH1F* imbAEtaHist_p[6];
-  TH1F* mean_projAEta_p[6][nBins];
-
-  std::string titlePhi[6];
+  TH1F* imbAEtaDHist_p[6];
+  TH1F* imbAEtaUHist_p[6];
+  TH1F* imbAEtaCutHist_p[6];
+  TH1F* imbAEtaCutDHist_p[6];
+  TH1F* imbAEtaCutUHist_p[6];
   TH1F* imbAPhiHist_p[6];
+  TH1F* imbAPhiDHist_p[6];
+  TH1F* imbAPhiUHist_p[6];
+  TH1F* imbAPhiCutHist_p[6];
+  TH1F* imbAPhiCutDHist_p[6];
+  TH1F* imbAPhiCutUHist_p[6];
+
+  TH1F* multARHist_p[6];
+  TH1F* multARDHist_p[6];
+  TH1F* multARUHist_p[6];
+  TH1F* multARCutHist_p[6];
+  TH1F* multARCutDHist_p[6];
+  TH1F* multARCutUHist_p[6];
+  TH1F* multAEtaHist_p[6];
+  TH1F* multAEtaDHist_p[6];
+  TH1F* multAEtaUHist_p[6];
+  TH1F* multAEtaCutHist_p[6];
+  TH1F* multAEtaCutDHist_p[6];
+  TH1F* multAEtaCutUHist_p[6];
+  TH1F* multAPhiHist_p[6];
+  TH1F* multAPhiDHist_p[6];
+  TH1F* multAPhiUHist_p[6];
+  TH1F* multAPhiCutHist_p[6];
+  TH1F* multAPhiCutDHist_p[6];
+  TH1F* multAPhiCutUHist_p[6];
+
+  TH1F* mean_projAR_p[6][nBins];
+  TH1F* mean_projARD_p[6][nBins];
+  TH1F* mean_projARU_p[6][nBins];
+  TH1F* mean_projARCut_p[6][nBins];
+  TH1F* mean_projARCutD_p[6][nBins];
+  TH1F* mean_projARCutU_p[6][nBins];
+  TH1F* mean_projAEta_p[6][nBins];
+  TH1F* mean_projAEtaD_p[6][nBins];
+  TH1F* mean_projAEtaU_p[6][nBins];
+  TH1F* mean_projAEtaCut_p[6][nBins];
+  TH1F* mean_projAEtaCutD_p[6][nBins];
+  TH1F* mean_projAEtaCutU_p[6][nBins];
   TH1F* mean_projAPhi_p[6][nBins];
+  TH1F* mean_projAPhiD_p[6][nBins];
+  TH1F* mean_projAPhiU_p[6][nBins];
+  TH1F* mean_projAPhiCut_p[6][nBins];
+  TH1F* mean_projAPhiCutD_p[6][nBins];
+  TH1F* mean_projAPhiCutU_p[6][nBins];
+
+  TH1F* mean_multAR_p[6][nBins];
+  TH1F* mean_multARD_p[6][nBins];
+  TH1F* mean_multARU_p[6][nBins];
+  TH1F* mean_multARCut_p[6][nBins];
+  TH1F* mean_multARCutD_p[6][nBins];
+  TH1F* mean_multARCutU_p[6][nBins];
+  TH1F* mean_multAEta_p[6][nBins];
+  TH1F* mean_multAEtaD_p[6][nBins];
+  TH1F* mean_multAEtaU_p[6][nBins];
+  TH1F* mean_multAEtaCut_p[6][nBins];
+  TH1F* mean_multAEtaCutD_p[6][nBins];
+  TH1F* mean_multAEtaCutU_p[6][nBins];
+  TH1F* mean_multAPhi_p[6][nBins];
+  TH1F* mean_multAPhiD_p[6][nBins];
+  TH1F* mean_multAPhiU_p[6][nBins];
+  TH1F* mean_multAPhiCut_p[6][nBins];
+  TH1F* mean_multAPhiCutD_p[6][nBins];
+  TH1F* mean_multAPhiCutU_p[6][nBins];
 
   InitHist(imbARHist_p);
-  BookHist(imbARHist_p, gR, "R", nBins, rBins, 2.00, niceNumR);
   InitHist(imbARDHist_p);
-  BookHist(imbARDHist_p, gR, "RD", nBins, rBins, 2.00, niceNumR);
   InitHist(imbARUHist_p);
-  BookHist(imbARUHist_p, gR, "RU", nBins, rBins, 2.00, niceNumR);
-
+  InitHist(imbARCutHist_p);
+  InitHist(imbARCutDHist_p);
+  InitHist(imbARCutUHist_p);
   InitHist(imbAEtaHist_p);
-  BookHist(imbAEtaHist_p, gR, "Eta", nBins, rBins, 2.00, niceNumR);
+  InitHist(imbAEtaDHist_p);
+  InitHist(imbAEtaUHist_p);
+  InitHist(imbAEtaCutHist_p);
+  InitHist(imbAEtaCutDHist_p);
+  InitHist(imbAEtaCutUHist_p);
   InitHist(imbAPhiHist_p);
-  BookHist(imbAPhiHist_p, gR, "Phi", nBins, rBins, 2.00, niceNumR);
+  InitHist(imbAPhiDHist_p);
+  InitHist(imbAPhiUHist_p);
+  InitHist(imbAPhiCutHist_p);
+  InitHist(imbAPhiCutDHist_p);
+  InitHist(imbAPhiCutUHist_p);
+
+  InitHist(multARHist_p);
+  InitHist(multARDHist_p);
+  InitHist(multARUHist_p);
+  InitHist(multARCutHist_p);
+  InitHist(multARCutDHist_p);
+  InitHist(multARCutUHist_p);
+  InitHist(multAEtaHist_p);
+  InitHist(multAEtaDHist_p);
+  InitHist(multAEtaUHist_p);
+  InitHist(multAEtaCutHist_p);
+  InitHist(multAEtaCutDHist_p);
+  InitHist(multAEtaCutUHist_p);
+  InitHist(multAPhiHist_p);
+  InitHist(multAPhiDHist_p);
+  InitHist(multAPhiUHist_p);
+  InitHist(multAPhiCutHist_p);
+  InitHist(multAPhiCutDHist_p);
+  InitHist(multAPhiCutUHist_p);
+
+  BookHist(imbARHist_p, gR, algType[setNum], "ImbProj", "R", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARDHist_p, gR, algType[setNum], "ImbProj", "RD", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARUHist_p, gR, algType[setNum], "ImbProj", "RU", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutHist_p, gR, algType[setNum], "ImbProj", "RCut", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutDHist_p, gR, algType[setNum], "ImbProj", "RCutD", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutUHist_p, gR, algType[setNum], "ImbProj", "RCutU", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAEtaHist_p, gR, algType[setNum], "ImbProj", "Eta", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAEtaDHist_p, gR, algType[setNum], "ImbProj", "EtaD", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAEtaUHist_p, gR, algType[setNum], "ImbProj", "EtaU", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAEtaCutHist_p, gR, algType[setNum], "ImbProj", "EtaCut", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAEtaCutDHist_p, gR, algType[setNum], "ImbProj", "EtaCutD", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAEtaCutUHist_p, gR, algType[setNum], "ImbProj", "EtaCutU", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAPhiHist_p, gR, algType[setNum], "ImbProj", "Phi", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAPhiDHist_p, gR, algType[setNum], "ImbProj", "PhiD", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAPhiUHist_p, gR, algType[setNum], "ImbProj", "PhiU", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAPhiCutHist_p, gR, algType[setNum], "ImbProj", "PhiCut", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAPhiCutDHist_p, gR, algType[setNum], "ImbProj", "PhiCutD", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbAPhiCutUHist_p, gR, algType[setNum], "ImbProj", "PhiCutU", Corr, centString, nBins, rBins, 2.00, niceNumR);
+
+  BookHist(multARHist_p, gR, algType[setNum], "Mult", "R", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARDHist_p, gR, algType[setNum], "Mult", "RD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARUHist_p, gR, algType[setNum], "Mult", "RU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutHist_p, gR, algType[setNum], "Mult", "RCut", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutDHist_p, gR, algType[setNum], "Mult", "RCutD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutUHist_p, gR, algType[setNum], "Mult", "RCutU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAEtaHist_p, gR, algType[setNum], "Mult", "Eta", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAEtaDHist_p, gR, algType[setNum], "Mult", "EtaD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAEtaUHist_p, gR, algType[setNum], "Mult", "EtaU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAEtaCutHist_p, gR, algType[setNum], "Mult", "EtaCut", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAEtaCutDHist_p, gR, algType[setNum], "Mult", "EtaCutD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAEtaCutUHist_p, gR, algType[setNum], "Mult", "EtaCutU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAPhiHist_p, gR, algType[setNum], "Mult", "Phi", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAPhiDHist_p, gR, algType[setNum], "Mult", "PhiD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAPhiUHist_p, gR, algType[setNum], "Mult", "PhiU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAPhiCutHist_p, gR, algType[setNum], "Mult", "PhiCut", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAPhiCutDHist_p, gR, algType[setNum], "Mult", "PhiCutD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multAPhiCutUHist_p, gR, algType[setNum], "Mult", "PhiCutU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+
 
   for(Int_t iter = 0; iter < 6; iter++){
-    titleR[iter] = Form("%s%sImbProjAR%s%s_%s_%s_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
-    titleRD[iter] = Form("%s%sImbProjARD%s%s_%s_%s_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
-    titleRU[iter] = Form("%s%sImbProjARU%s%s_%s_%s_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
-
-    titleEta[iter] = Form("%s%sImbProjAEta%s%s_%s_%s_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
-    titlePhi[iter] = Form("%s%sImbProjAPhi%s%s_%s_%s_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), Corr.c_str(), centString.c_str(), fileTag.c_str());
-
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       mean_projAR_p[iter][iter2] = new TH1F(Form("mean_projAR_%d_%d_h", iter, iter2), Form("mean_projAR_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projARD_p[iter][iter2] = new TH1F(Form("mean_projARD_%d_%d_h", iter, iter2), Form("mean_projARD_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projARU_p[iter][iter2] = new TH1F(Form("mean_projARU_%d_%d_h", iter, iter2), Form("mean_projARU_%d_%d_h", iter, iter2), 100, -2000, 2000);
-
+      mean_projARCut_p[iter][iter2] = new TH1F(Form("mean_projARCut_%d_%d_h", iter, iter2), Form("mean_projARCut_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projARCutD_p[iter][iter2] = new TH1F(Form("mean_projARCutD_%d_%d_h", iter, iter2), Form("mean_projARCutD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projARCutU_p[iter][iter2] = new TH1F(Form("mean_projARCutU_%d_%d_h", iter, iter2), Form("mean_projARCutU_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projAEta_p[iter][iter2] = new TH1F(Form("mean_projAEta_%d_%d_h", iter, iter2), Form("mean_projAEta_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAEtaD_p[iter][iter2] = new TH1F(Form("mean_projAEtaD_%d_%d_h", iter, iter2), Form("mean_projAEtaD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAEtaU_p[iter][iter2] = new TH1F(Form("mean_projAEtaU_%d_%d_h", iter, iter2), Form("mean_projAEtaU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAEtaCut_p[iter][iter2] = new TH1F(Form("mean_projAEtaCut_%d_%d_h", iter, iter2), Form("mean_projAEtaCut_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAEtaCutD_p[iter][iter2] = new TH1F(Form("mean_projAEtaCutD_%d_%d_h", iter, iter2), Form("mean_projAEtaCutD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAEtaCutU_p[iter][iter2] = new TH1F(Form("mean_projAEtaCutU_%d_%d_h", iter, iter2), Form("mean_projAEtaCutU_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projAPhi_p[iter][iter2] = new TH1F(Form("mean_projAPhi_%d_%d_h", iter, iter2), Form("mean_projAPhi_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAPhiD_p[iter][iter2] = new TH1F(Form("mean_projAPhiD_%d_%d_h", iter, iter2), Form("mean_projAPhiD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAPhiU_p[iter][iter2] = new TH1F(Form("mean_projAPhiU_%d_%d_h", iter, iter2), Form("mean_projAPhiU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAPhiCut_p[iter][iter2] = new TH1F(Form("mean_projAPhiCut_%d_%d_h", iter, iter2), Form("mean_projAPhiCut_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAPhiCutD_p[iter][iter2] = new TH1F(Form("mean_projAPhiCutD_%d_%d_h", iter, iter2), Form("mean_projAPhiCutD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projAPhiCutU_p[iter][iter2] = new TH1F(Form("mean_projAPhiCutU_%d_%d_h", iter, iter2), Form("mean_projAPhiCutU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+
+      mean_multAR_p[iter][iter2] = new TH1F(Form("mean_multAR_%d_%d_h", iter, iter2), Form("mean_multAR_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARD_p[iter][iter2] = new TH1F(Form("mean_multARD_%d_%d_h", iter, iter2), Form("mean_multARD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARU_p[iter][iter2] = new TH1F(Form("mean_multARU_%d_%d_h", iter, iter2), Form("mean_multARU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCut_p[iter][iter2] = new TH1F(Form("mean_multARCut_%d_%d_h", iter, iter2), Form("mean_multARCut_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCutD_p[iter][iter2] = new TH1F(Form("mean_multARCutD_%d_%d_h", iter, iter2), Form("mean_multARCutD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCutU_p[iter][iter2] = new TH1F(Form("mean_multARCutU_%d_%d_h", iter, iter2), Form("mean_multARCutU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAEta_p[iter][iter2] = new TH1F(Form("mean_multAEta_%d_%d_h", iter, iter2), Form("mean_multAEta_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAEtaD_p[iter][iter2] = new TH1F(Form("mean_multAEtaD_%d_%d_h", iter, iter2), Form("mean_multAEtaD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAEtaU_p[iter][iter2] = new TH1F(Form("mean_multAEtaU_%d_%d_h", iter, iter2), Form("mean_multAEtaU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAEtaCut_p[iter][iter2] = new TH1F(Form("mean_multAEtaCut_%d_%d_h", iter, iter2), Form("mean_multAEtaCut_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAEtaCutD_p[iter][iter2] = new TH1F(Form("mean_multAEtaCutD_%d_%d_h", iter, iter2), Form("mean_multAEtaCutD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAEtaCutU_p[iter][iter2] = new TH1F(Form("mean_multAEtaCutU_%d_%d_h", iter, iter2), Form("mean_multAEtaCutU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAPhi_p[iter][iter2] = new TH1F(Form("mean_multAPhi_%d_%d_h", iter, iter2), Form("mean_multAPhi_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAPhiD_p[iter][iter2] = new TH1F(Form("mean_multAPhiD_%d_%d_h", iter, iter2), Form("mean_multAPhiD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAPhiU_p[iter][iter2] = new TH1F(Form("mean_multAPhiU_%d_%d_h", iter, iter2), Form("mean_multAPhiU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAPhiCut_p[iter][iter2] = new TH1F(Form("mean_multAPhiCut_%d_%d_h", iter, iter2), Form("mean_multAPhiCut_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAPhiCutD_p[iter][iter2] = new TH1F(Form("mean_multAPhiCutD_%d_%d_h", iter, iter2), Form("mean_multAPhiCutD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multAPhiCutU_p[iter][iter2] = new TH1F(Form("mean_multAPhiCutU_%d_%d_h", iter, iter2), Form("mean_multAPhiCutU_%d_%d_h", iter, iter2), 100, -2000, 2000);
     }
   }
 
@@ -525,12 +668,6 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
     if(TMath::Abs(AlgJtEta_[setNum][0]) > 0.5 || TMath::Abs(AlgJtEta_[setNum][1]) > 0.5) continue;
 
     evtsPass++;
-
-    for(Int_t iter = 0; iter < 6; iter++){
-      for(Int_t iter2 = 0; iter2 < nBins; iter2++){
-	if(rAlgImbProjAEta_[setCorrNum][iter][iter2] != 0) std::cout << rAlgImbProjAEta_[setCorrNum][iter][iter2] << std::endl;
-      }
-    }
 
     if(AlgJtAsymm_[setNum] < 0.22) evtsPassD++;
     else evtsPassU++;
@@ -548,17 +685,93 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	  mean_projAR_p[iter][iter2]->Fill(rAlgImbProjAR_[setCorrNum][iter][iter2], weight);
 	  mean_projAEta_p[iter][iter2]->Fill(rAlgImbProjAEta_[setCorrNum][iter][iter2], weight);
 	  mean_projAPhi_p[iter][iter2]->Fill(rAlgImbProjAPhi_[setCorrNum][iter][iter2], weight);
+	  mean_projARCut_p[iter][iter2]->Fill(rAlgImbProjAR_Cut_[setCorrNum][iter][iter2], weight);
+	  mean_projAEtaCut_p[iter][iter2]->Fill(rAlgImbProjAEta_Cut_[setCorrNum][iter][iter2], weight);
+	  mean_projAPhiCut_p[iter][iter2]->Fill(rAlgImbProjAPhi_Cut_[setCorrNum][iter][iter2], weight);
 
-	  if(AlgJtAsymm_[setNum] < 0.22) mean_projARD_p[iter][iter2]->Fill(rAlgImbProjAR_[setCorrNum][iter][iter2], weight);
-	  else mean_projARU_p[iter][iter2]->Fill(rAlgImbProjAR_[setCorrNum][iter][iter2], weight);
+	  mean_multAR_p[iter][iter2]->Fill(rAlgMultAR_[setCorrNum][iter][iter2], weight);
+	  mean_multAEta_p[iter][iter2]->Fill(rAlgMultAEta_[setCorrNum][iter][iter2], weight);
+	  mean_multAPhi_p[iter][iter2]->Fill(rAlgMultAPhi_[setCorrNum][iter][iter2], weight);
+	  mean_multARCut_p[iter][iter2]->Fill(rAlgMultAR_Cut_[setCorrNum][iter][iter2], weight);
+	  mean_multAEtaCut_p[iter][iter2]->Fill(rAlgMultAEta_Cut_[setCorrNum][iter][iter2], weight);
+	  mean_multAPhiCut_p[iter][iter2]->Fill(rAlgMultAPhi_Cut_[setCorrNum][iter][iter2], weight);
+
+	  if(AlgJtAsymm_[setNum] < 0.22){
+	    mean_projARD_p[iter][iter2]->Fill(rAlgImbProjAR_[setCorrNum][iter][iter2], weight);
+	    mean_projAEtaD_p[iter][iter2]->Fill(rAlgImbProjAEta_[setCorrNum][iter][iter2], weight);
+	    mean_projAPhiD_p[iter][iter2]->Fill(rAlgImbProjAPhi_[setCorrNum][iter][iter2], weight);
+	    mean_projARCutD_p[iter][iter2]->Fill(rAlgImbProjAR_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_projAEtaCutD_p[iter][iter2]->Fill(rAlgImbProjAEta_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_projAPhiCutD_p[iter][iter2]->Fill(rAlgImbProjAPhi_Cut_[setCorrNum][iter][iter2], weight);
+
+	    mean_multARD_p[iter][iter2]->Fill(rAlgMultAR_[setCorrNum][iter][iter2], weight);
+	    mean_multAEtaD_p[iter][iter2]->Fill(rAlgMultAEta_[setCorrNum][iter][iter2], weight);
+	    mean_multAPhiD_p[iter][iter2]->Fill(rAlgMultAPhi_[setCorrNum][iter][iter2], weight);
+	    mean_multARCutD_p[iter][iter2]->Fill(rAlgMultAR_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_multAEtaCutD_p[iter][iter2]->Fill(rAlgMultAEta_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_multAPhiCutD_p[iter][iter2]->Fill(rAlgMultAPhi_Cut_[setCorrNum][iter][iter2], weight);
+	  }
+	  else{
+	    mean_projARU_p[iter][iter2]->Fill(rAlgImbProjAR_[setCorrNum][iter][iter2], weight);
+	    mean_projAEtaU_p[iter][iter2]->Fill(rAlgImbProjAEta_[setCorrNum][iter][iter2], weight);
+	    mean_projAPhiU_p[iter][iter2]->Fill(rAlgImbProjAPhi_[setCorrNum][iter][iter2], weight);
+	    mean_projARCutU_p[iter][iter2]->Fill(rAlgImbProjAR_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_projAEtaCutU_p[iter][iter2]->Fill(rAlgImbProjAEta_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_projAPhiCutU_p[iter][iter2]->Fill(rAlgImbProjAPhi_Cut_[setCorrNum][iter][iter2], weight);
+
+	    mean_multARU_p[iter][iter2]->Fill(rAlgMultAR_[setCorrNum][iter][iter2], weight);
+	    mean_multAEtaU_p[iter][iter2]->Fill(rAlgMultAEta_[setCorrNum][iter][iter2], weight);
+	    mean_multAPhiU_p[iter][iter2]->Fill(rAlgMultAPhi_[setCorrNum][iter][iter2], weight);
+	    mean_multARCutU_p[iter][iter2]->Fill(rAlgMultAR_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_multAEtaCutU_p[iter][iter2]->Fill(rAlgMultAEta_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_multAPhiCutU_p[iter][iter2]->Fill(rAlgMultAPhi_Cut_[setCorrNum][iter][iter2], weight);
+	  }
 	}
 	else{
 	  mean_projAR_p[iter][iter2]->Fill(gAlgImbProjAR_[setNum][iter][iter2], weight);
 	  mean_projAEta_p[iter][iter2]->Fill(gAlgImbProjAEta_[setNum][iter][iter2], weight);
 	  mean_projAPhi_p[iter][iter2]->Fill(gAlgImbProjAPhi_[setNum][iter][iter2], weight);
+	  mean_projARCut_p[iter][iter2]->Fill(gAlgImbProjAR_Cut_[setNum][iter][iter2], weight);
+	  mean_projAEtaCut_p[iter][iter2]->Fill(gAlgImbProjAEta_Cut_[setNum][iter][iter2], weight);
+	  mean_projAPhiCut_p[iter][iter2]->Fill(gAlgImbProjAPhi_Cut_[setNum][iter][iter2], weight);
 
-	  if(AlgJtAsymm_[setNum] < 0.22) mean_projARD_p[iter][iter2]->Fill(gAlgImbProjAR_[setNum][iter][iter2], weight);
-	  else mean_projARU_p[iter][iter2]->Fill(gAlgImbProjAR_[setNum][iter][iter2], weight);
+	  mean_multAR_p[iter][iter2]->Fill(gAlgMultAR_[setNum][iter][iter2], weight);
+	  mean_multAEta_p[iter][iter2]->Fill(gAlgMultAEta_[setNum][iter][iter2], weight);
+	  mean_multAPhi_p[iter][iter2]->Fill(gAlgMultAPhi_[setNum][iter][iter2], weight);
+	  mean_multARCut_p[iter][iter2]->Fill(gAlgMultAR_Cut_[setNum][iter][iter2], weight);
+	  mean_multAEtaCut_p[iter][iter2]->Fill(gAlgMultAEta_Cut_[setNum][iter][iter2], weight);
+	  mean_multAPhiCut_p[iter][iter2]->Fill(gAlgMultAPhi_Cut_[setNum][iter][iter2], weight);
+
+	  if(AlgJtAsymm_[setNum] < 0.22){
+	    mean_projARD_p[iter][iter2]->Fill(gAlgImbProjAR_[setNum][iter][iter2], weight);
+	    mean_projAEtaD_p[iter][iter2]->Fill(gAlgImbProjAEta_[setNum][iter][iter2], weight);
+	    mean_projAPhiD_p[iter][iter2]->Fill(gAlgImbProjAPhi_[setNum][iter][iter2], weight);
+	    mean_projARCutD_p[iter][iter2]->Fill(gAlgImbProjAR_Cut_[setNum][iter][iter2], weight);
+	    mean_projAEtaCutD_p[iter][iter2]->Fill(gAlgImbProjAEta_Cut_[setNum][iter][iter2], weight);
+	    mean_projAPhiCutD_p[iter][iter2]->Fill(gAlgImbProjAPhi_Cut_[setNum][iter][iter2], weight);
+
+	    mean_multARD_p[iter][iter2]->Fill(gAlgMultAR_[setNum][iter][iter2], weight);
+	    mean_multAEtaD_p[iter][iter2]->Fill(gAlgMultAEta_[setNum][iter][iter2], weight);
+	    mean_multAPhiD_p[iter][iter2]->Fill(gAlgMultAPhi_[setNum][iter][iter2], weight);
+	    mean_multARCutD_p[iter][iter2]->Fill(gAlgMultAR_Cut_[setNum][iter][iter2], weight);
+	    mean_multAEtaCutD_p[iter][iter2]->Fill(gAlgMultAEta_Cut_[setNum][iter][iter2], weight);
+	    mean_multAPhiCutD_p[iter][iter2]->Fill(gAlgMultAPhi_Cut_[setNum][iter][iter2], weight);
+	  }
+	  else{
+	    mean_projARU_p[iter][iter2]->Fill(gAlgImbProjAR_[setNum][iter][iter2], weight);
+	    mean_projAEtaU_p[iter][iter2]->Fill(gAlgImbProjAEta_[setNum][iter][iter2], weight);
+	    mean_projAPhiU_p[iter][iter2]->Fill(gAlgImbProjAPhi_[setNum][iter][iter2], weight);
+	    mean_projARCutU_p[iter][iter2]->Fill(gAlgImbProjAR_Cut_[setNum][iter][iter2], weight);
+	    mean_projAEtaCutU_p[iter][iter2]->Fill(gAlgImbProjAEta_Cut_[setNum][iter][iter2], weight);
+	    mean_projAPhiCutU_p[iter][iter2]->Fill(gAlgImbProjAPhi_Cut_[setNum][iter][iter2], weight);
+
+	    mean_multARU_p[iter][iter2]->Fill(gAlgMultAR_[setNum][iter][iter2], weight);
+	    mean_multAEtaU_p[iter][iter2]->Fill(gAlgMultAEta_[setNum][iter][iter2], weight);
+	    mean_multAPhiU_p[iter][iter2]->Fill(gAlgMultAPhi_[setNum][iter][iter2], weight);
+	    mean_multARCutU_p[iter][iter2]->Fill(gAlgMultAR_Cut_[setNum][iter][iter2], weight);
+	    mean_multAEtaCutU_p[iter][iter2]->Fill(gAlgMultAEta_Cut_[setNum][iter][iter2], weight);
+	    mean_multAPhiCutU_p[iter][iter2]->Fill(gAlgMultAPhi_Cut_[setNum][iter][iter2], weight);
+	  }
 	}
 	
       }
@@ -571,25 +784,149 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	imbARHist_p[iter]->SetBinContent(iter2+1, mean_projAR_p[iter][iter2]->GetMean());
 	imbARHist_p[iter]->SetBinError(iter2+1, mean_projAR_p[iter][iter2]->GetMeanError());
       }
-
       if(mean_projARD_p[iter][iter2]->GetEntries() != 0){
 	imbARDHist_p[iter]->SetBinContent(iter2+1, mean_projARD_p[iter][iter2]->GetMean());
 	imbARDHist_p[iter]->SetBinError(iter2+1, mean_projARD_p[iter][iter2]->GetMeanError());
       }
-
       if(mean_projARU_p[iter][iter2]->GetEntries() != 0){
 	imbARUHist_p[iter]->SetBinContent(iter2+1, mean_projARU_p[iter][iter2]->GetMean());
 	imbARUHist_p[iter]->SetBinError(iter2+1, mean_projARU_p[iter][iter2]->GetMeanError());
       }
-
+      if(mean_projARCut_p[iter][iter2]->GetEntries() != 0){
+	imbARCutHist_p[iter]->SetBinContent(iter2+1, mean_projARCut_p[iter][iter2]->GetMean());
+	imbARCutHist_p[iter]->SetBinError(iter2+1, mean_projARCut_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projARCutD_p[iter][iter2]->GetEntries() != 0){
+	imbARCutDHist_p[iter]->SetBinContent(iter2+1, mean_projARCutD_p[iter][iter2]->GetMean());
+	imbARCutDHist_p[iter]->SetBinError(iter2+1, mean_projARCutD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projARCutU_p[iter][iter2]->GetEntries() != 0){
+	imbARCutUHist_p[iter]->SetBinContent(iter2+1, mean_projARCutU_p[iter][iter2]->GetMean());
+	imbARCutUHist_p[iter]->SetBinError(iter2+1, mean_projARCutU_p[iter][iter2]->GetMeanError());
+      }
       if(mean_projAEta_p[iter][iter2]->GetEntries() != 0){
 	imbAEtaHist_p[iter]->SetBinContent(iter2+1, mean_projAEta_p[iter][iter2]->GetMean());
 	imbAEtaHist_p[iter]->SetBinError(iter2+1, mean_projAEta_p[iter][iter2]->GetMeanError());
       }
-
+      if(mean_projAEtaD_p[iter][iter2]->GetEntries() != 0){
+	imbAEtaDHist_p[iter]->SetBinContent(iter2+1, mean_projAEtaD_p[iter][iter2]->GetMean());
+	imbAEtaDHist_p[iter]->SetBinError(iter2+1, mean_projAEtaD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAEtaU_p[iter][iter2]->GetEntries() != 0){
+	imbAEtaUHist_p[iter]->SetBinContent(iter2+1, mean_projAEtaU_p[iter][iter2]->GetMean());
+	imbAEtaUHist_p[iter]->SetBinError(iter2+1, mean_projAEtaU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAEtaCut_p[iter][iter2]->GetEntries() != 0){
+	imbAEtaCutHist_p[iter]->SetBinContent(iter2+1, mean_projAEtaCut_p[iter][iter2]->GetMean());
+	imbAEtaCutHist_p[iter]->SetBinError(iter2+1, mean_projAEtaCut_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAEtaCutD_p[iter][iter2]->GetEntries() != 0){
+	imbAEtaCutDHist_p[iter]->SetBinContent(iter2+1, mean_projAEtaCutD_p[iter][iter2]->GetMean());
+	imbAEtaCutDHist_p[iter]->SetBinError(iter2+1, mean_projAEtaCutD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAEtaCutU_p[iter][iter2]->GetEntries() != 0){
+	imbAEtaCutUHist_p[iter]->SetBinContent(iter2+1, mean_projAEtaCutU_p[iter][iter2]->GetMean());
+	imbAEtaCutUHist_p[iter]->SetBinError(iter2+1, mean_projAEtaCutU_p[iter][iter2]->GetMeanError());
+      }
       if(mean_projAPhi_p[iter][iter2]->GetEntries() != 0){
 	imbAPhiHist_p[iter]->SetBinContent(iter2+1, mean_projAPhi_p[iter][iter2]->GetMean());
 	imbAPhiHist_p[iter]->SetBinError(iter2+1, mean_projAPhi_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAPhiD_p[iter][iter2]->GetEntries() != 0){
+	imbAPhiDHist_p[iter]->SetBinContent(iter2+1, mean_projAPhiD_p[iter][iter2]->GetMean());
+	imbAPhiDHist_p[iter]->SetBinError(iter2+1, mean_projAPhiD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAPhiU_p[iter][iter2]->GetEntries() != 0){
+	imbAPhiUHist_p[iter]->SetBinContent(iter2+1, mean_projAPhiU_p[iter][iter2]->GetMean());
+	imbAPhiUHist_p[iter]->SetBinError(iter2+1, mean_projAPhiU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAPhiCut_p[iter][iter2]->GetEntries() != 0){
+	imbAPhiCutHist_p[iter]->SetBinContent(iter2+1, mean_projAPhiCut_p[iter][iter2]->GetMean());
+	imbAPhiCutHist_p[iter]->SetBinError(iter2+1, mean_projAPhiCut_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAPhiCutD_p[iter][iter2]->GetEntries() != 0){
+	imbAPhiCutDHist_p[iter]->SetBinContent(iter2+1, mean_projAPhiCutD_p[iter][iter2]->GetMean());
+	imbAPhiCutDHist_p[iter]->SetBinError(iter2+1, mean_projAPhiCutD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projAPhiCutU_p[iter][iter2]->GetEntries() != 0){
+	imbAPhiCutUHist_p[iter]->SetBinContent(iter2+1, mean_projAPhiCutU_p[iter][iter2]->GetMean());
+	imbAPhiCutUHist_p[iter]->SetBinError(iter2+1, mean_projAPhiCutU_p[iter][iter2]->GetMeanError());
+      }
+
+
+      //MULTIPLICITY PROJECTIONS
+
+      if(mean_multAR_p[iter][iter2]->GetEntries() != 0){
+	multARHist_p[iter]->SetBinContent(iter2+1, mean_multAR_p[iter][iter2]->GetMean());
+	multARHist_p[iter]->SetBinError(iter2+1, mean_multAR_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARD_p[iter][iter2]->GetEntries() != 0){
+	multARDHist_p[iter]->SetBinContent(iter2+1, mean_multARD_p[iter][iter2]->GetMean());
+	multARDHist_p[iter]->SetBinError(iter2+1, mean_multARD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARU_p[iter][iter2]->GetEntries() != 0){
+	multARUHist_p[iter]->SetBinContent(iter2+1, mean_multARU_p[iter][iter2]->GetMean());
+	multARUHist_p[iter]->SetBinError(iter2+1, mean_multARU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARCut_p[iter][iter2]->GetEntries() != 0){
+	multARCutHist_p[iter]->SetBinContent(iter2+1, mean_multARCut_p[iter][iter2]->GetMean());
+	multARCutHist_p[iter]->SetBinError(iter2+1, mean_multARCut_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARCutD_p[iter][iter2]->GetEntries() != 0){
+	multARCutDHist_p[iter]->SetBinContent(iter2+1, mean_multARCutD_p[iter][iter2]->GetMean());
+	multARCutDHist_p[iter]->SetBinError(iter2+1, mean_multARCutD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARCutU_p[iter][iter2]->GetEntries() != 0){
+	multARCutUHist_p[iter]->SetBinContent(iter2+1, mean_multARCutU_p[iter][iter2]->GetMean());
+	multARCutUHist_p[iter]->SetBinError(iter2+1, mean_multARCutU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAEta_p[iter][iter2]->GetEntries() != 0){
+	multAEtaHist_p[iter]->SetBinContent(iter2+1, mean_multAEta_p[iter][iter2]->GetMean());
+	multAEtaHist_p[iter]->SetBinError(iter2+1, mean_multAEta_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAEtaD_p[iter][iter2]->GetEntries() != 0){
+	multAEtaDHist_p[iter]->SetBinContent(iter2+1, mean_multAEtaD_p[iter][iter2]->GetMean());
+	multAEtaDHist_p[iter]->SetBinError(iter2+1, mean_multAEtaD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAEtaU_p[iter][iter2]->GetEntries() != 0){
+	multAEtaUHist_p[iter]->SetBinContent(iter2+1, mean_multAEtaU_p[iter][iter2]->GetMean());
+	multAEtaUHist_p[iter]->SetBinError(iter2+1, mean_multAEtaU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAEtaCut_p[iter][iter2]->GetEntries() != 0){
+	multAEtaCutHist_p[iter]->SetBinContent(iter2+1, mean_multAEtaCut_p[iter][iter2]->GetMean());
+	multAEtaCutHist_p[iter]->SetBinError(iter2+1, mean_multAEtaCut_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAEtaCutD_p[iter][iter2]->GetEntries() != 0){
+	multAEtaCutDHist_p[iter]->SetBinContent(iter2+1, mean_multAEtaCutD_p[iter][iter2]->GetMean());
+	multAEtaCutDHist_p[iter]->SetBinError(iter2+1, mean_multAEtaCutD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAEtaCutU_p[iter][iter2]->GetEntries() != 0){
+	multAEtaCutUHist_p[iter]->SetBinContent(iter2+1, mean_multAEtaCutU_p[iter][iter2]->GetMean());
+	multAEtaCutUHist_p[iter]->SetBinError(iter2+1, mean_multAEtaCutU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAPhi_p[iter][iter2]->GetEntries() != 0){
+	multAPhiHist_p[iter]->SetBinContent(iter2+1, mean_multAPhi_p[iter][iter2]->GetMean());
+	multAPhiHist_p[iter]->SetBinError(iter2+1, mean_multAPhi_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAPhiD_p[iter][iter2]->GetEntries() != 0){
+	multAPhiDHist_p[iter]->SetBinContent(iter2+1, mean_multAPhiD_p[iter][iter2]->GetMean());
+	multAPhiDHist_p[iter]->SetBinError(iter2+1, mean_multAPhiD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAPhiU_p[iter][iter2]->GetEntries() != 0){
+	multAPhiUHist_p[iter]->SetBinContent(iter2+1, mean_multAPhiU_p[iter][iter2]->GetMean());
+	multAPhiUHist_p[iter]->SetBinError(iter2+1, mean_multAPhiU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAPhiCut_p[iter][iter2]->GetEntries() != 0){
+	multAPhiCutHist_p[iter]->SetBinContent(iter2+1, mean_multAPhiCut_p[iter][iter2]->GetMean());
+	multAPhiCutHist_p[iter]->SetBinError(iter2+1, mean_multAPhiCut_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAPhiCutD_p[iter][iter2]->GetEntries() != 0){
+	multAPhiCutDHist_p[iter]->SetBinContent(iter2+1, mean_multAPhiCutD_p[iter][iter2]->GetMean());
+	multAPhiCutDHist_p[iter]->SetBinError(iter2+1, mean_multAPhiCutD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multAPhiCutU_p[iter][iter2]->GetEntries() != 0){
+	multAPhiCutUHist_p[iter]->SetBinContent(iter2+1, mean_multAPhiCutU_p[iter][iter2]->GetMean());
+	multAPhiCutUHist_p[iter]->SetBinError(iter2+1, mean_multAPhiCutU_p[iter][iter2]->GetMeanError());
       }
     }
   }
@@ -598,12 +935,43 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   std::cout << outName << std::endl;
 
   for(Int_t iter = 0; iter < 6; iter++){
-    imbARHist_p[iter]->Write(titleR[iter].c_str(), TObject::kOverwrite);
-    imbARDHist_p[iter]->Write(titleRD[iter].c_str(), TObject::kOverwrite);
-    imbARUHist_p[iter]->Write(titleRU[iter].c_str(), TObject::kOverwrite);
+    imbARHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARDHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARUHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutDHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutUHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAEtaHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAEtaDHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAEtaUHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAEtaCutHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAEtaCutDHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAEtaCutUHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAPhiHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAPhiDHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAPhiUHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAPhiCutHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAPhiCutDHist_p[iter]->Write("", TObject::kOverwrite);
+    imbAPhiCutUHist_p[iter]->Write("", TObject::kOverwrite);
 
-    imbAEtaHist_p[iter]->Write(titleEta[iter].c_str(), TObject::kOverwrite);
-    imbAPhiHist_p[iter]->Write(titlePhi[iter].c_str(), TObject::kOverwrite);
+    multARHist_p[iter]->Write("", TObject::kOverwrite);
+    multARDHist_p[iter]->Write("", TObject::kOverwrite);
+    multARUHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutDHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutUHist_p[iter]->Write("", TObject::kOverwrite);
+    multAEtaHist_p[iter]->Write("", TObject::kOverwrite);
+    multAEtaDHist_p[iter]->Write("", TObject::kOverwrite);
+    multAEtaUHist_p[iter]->Write("", TObject::kOverwrite);
+    multAEtaCutHist_p[iter]->Write("", TObject::kOverwrite);
+    multAEtaCutDHist_p[iter]->Write("", TObject::kOverwrite);
+    multAEtaCutUHist_p[iter]->Write("", TObject::kOverwrite);
+    multAPhiHist_p[iter]->Write("", TObject::kOverwrite);
+    multAPhiDHist_p[iter]->Write("", TObject::kOverwrite);
+    multAPhiUHist_p[iter]->Write("", TObject::kOverwrite);
+    multAPhiCutHist_p[iter]->Write("", TObject::kOverwrite);
+    multAPhiCutDHist_p[iter]->Write("", TObject::kOverwrite);
+    multAPhiCutUHist_p[iter]->Write("", TObject::kOverwrite);
   } 
 
   outFile_p->Close();
@@ -617,30 +985,83 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   txtFile.close();
 
   for(Int_t iter = 0; iter < 6; iter++){
-    delete imbARHist_p[iter];
-    imbARHist_p[iter] = 0;
-    delete imbARDHist_p[iter];
-    imbARDHist_p[iter] = 0;
-    delete imbARUHist_p[iter];
-    imbARUHist_p[iter] = 0;
+    CleanHist(imbARHist_p[iter]);
+    CleanHist(imbARDHist_p[iter]);
+    CleanHist(imbARUHist_p[iter]);
+    CleanHist(imbARCutHist_p[iter]);
+    CleanHist(imbARCutDHist_p[iter]);
+    CleanHist(imbARCutUHist_p[iter]);
+    CleanHist(imbAEtaHist_p[iter]);
+    CleanHist(imbAEtaDHist_p[iter]);
+    CleanHist(imbAEtaUHist_p[iter]);
+    CleanHist(imbAEtaCutHist_p[iter]);
+    CleanHist(imbAEtaCutDHist_p[iter]);
+    CleanHist(imbAEtaCutUHist_p[iter]);
+    CleanHist(imbAPhiHist_p[iter]);
+    CleanHist(imbAPhiDHist_p[iter]);
+    CleanHist(imbAPhiUHist_p[iter]);
+    CleanHist(imbAPhiCutHist_p[iter]);
+    CleanHist(imbAPhiCutDHist_p[iter]);
+    CleanHist(imbAPhiCutUHist_p[iter]);
 
-    delete imbAEtaHist_p[iter];
-    imbAEtaHist_p[iter] = 0;
-    delete imbAPhiHist_p[iter];
-    imbAPhiHist_p[iter] = 0;
+    CleanHist(multARHist_p[iter]);
+    CleanHist(multARDHist_p[iter]);
+    CleanHist(multARUHist_p[iter]);
+    CleanHist(multARCutHist_p[iter]);
+    CleanHist(multARCutDHist_p[iter]);
+    CleanHist(multARCutUHist_p[iter]);
+    CleanHist(multAEtaHist_p[iter]);
+    CleanHist(multAEtaDHist_p[iter]);
+    CleanHist(multAEtaUHist_p[iter]);
+    CleanHist(multAEtaCutHist_p[iter]);
+    CleanHist(multAEtaCutDHist_p[iter]);
+    CleanHist(multAEtaCutUHist_p[iter]);
+    CleanHist(multAPhiHist_p[iter]);
+    CleanHist(multAPhiDHist_p[iter]);
+    CleanHist(multAPhiUHist_p[iter]);
+    CleanHist(multAPhiCutHist_p[iter]);
+    CleanHist(multAPhiCutDHist_p[iter]);
+    CleanHist(multAPhiCutUHist_p[iter]);
+
 
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
-      delete mean_projAR_p[iter][iter2];
-      mean_projAR_p[iter][iter2] = 0;
-      delete mean_projARD_p[iter][iter2];
-      mean_projARD_p[iter][iter2] = 0;
-      delete mean_projARU_p[iter][iter2];
-      mean_projARU_p[iter][iter2] = 0;
+      CleanHist(mean_projAR_p[iter][iter2]);
+      CleanHist(mean_projARD_p[iter][iter2]);
+      CleanHist(mean_projARU_p[iter][iter2]);
+      CleanHist(mean_projARCut_p[iter][iter2]);
+      CleanHist(mean_projARCutD_p[iter][iter2]);
+      CleanHist(mean_projARCutU_p[iter][iter2]);
+      CleanHist(mean_projAEta_p[iter][iter2]);
+      CleanHist(mean_projAEtaD_p[iter][iter2]);
+      CleanHist(mean_projAEtaU_p[iter][iter2]);
+      CleanHist(mean_projAEtaCut_p[iter][iter2]);
+      CleanHist(mean_projAEtaCutD_p[iter][iter2]);
+      CleanHist(mean_projAEtaCutU_p[iter][iter2]);
+      CleanHist(mean_projAPhi_p[iter][iter2]);
+      CleanHist(mean_projAPhiD_p[iter][iter2]);
+      CleanHist(mean_projAPhiU_p[iter][iter2]);
+      CleanHist(mean_projAPhiCut_p[iter][iter2]);
+      CleanHist(mean_projAPhiCutD_p[iter][iter2]);
+      CleanHist(mean_projAPhiCutU_p[iter][iter2]);
 
-      delete mean_projAEta_p[iter][iter2];
-      mean_projAEta_p[iter][iter2] = 0;
-      delete mean_projAPhi_p[iter][iter2];
-      mean_projAPhi_p[iter][iter2] = 0;
+      CleanHist(mean_multAR_p[iter][iter2]);
+      CleanHist(mean_multARD_p[iter][iter2]);
+      CleanHist(mean_multARU_p[iter][iter2]);
+      CleanHist(mean_multARCut_p[iter][iter2]);
+      CleanHist(mean_multARCutD_p[iter][iter2]);
+      CleanHist(mean_multARCutU_p[iter][iter2]);
+      CleanHist(mean_multAEta_p[iter][iter2]);
+      CleanHist(mean_multAEtaD_p[iter][iter2]);
+      CleanHist(mean_multAEtaU_p[iter][iter2]);
+      CleanHist(mean_multAEtaCut_p[iter][iter2]);
+      CleanHist(mean_multAEtaCutD_p[iter][iter2]);
+      CleanHist(mean_multAEtaCutU_p[iter][iter2]);
+      CleanHist(mean_multAPhi_p[iter][iter2]);
+      CleanHist(mean_multAPhiD_p[iter][iter2]);
+      CleanHist(mean_multAPhiU_p[iter][iter2]);
+      CleanHist(mean_multAPhiCut_p[iter][iter2]);
+      CleanHist(mean_multAPhiCutD_p[iter][iter2]);
+      CleanHist(mean_multAPhiCutU_p[iter][iter2]);
     }
   }
   return;
@@ -682,7 +1103,7 @@ int makeDiJetHists(const std::string inName, sampleType sType = kHIDATA, Bool_t 
 
   for(Int_t corrIter = 1; corrIter < 2; corrIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
-      for(Int_t algIter = 4; algIter < 5; algIter++){
+      for(Int_t algIter = 4; algIter < 8; algIter++){
 
 	/*
 	makeImbAHist(jetTreeAna_p, outName, algIter, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
@@ -698,15 +1119,16 @@ int makeDiJetHists(const std::string inName, sampleType sType = kHIDATA, Bool_t 
 	if(isHI(sType))	makeImbACNCHist(jetTreeAna_p, outName, algIter, 60, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);      
 	*/
 	
-	makeImbARHist(jetTreeAna_p, outName, "r", algIter, 0, 59, Corr[corrIter], sType, isHighPtTrk);
-	if(isHI(sType)) makeImbARHist(jetTreeAna_p, outName, "r", algIter, 60, 199, Corr[corrIter], sType, isHighPtTrk);
-
-	/*
+	if(algIter == 4){
+	  makeImbARHist(jetTreeAna_p, outName, "r", algIter, 0, 59, Corr[corrIter], sType, isHighPtTrk);
+	  if(isHI(sType)) makeImbARHist(jetTreeAna_p, outName, "r", algIter, 60, 199, Corr[corrIter], sType, isHighPtTrk);
+	}
+	
 	if(algIter == 7){
 	  makeImbARHist(jetTreeAna_p, outName, "g", algIter, 0, 59, Corr[corrIter], sType, isHighPtTrk);
 	  if(isHI(sType)) makeImbARHist(jetTreeAna_p, outName, "g", algIter, 60, 199, Corr[corrIter], sType, isHighPtTrk);
 	}
-	*/
+	
 
       }
     }

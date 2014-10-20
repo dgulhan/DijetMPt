@@ -251,6 +251,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     setJtBranches(c->ak3CaloJetTree, montecarlo);
     setJtBranches(c->ak4CaloJetTree, montecarlo);
     setJtBranches(c->ak5CaloJetTree, montecarlo);
+    setJtBranches(c->akPu3PFJetTree, montecarlo, true);
   }
 
   c->LoadNoTrees();
@@ -277,6 +278,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     c->hasAkPu3CaloJetTree = true;
     c->hasAkPu4CaloJetTree = true;
     c->hasAkPu5CaloJetTree = true;
+    c->hasAkPu3JetTree = true;
   }
 
   c->hasTrackTree = true;
