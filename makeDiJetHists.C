@@ -469,6 +469,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   TH1F* imbARCutHist_p[6];
   TH1F* imbARCutDHist_p[6];
   TH1F* imbARCutUHist_p[6];
+  TH1F* imbARCutEtaHist_p[6];
+  TH1F* imbARCutEtaDHist_p[6];
+  TH1F* imbARCutEtaUHist_p[6];
+  TH1F* imbARCutPhiHist_p[6];
+  TH1F* imbARCutPhiDHist_p[6];
+  TH1F* imbARCutPhiUHist_p[6];
   TH1F* imbAEtaHist_p[6];
   TH1F* imbAEtaDHist_p[6];
   TH1F* imbAEtaUHist_p[6];
@@ -488,6 +494,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   TH1F* multARCutHist_p[6];
   TH1F* multARCutDHist_p[6];
   TH1F* multARCutUHist_p[6];
+  TH1F* multARCutEtaHist_p[6];
+  TH1F* multARCutEtaDHist_p[6];
+  TH1F* multARCutEtaUHist_p[6];
+  TH1F* multARCutPhiHist_p[6];
+  TH1F* multARCutPhiDHist_p[6];
+  TH1F* multARCutPhiUHist_p[6];
   TH1F* multAEtaHist_p[6];
   TH1F* multAEtaDHist_p[6];
   TH1F* multAEtaUHist_p[6];
@@ -507,6 +519,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   TH1F* mean_projARCut_p[6][nBins];
   TH1F* mean_projARCutD_p[6][nBins];
   TH1F* mean_projARCutU_p[6][nBins];
+  TH1F* mean_projARCutEta_p[6][nBins];
+  TH1F* mean_projARCutEtaD_p[6][nBins];
+  TH1F* mean_projARCutEtaU_p[6][nBins];
+  TH1F* mean_projARCutPhi_p[6][nBins];
+  TH1F* mean_projARCutPhiD_p[6][nBins];
+  TH1F* mean_projARCutPhiU_p[6][nBins];
   TH1F* mean_projAEta_p[6][nBins];
   TH1F* mean_projAEtaD_p[6][nBins];
   TH1F* mean_projAEtaU_p[6][nBins];
@@ -526,6 +544,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   TH1F* mean_multARCut_p[6][nBins];
   TH1F* mean_multARCutD_p[6][nBins];
   TH1F* mean_multARCutU_p[6][nBins];
+  TH1F* mean_multARCutEta_p[6][nBins];
+  TH1F* mean_multARCutEtaD_p[6][nBins];
+  TH1F* mean_multARCutEtaU_p[6][nBins];
+  TH1F* mean_multARCutPhi_p[6][nBins];
+  TH1F* mean_multARCutPhiD_p[6][nBins];
+  TH1F* mean_multARCutPhiU_p[6][nBins];
   TH1F* mean_multAEta_p[6][nBins];
   TH1F* mean_multAEtaD_p[6][nBins];
   TH1F* mean_multAEtaU_p[6][nBins];
@@ -545,6 +569,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   InitHist(imbARCutHist_p);
   InitHist(imbARCutDHist_p);
   InitHist(imbARCutUHist_p);
+  InitHist(imbARCutEtaHist_p);
+  InitHist(imbARCutEtaDHist_p);
+  InitHist(imbARCutEtaUHist_p);
+  InitHist(imbARCutPhiHist_p);
+  InitHist(imbARCutPhiDHist_p);
+  InitHist(imbARCutPhiUHist_p);
   InitHist(imbAEtaHist_p);
   InitHist(imbAEtaDHist_p);
   InitHist(imbAEtaUHist_p);
@@ -564,6 +594,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   InitHist(multARCutHist_p);
   InitHist(multARCutDHist_p);
   InitHist(multARCutUHist_p);
+  InitHist(multARCutEtaHist_p);
+  InitHist(multARCutEtaDHist_p);
+  InitHist(multARCutEtaUHist_p);
+  InitHist(multARCutPhiHist_p);
+  InitHist(multARCutPhiDHist_p);
+  InitHist(multARCutPhiUHist_p);
   InitHist(multAEtaHist_p);
   InitHist(multAEtaDHist_p);
   InitHist(multAEtaUHist_p);
@@ -583,6 +619,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   BookHist(imbARCutHist_p, gR, algType[setNum], "ImbProj", "RCut", Corr, centString, nBins, rBins, 2.00, niceNumR);
   BookHist(imbARCutDHist_p, gR, algType[setNum], "ImbProj", "RCutD", Corr, centString, nBins, rBins, 2.00, niceNumR);
   BookHist(imbARCutUHist_p, gR, algType[setNum], "ImbProj", "RCutU", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutEtaHist_p, gR, algType[setNum], "ImbProj", "RCutEta", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutEtaDHist_p, gR, algType[setNum], "ImbProj", "RCutEtaD", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutEtaUHist_p, gR, algType[setNum], "ImbProj", "RCutEtaU", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutPhiHist_p, gR, algType[setNum], "ImbProj", "RCutPhi", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutPhiDHist_p, gR, algType[setNum], "ImbProj", "RCutPhiD", Corr, centString, nBins, rBins, 2.00, niceNumR);
+  BookHist(imbARCutPhiUHist_p, gR, algType[setNum], "ImbProj", "RCutPhiU", Corr, centString, nBins, rBins, 2.00, niceNumR);
   BookHist(imbAEtaHist_p, gR, algType[setNum], "ImbProj", "Eta", Corr, centString, nBins, rBins, 2.00, niceNumR);
   BookHist(imbAEtaDHist_p, gR, algType[setNum], "ImbProj", "EtaD", Corr, centString, nBins, rBins, 2.00, niceNumR);
   BookHist(imbAEtaUHist_p, gR, algType[setNum], "ImbProj", "EtaU", Corr, centString, nBins, rBins, 2.00, niceNumR);
@@ -602,6 +644,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   BookHist(multARCutHist_p, gR, algType[setNum], "Mult", "RCut", Corr, centString, nBins, rBins, 2.00, niceNumMult);
   BookHist(multARCutDHist_p, gR, algType[setNum], "Mult", "RCutD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
   BookHist(multARCutUHist_p, gR, algType[setNum], "Mult", "RCutU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutEtaHist_p, gR, algType[setNum], "Mult", "RCutEta", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutEtaDHist_p, gR, algType[setNum], "Mult", "RCutEtaD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutEtaUHist_p, gR, algType[setNum], "Mult", "RCutEtaU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutPhiHist_p, gR, algType[setNum], "Mult", "RCutPhi", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutPhiDHist_p, gR, algType[setNum], "Mult", "RCutPhiD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
+  BookHist(multARCutPhiUHist_p, gR, algType[setNum], "Mult", "RCutPhiU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
   BookHist(multAEtaHist_p, gR, algType[setNum], "Mult", "Eta", Corr, centString, nBins, rBins, 2.00, niceNumMult);
   BookHist(multAEtaDHist_p, gR, algType[setNum], "Mult", "EtaD", Corr, centString, nBins, rBins, 2.00, niceNumMult);
   BookHist(multAEtaUHist_p, gR, algType[setNum], "Mult", "EtaU", Corr, centString, nBins, rBins, 2.00, niceNumMult);
@@ -624,6 +672,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
       mean_projARCut_p[iter][iter2] = new TH1F(Form("mean_projARCut_%d_%d_h", iter, iter2), Form("mean_projARCut_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projARCutD_p[iter][iter2] = new TH1F(Form("mean_projARCutD_%d_%d_h", iter, iter2), Form("mean_projARCutD_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projARCutU_p[iter][iter2] = new TH1F(Form("mean_projARCutU_%d_%d_h", iter, iter2), Form("mean_projARCutU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projARCutEta_p[iter][iter2] = new TH1F(Form("mean_projARCutEta_%d_%d_h", iter, iter2), Form("mean_projARCutEta_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projARCutEtaD_p[iter][iter2] = new TH1F(Form("mean_projARCutEtaD_%d_%d_h", iter, iter2), Form("mean_projARCutEtaD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projARCutEtaU_p[iter][iter2] = new TH1F(Form("mean_projARCutEtaU_%d_%d_h", iter, iter2), Form("mean_projARCutEtaU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projARCutPhi_p[iter][iter2] = new TH1F(Form("mean_projARCutPhi_%d_%d_h", iter, iter2), Form("mean_projARCutPhi_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projARCutPhiD_p[iter][iter2] = new TH1F(Form("mean_projARCutPhiD_%d_%d_h", iter, iter2), Form("mean_projARCutPhiD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_projARCutPhiU_p[iter][iter2] = new TH1F(Form("mean_projARCutPhiU_%d_%d_h", iter, iter2), Form("mean_projARCutPhiU_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projAEta_p[iter][iter2] = new TH1F(Form("mean_projAEta_%d_%d_h", iter, iter2), Form("mean_projAEta_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projAEtaD_p[iter][iter2] = new TH1F(Form("mean_projAEtaD_%d_%d_h", iter, iter2), Form("mean_projAEtaD_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projAEtaU_p[iter][iter2] = new TH1F(Form("mean_projAEtaU_%d_%d_h", iter, iter2), Form("mean_projAEtaU_%d_%d_h", iter, iter2), 100, -2000, 2000);
@@ -643,6 +697,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
       mean_multARCut_p[iter][iter2] = new TH1F(Form("mean_multARCut_%d_%d_h", iter, iter2), Form("mean_multARCut_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_multARCutD_p[iter][iter2] = new TH1F(Form("mean_multARCutD_%d_%d_h", iter, iter2), Form("mean_multARCutD_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_multARCutU_p[iter][iter2] = new TH1F(Form("mean_multARCutU_%d_%d_h", iter, iter2), Form("mean_multARCutU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCutEta_p[iter][iter2] = new TH1F(Form("mean_multARCutEta_%d_%d_h", iter, iter2), Form("mean_multARCutEta_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCutEtaD_p[iter][iter2] = new TH1F(Form("mean_multARCutEtaD_%d_%d_h", iter, iter2), Form("mean_multARCutEtaD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCutEtaU_p[iter][iter2] = new TH1F(Form("mean_multARCutEtaU_%d_%d_h", iter, iter2), Form("mean_multARCutEtaU_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCutPhi_p[iter][iter2] = new TH1F(Form("mean_multARCutPhi_%d_%d_h", iter, iter2), Form("mean_multARCutPhi_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCutPhiD_p[iter][iter2] = new TH1F(Form("mean_multARCutPhiD_%d_%d_h", iter, iter2), Form("mean_multARCutPhiD_%d_%d_h", iter, iter2), 100, -2000, 2000);
+      mean_multARCutPhiU_p[iter][iter2] = new TH1F(Form("mean_multARCutPhiU_%d_%d_h", iter, iter2), Form("mean_multARCutPhiU_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_multAEta_p[iter][iter2] = new TH1F(Form("mean_multAEta_%d_%d_h", iter, iter2), Form("mean_multAEta_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_multAEtaD_p[iter][iter2] = new TH1F(Form("mean_multAEtaD_%d_%d_h", iter, iter2), Form("mean_multAEtaD_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_multAEtaU_p[iter][iter2] = new TH1F(Form("mean_multAEtaU_%d_%d_h", iter, iter2), Form("mean_multAEtaU_%d_%d_h", iter, iter2), 100, -2000, 2000);
@@ -686,6 +746,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	  mean_projAEta_p[iter][iter2]->Fill(rAlgImbProjAEta_[setCorrNum][iter][iter2], weight);
 	  mean_projAPhi_p[iter][iter2]->Fill(rAlgImbProjAPhi_[setCorrNum][iter][iter2], weight);
 	  mean_projARCut_p[iter][iter2]->Fill(rAlgImbProjAR_Cut_[setCorrNum][iter][iter2], weight);
+	  mean_projARCutEta_p[iter][iter2]->Fill(rAlgImbProjAR_CutEta_[setCorrNum][iter][iter2], weight);
+	  mean_projARCutPhi_p[iter][iter2]->Fill(rAlgImbProjAR_CutPhi_[setCorrNum][iter][iter2], weight);
 	  mean_projAEtaCut_p[iter][iter2]->Fill(rAlgImbProjAEta_Cut_[setCorrNum][iter][iter2], weight);
 	  mean_projAPhiCut_p[iter][iter2]->Fill(rAlgImbProjAPhi_Cut_[setCorrNum][iter][iter2], weight);
 
@@ -693,6 +755,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	  mean_multAEta_p[iter][iter2]->Fill(rAlgMultAEta_[setCorrNum][iter][iter2], weight);
 	  mean_multAPhi_p[iter][iter2]->Fill(rAlgMultAPhi_[setCorrNum][iter][iter2], weight);
 	  mean_multARCut_p[iter][iter2]->Fill(rAlgMultAR_Cut_[setCorrNum][iter][iter2], weight);
+	  mean_multARCutEta_p[iter][iter2]->Fill(rAlgMultAR_CutEta_[setCorrNum][iter][iter2], weight);
+	  mean_multARCutPhi_p[iter][iter2]->Fill(rAlgMultAR_CutPhi_[setCorrNum][iter][iter2], weight);
 	  mean_multAEtaCut_p[iter][iter2]->Fill(rAlgMultAEta_Cut_[setCorrNum][iter][iter2], weight);
 	  mean_multAPhiCut_p[iter][iter2]->Fill(rAlgMultAPhi_Cut_[setCorrNum][iter][iter2], weight);
 
@@ -701,6 +765,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	    mean_projAEtaD_p[iter][iter2]->Fill(rAlgImbProjAEta_[setCorrNum][iter][iter2], weight);
 	    mean_projAPhiD_p[iter][iter2]->Fill(rAlgImbProjAPhi_[setCorrNum][iter][iter2], weight);
 	    mean_projARCutD_p[iter][iter2]->Fill(rAlgImbProjAR_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_projARCutEtaD_p[iter][iter2]->Fill(rAlgImbProjAR_CutEta_[setCorrNum][iter][iter2], weight);
+	    mean_projARCutPhiD_p[iter][iter2]->Fill(rAlgImbProjAR_CutPhi_[setCorrNum][iter][iter2], weight);
 	    mean_projAEtaCutD_p[iter][iter2]->Fill(rAlgImbProjAEta_Cut_[setCorrNum][iter][iter2], weight);
 	    mean_projAPhiCutD_p[iter][iter2]->Fill(rAlgImbProjAPhi_Cut_[setCorrNum][iter][iter2], weight);
 
@@ -708,6 +774,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	    mean_multAEtaD_p[iter][iter2]->Fill(rAlgMultAEta_[setCorrNum][iter][iter2], weight);
 	    mean_multAPhiD_p[iter][iter2]->Fill(rAlgMultAPhi_[setCorrNum][iter][iter2], weight);
 	    mean_multARCutD_p[iter][iter2]->Fill(rAlgMultAR_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_multARCutEtaD_p[iter][iter2]->Fill(rAlgMultAR_CutEta_[setCorrNum][iter][iter2], weight);
+	    mean_multARCutPhiD_p[iter][iter2]->Fill(rAlgMultAR_CutPhi_[setCorrNum][iter][iter2], weight);
 	    mean_multAEtaCutD_p[iter][iter2]->Fill(rAlgMultAEta_Cut_[setCorrNum][iter][iter2], weight);
 	    mean_multAPhiCutD_p[iter][iter2]->Fill(rAlgMultAPhi_Cut_[setCorrNum][iter][iter2], weight);
 	  }
@@ -716,6 +784,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	    mean_projAEtaU_p[iter][iter2]->Fill(rAlgImbProjAEta_[setCorrNum][iter][iter2], weight);
 	    mean_projAPhiU_p[iter][iter2]->Fill(rAlgImbProjAPhi_[setCorrNum][iter][iter2], weight);
 	    mean_projARCutU_p[iter][iter2]->Fill(rAlgImbProjAR_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_projARCutEtaU_p[iter][iter2]->Fill(rAlgImbProjAR_CutEta_[setCorrNum][iter][iter2], weight);
+	    mean_projARCutPhiU_p[iter][iter2]->Fill(rAlgImbProjAR_CutPhi_[setCorrNum][iter][iter2], weight);
 	    mean_projAEtaCutU_p[iter][iter2]->Fill(rAlgImbProjAEta_Cut_[setCorrNum][iter][iter2], weight);
 	    mean_projAPhiCutU_p[iter][iter2]->Fill(rAlgImbProjAPhi_Cut_[setCorrNum][iter][iter2], weight);
 
@@ -723,6 +793,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	    mean_multAEtaU_p[iter][iter2]->Fill(rAlgMultAEta_[setCorrNum][iter][iter2], weight);
 	    mean_multAPhiU_p[iter][iter2]->Fill(rAlgMultAPhi_[setCorrNum][iter][iter2], weight);
 	    mean_multARCutU_p[iter][iter2]->Fill(rAlgMultAR_Cut_[setCorrNum][iter][iter2], weight);
+	    mean_multARCutEtaU_p[iter][iter2]->Fill(rAlgMultAR_CutEta_[setCorrNum][iter][iter2], weight);
+	    mean_multARCutPhiU_p[iter][iter2]->Fill(rAlgMultAR_CutPhi_[setCorrNum][iter][iter2], weight);
 	    mean_multAEtaCutU_p[iter][iter2]->Fill(rAlgMultAEta_Cut_[setCorrNum][iter][iter2], weight);
 	    mean_multAPhiCutU_p[iter][iter2]->Fill(rAlgMultAPhi_Cut_[setCorrNum][iter][iter2], weight);
 	  }
@@ -732,6 +804,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	  mean_projAEta_p[iter][iter2]->Fill(gAlgImbProjAEta_[setNum][iter][iter2], weight);
 	  mean_projAPhi_p[iter][iter2]->Fill(gAlgImbProjAPhi_[setNum][iter][iter2], weight);
 	  mean_projARCut_p[iter][iter2]->Fill(gAlgImbProjAR_Cut_[setNum][iter][iter2], weight);
+	  mean_projARCutEta_p[iter][iter2]->Fill(gAlgImbProjAR_CutEta_[setNum][iter][iter2], weight);
+	  mean_projARCutPhi_p[iter][iter2]->Fill(gAlgImbProjAR_CutPhi_[setNum][iter][iter2], weight);
 	  mean_projAEtaCut_p[iter][iter2]->Fill(gAlgImbProjAEta_Cut_[setNum][iter][iter2], weight);
 	  mean_projAPhiCut_p[iter][iter2]->Fill(gAlgImbProjAPhi_Cut_[setNum][iter][iter2], weight);
 
@@ -739,6 +813,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	  mean_multAEta_p[iter][iter2]->Fill(gAlgMultAEta_[setNum][iter][iter2], weight);
 	  mean_multAPhi_p[iter][iter2]->Fill(gAlgMultAPhi_[setNum][iter][iter2], weight);
 	  mean_multARCut_p[iter][iter2]->Fill(gAlgMultAR_Cut_[setNum][iter][iter2], weight);
+	  mean_multARCutEta_p[iter][iter2]->Fill(gAlgMultAR_CutEta_[setNum][iter][iter2], weight);
+	  mean_multARCutPhi_p[iter][iter2]->Fill(gAlgMultAR_CutPhi_[setNum][iter][iter2], weight);
 	  mean_multAEtaCut_p[iter][iter2]->Fill(gAlgMultAEta_Cut_[setNum][iter][iter2], weight);
 	  mean_multAPhiCut_p[iter][iter2]->Fill(gAlgMultAPhi_Cut_[setNum][iter][iter2], weight);
 
@@ -747,6 +823,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	    mean_projAEtaD_p[iter][iter2]->Fill(gAlgImbProjAEta_[setNum][iter][iter2], weight);
 	    mean_projAPhiD_p[iter][iter2]->Fill(gAlgImbProjAPhi_[setNum][iter][iter2], weight);
 	    mean_projARCutD_p[iter][iter2]->Fill(gAlgImbProjAR_Cut_[setNum][iter][iter2], weight);
+	    mean_projARCutEtaD_p[iter][iter2]->Fill(gAlgImbProjAR_CutEta_[setNum][iter][iter2], weight);
+	    mean_projARCutPhiD_p[iter][iter2]->Fill(gAlgImbProjAR_CutPhi_[setNum][iter][iter2], weight);
 	    mean_projAEtaCutD_p[iter][iter2]->Fill(gAlgImbProjAEta_Cut_[setNum][iter][iter2], weight);
 	    mean_projAPhiCutD_p[iter][iter2]->Fill(gAlgImbProjAPhi_Cut_[setNum][iter][iter2], weight);
 
@@ -754,6 +832,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	    mean_multAEtaD_p[iter][iter2]->Fill(gAlgMultAEta_[setNum][iter][iter2], weight);
 	    mean_multAPhiD_p[iter][iter2]->Fill(gAlgMultAPhi_[setNum][iter][iter2], weight);
 	    mean_multARCutD_p[iter][iter2]->Fill(gAlgMultAR_Cut_[setNum][iter][iter2], weight);
+	    mean_multARCutEtaD_p[iter][iter2]->Fill(gAlgMultAR_CutEta_[setNum][iter][iter2], weight);
+	    mean_multARCutPhiD_p[iter][iter2]->Fill(gAlgMultAR_CutPhi_[setNum][iter][iter2], weight);
 	    mean_multAEtaCutD_p[iter][iter2]->Fill(gAlgMultAEta_Cut_[setNum][iter][iter2], weight);
 	    mean_multAPhiCutD_p[iter][iter2]->Fill(gAlgMultAPhi_Cut_[setNum][iter][iter2], weight);
 	  }
@@ -762,6 +842,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	    mean_projAEtaU_p[iter][iter2]->Fill(gAlgImbProjAEta_[setNum][iter][iter2], weight);
 	    mean_projAPhiU_p[iter][iter2]->Fill(gAlgImbProjAPhi_[setNum][iter][iter2], weight);
 	    mean_projARCutU_p[iter][iter2]->Fill(gAlgImbProjAR_Cut_[setNum][iter][iter2], weight);
+	    mean_projARCutEtaU_p[iter][iter2]->Fill(gAlgImbProjAR_CutEta_[setNum][iter][iter2], weight);
+	    mean_projARCutPhiU_p[iter][iter2]->Fill(gAlgImbProjAR_CutPhi_[setNum][iter][iter2], weight);
 	    mean_projAEtaCutU_p[iter][iter2]->Fill(gAlgImbProjAEta_Cut_[setNum][iter][iter2], weight);
 	    mean_projAPhiCutU_p[iter][iter2]->Fill(gAlgImbProjAPhi_Cut_[setNum][iter][iter2], weight);
 
@@ -769,6 +851,8 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	    mean_multAEtaU_p[iter][iter2]->Fill(gAlgMultAEta_[setNum][iter][iter2], weight);
 	    mean_multAPhiU_p[iter][iter2]->Fill(gAlgMultAPhi_[setNum][iter][iter2], weight);
 	    mean_multARCutU_p[iter][iter2]->Fill(gAlgMultAR_Cut_[setNum][iter][iter2], weight);
+	    mean_multARCutEtaU_p[iter][iter2]->Fill(gAlgMultAR_CutEta_[setNum][iter][iter2], weight);
+	    mean_multARCutPhiU_p[iter][iter2]->Fill(gAlgMultAR_CutPhi_[setNum][iter][iter2], weight);
 	    mean_multAEtaCutU_p[iter][iter2]->Fill(gAlgMultAEta_Cut_[setNum][iter][iter2], weight);
 	    mean_multAPhiCutU_p[iter][iter2]->Fill(gAlgMultAPhi_Cut_[setNum][iter][iter2], weight);
 	  }
@@ -803,6 +887,30 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
       if(mean_projARCutU_p[iter][iter2]->GetEntries() != 0){
 	imbARCutUHist_p[iter]->SetBinContent(iter2+1, mean_projARCutU_p[iter][iter2]->GetMean());
 	imbARCutUHist_p[iter]->SetBinError(iter2+1, mean_projARCutU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projARCutEta_p[iter][iter2]->GetEntries() != 0){
+	imbARCutEtaHist_p[iter]->SetBinContent(iter2+1, mean_projARCutEta_p[iter][iter2]->GetMean());
+	imbARCutEtaHist_p[iter]->SetBinError(iter2+1, mean_projARCutEta_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projARCutEtaD_p[iter][iter2]->GetEntries() != 0){
+	imbARCutEtaDHist_p[iter]->SetBinContent(iter2+1, mean_projARCutEtaD_p[iter][iter2]->GetMean());
+	imbARCutEtaDHist_p[iter]->SetBinError(iter2+1, mean_projARCutEtaD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projARCutEtaU_p[iter][iter2]->GetEntries() != 0){
+	imbARCutEtaUHist_p[iter]->SetBinContent(iter2+1, mean_projARCutEtaU_p[iter][iter2]->GetMean());
+	imbARCutEtaUHist_p[iter]->SetBinError(iter2+1, mean_projARCutEtaU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projARCutPhi_p[iter][iter2]->GetEntries() != 0){
+	imbARCutPhiHist_p[iter]->SetBinContent(iter2+1, mean_projARCutPhi_p[iter][iter2]->GetMean());
+	imbARCutPhiHist_p[iter]->SetBinError(iter2+1, mean_projARCutPhi_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projARCutPhiD_p[iter][iter2]->GetEntries() != 0){
+	imbARCutPhiDHist_p[iter]->SetBinContent(iter2+1, mean_projARCutPhiD_p[iter][iter2]->GetMean());
+	imbARCutPhiDHist_p[iter]->SetBinError(iter2+1, mean_projARCutPhiD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_projARCutPhiU_p[iter][iter2]->GetEntries() != 0){
+	imbARCutPhiUHist_p[iter]->SetBinContent(iter2+1, mean_projARCutPhiU_p[iter][iter2]->GetMean());
+	imbARCutPhiUHist_p[iter]->SetBinError(iter2+1, mean_projARCutPhiU_p[iter][iter2]->GetMeanError());
       }
       if(mean_projAEta_p[iter][iter2]->GetEntries() != 0){
 	imbAEtaHist_p[iter]->SetBinContent(iter2+1, mean_projAEta_p[iter][iter2]->GetMean());
@@ -880,6 +988,30 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	multARCutUHist_p[iter]->SetBinContent(iter2+1, mean_multARCutU_p[iter][iter2]->GetMean());
 	multARCutUHist_p[iter]->SetBinError(iter2+1, mean_multARCutU_p[iter][iter2]->GetMeanError());
       }
+      if(mean_multARCutEta_p[iter][iter2]->GetEntries() != 0){
+	multARCutEtaHist_p[iter]->SetBinContent(iter2+1, mean_multARCutEta_p[iter][iter2]->GetMean());
+	multARCutEtaHist_p[iter]->SetBinError(iter2+1, mean_multARCutEta_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARCutEtaD_p[iter][iter2]->GetEntries() != 0){
+	multARCutEtaDHist_p[iter]->SetBinContent(iter2+1, mean_multARCutEtaD_p[iter][iter2]->GetMean());
+	multARCutEtaDHist_p[iter]->SetBinError(iter2+1, mean_multARCutEtaD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARCutEtaU_p[iter][iter2]->GetEntries() != 0){
+	multARCutEtaUHist_p[iter]->SetBinContent(iter2+1, mean_multARCutEtaU_p[iter][iter2]->GetMean());
+	multARCutEtaUHist_p[iter]->SetBinError(iter2+1, mean_multARCutEtaU_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARCutPhi_p[iter][iter2]->GetEntries() != 0){
+	multARCutPhiHist_p[iter]->SetBinContent(iter2+1, mean_multARCutPhi_p[iter][iter2]->GetMean());
+	multARCutPhiHist_p[iter]->SetBinError(iter2+1, mean_multARCutPhi_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARCutPhiD_p[iter][iter2]->GetEntries() != 0){
+	multARCutPhiDHist_p[iter]->SetBinContent(iter2+1, mean_multARCutPhiD_p[iter][iter2]->GetMean());
+	multARCutPhiDHist_p[iter]->SetBinError(iter2+1, mean_multARCutPhiD_p[iter][iter2]->GetMeanError());
+      }
+      if(mean_multARCutPhiU_p[iter][iter2]->GetEntries() != 0){
+	multARCutPhiUHist_p[iter]->SetBinContent(iter2+1, mean_multARCutPhiU_p[iter][iter2]->GetMean());
+	multARCutPhiUHist_p[iter]->SetBinError(iter2+1, mean_multARCutPhiU_p[iter][iter2]->GetMeanError());
+      }
       if(mean_multAEta_p[iter][iter2]->GetEntries() != 0){
 	multAEtaHist_p[iter]->SetBinContent(iter2+1, mean_multAEta_p[iter][iter2]->GetMean());
 	multAEtaHist_p[iter]->SetBinError(iter2+1, mean_multAEta_p[iter][iter2]->GetMeanError());
@@ -941,6 +1073,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
     imbARCutHist_p[iter]->Write("", TObject::kOverwrite);
     imbARCutDHist_p[iter]->Write("", TObject::kOverwrite);
     imbARCutUHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutEtaHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutEtaDHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutEtaUHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutPhiHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutPhiDHist_p[iter]->Write("", TObject::kOverwrite);
+    imbARCutPhiUHist_p[iter]->Write("", TObject::kOverwrite);
     imbAEtaHist_p[iter]->Write("", TObject::kOverwrite);
     imbAEtaDHist_p[iter]->Write("", TObject::kOverwrite);
     imbAEtaUHist_p[iter]->Write("", TObject::kOverwrite);
@@ -960,6 +1098,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
     multARCutHist_p[iter]->Write("", TObject::kOverwrite);
     multARCutDHist_p[iter]->Write("", TObject::kOverwrite);
     multARCutUHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutEtaHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutEtaDHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutEtaUHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutPhiHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutPhiDHist_p[iter]->Write("", TObject::kOverwrite);
+    multARCutPhiUHist_p[iter]->Write("", TObject::kOverwrite);
     multAEtaHist_p[iter]->Write("", TObject::kOverwrite);
     multAEtaDHist_p[iter]->Write("", TObject::kOverwrite);
     multAEtaUHist_p[iter]->Write("", TObject::kOverwrite);
@@ -978,6 +1122,16 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
   delete outFile_p;
   outFile_p = 0;
 
+  if(!montecarlo){
+    outFile_p = new TFile("ajIncl_DelR_allPtBins.root", "UPDATE");
+    for(Int_t iter = 0; iter < 6; iter++){
+      imbARHist_p[iter]->Write("", TObject::kOverwrite);
+    }
+    outFile_p->Close();
+    delete outFile_p;
+    outFile_p = 0;
+  }
+
   std::ofstream txtFile;
   txtFile.open(Form("%s.txt", outName.c_str()), std::ofstream::out | std::ofstream::app);
   if(centLow == 0) txtFile << Form("ProjAR (D) (U) %s,\n", algType[setNum].c_str());
@@ -991,6 +1145,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
     CleanHist(imbARCutHist_p[iter]);
     CleanHist(imbARCutDHist_p[iter]);
     CleanHist(imbARCutUHist_p[iter]);
+    CleanHist(imbARCutEtaHist_p[iter]);
+    CleanHist(imbARCutEtaDHist_p[iter]);
+    CleanHist(imbARCutEtaUHist_p[iter]);
+    CleanHist(imbARCutPhiHist_p[iter]);
+    CleanHist(imbARCutPhiDHist_p[iter]);
+    CleanHist(imbARCutPhiUHist_p[iter]);
     CleanHist(imbAEtaHist_p[iter]);
     CleanHist(imbAEtaDHist_p[iter]);
     CleanHist(imbAEtaUHist_p[iter]);
@@ -1010,6 +1170,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
     CleanHist(multARCutHist_p[iter]);
     CleanHist(multARCutDHist_p[iter]);
     CleanHist(multARCutUHist_p[iter]);
+    CleanHist(multARCutEtaHist_p[iter]);
+    CleanHist(multARCutEtaDHist_p[iter]);
+    CleanHist(multARCutEtaUHist_p[iter]);
+    CleanHist(multARCutPhiHist_p[iter]);
+    CleanHist(multARCutPhiDHist_p[iter]);
+    CleanHist(multARCutPhiUHist_p[iter]);
     CleanHist(multAEtaHist_p[iter]);
     CleanHist(multAEtaDHist_p[iter]);
     CleanHist(multAEtaUHist_p[iter]);
@@ -1031,6 +1197,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
       CleanHist(mean_projARCut_p[iter][iter2]);
       CleanHist(mean_projARCutD_p[iter][iter2]);
       CleanHist(mean_projARCutU_p[iter][iter2]);
+      CleanHist(mean_projARCutEta_p[iter][iter2]);
+      CleanHist(mean_projARCutEtaD_p[iter][iter2]);
+      CleanHist(mean_projARCutEtaU_p[iter][iter2]);
+      CleanHist(mean_projARCutPhi_p[iter][iter2]);
+      CleanHist(mean_projARCutPhiD_p[iter][iter2]);
+      CleanHist(mean_projARCutPhiU_p[iter][iter2]);
       CleanHist(mean_projAEta_p[iter][iter2]);
       CleanHist(mean_projAEtaD_p[iter][iter2]);
       CleanHist(mean_projAEtaU_p[iter][iter2]);
@@ -1050,6 +1222,12 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
       CleanHist(mean_multARCut_p[iter][iter2]);
       CleanHist(mean_multARCutD_p[iter][iter2]);
       CleanHist(mean_multARCutU_p[iter][iter2]);
+      CleanHist(mean_multARCutEta_p[iter][iter2]);
+      CleanHist(mean_multARCutEtaD_p[iter][iter2]);
+      CleanHist(mean_multARCutEtaU_p[iter][iter2]);
+      CleanHist(mean_multARCutPhi_p[iter][iter2]);
+      CleanHist(mean_multARCutPhiD_p[iter][iter2]);
+      CleanHist(mean_multARCutPhiU_p[iter][iter2]);
       CleanHist(mean_multAEta_p[iter][iter2]);
       CleanHist(mean_multAEtaD_p[iter][iter2]);
       CleanHist(mean_multAEtaU_p[iter][iter2]);
@@ -1124,7 +1302,7 @@ int makeDiJetHists(const std::string inName, sampleType sType = kHIDATA, Bool_t 
 	  if(isHI(sType)) makeImbARHist(jetTreeAna_p, outName, "r", algIter, 60, 199, Corr[corrIter], sType, isHighPtTrk);
 	}
 	
-	if(algIter == 7){
+	if(algIter == 7 && montecarlo){
 	  makeImbARHist(jetTreeAna_p, outName, "g", algIter, 0, 59, Corr[corrIter], sType, isHighPtTrk);
 	  if(isHI(sType)) makeImbARHist(jetTreeAna_p, outName, "g", algIter, 60, 199, Corr[corrIter], sType, isHighPtTrk);
 	}
