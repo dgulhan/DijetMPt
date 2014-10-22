@@ -81,15 +81,63 @@ void drawNum(const char* CNCR){
 }
 
 
+Bool_t isR(const char* CNCR)
+{
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutEta") || !strcmp(CNCR, "RCutEtaD") || !strcmp(CNCR, "RCutEtaU") || !strcmp(CNCR, "RCutPhi") || !strcmp(CNCR, "RCutPhiD") || !strcmp(CNCR, "RCutPhiU")) return true;
+  else return false;
+}
+
+
+Bool_t isEta(const char* CNCR)
+{
+  if(!strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "EtaCutD")) return true;
+  else return false;
+}
+
+
+Bool_t isPhi(const char* CNCR)
+{
+  if(!strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutU") || !strcmp(CNCR, "PhiCutD")) return true;
+  else return false;
+}
+
+
+Bool_t isInc(const char* CNCR)
+{
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutEta") || !strcmp(CNCR, "RCutPhi") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "PhiCut")) return true;
+  else return false;
+}
+
+Bool_t isU(const char* CNCR)
+{
+  if(!strcmp(CNCR, "RU") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutEtaU") || !strcmp(CNCR, "RCutPhiU") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCutU")) return true;
+  else return false;
+}
+
+
+Bool_t isD(const char* CNCR)
+{
+  if(!strcmp(CNCR, "RD") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutEtaD") || !strcmp(CNCR, "RCutPhiD") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "PhiCutD")) return true;
+  else return false;
+}
+
+
+Bool_t isAll(const char* CNCR)
+{
+  if(isR(CNCR) || isPhi(CNCR) || isEta(CNCR)) return true;
+  else return false;
+}
+
+
 void drawBin(const char* CNCR){
   TLatex* temp = new TLatex();
   temp->SetNDC();
   temp->SetTextFont(43);
   temp->SetTextSizePixels(28);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "PhiCut")) temp->DrawLatex(.30, .16, "A_{J} Inclusive");
-  else if(!strcmp(CNCR, "RU") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCutU")) temp->DrawLatex(.30, .16, "A_{J}>0.22");
-  else if(!strcmp(CNCR, "RD") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "PhiCutD")) temp->DrawLatex(.30, .16, "A_{J}<0.22");
+  if(isInc(CNCR)) temp->DrawLatex(.30, .16, "A_{J} Inclusive");
+  else if(isU(CNCR)) temp->DrawLatex(.30, .16, "A_{J}>0.22");
+  else if(isD(CNCR)) temp->DrawLatex(.30, .16, "A_{J}<0.22");
   else if(!strcmp(CNCR, "C")) temp->DrawLatex(.15, .16, "In-cone, #DeltaR < 0.8");
   else if(!strcmp(CNCR, "NC")) temp->DrawLatex(.15, .16, "Out-cone, #DeltaR > 0.8");
   else if(!strcmp(CNCR, "C0")) temp->DrawLatex(.15, .16, "#DeltaR < 0.5");
@@ -98,8 +146,8 @@ void drawBin(const char* CNCR){
   else if(!strcmp(CNCR, "C3")) temp->DrawLatex(.15, .16, "1.5 < #DeltaR");
 
   if(!strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD")) temp->DrawLatex(.30, .08, "|#Delta#phi(#Delta#eta)|_{trk,jet}<1.0");
-  else if(!strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "EtaCutD")) temp->DrawLatex(.30, .08, "|#Delta#phi|_{trk,jet}<1.0");
-  else if(!strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutU") || !strcmp(CNCR, "PhiCutD")) temp->DrawLatex(.30, .08, "|#Delta#eta|_{trk,jet}<1.0");
+  else if(!strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "RCutPhi") || !strcmp(CNCR, "RCutPhiU") || !strcmp(CNCR, "RCutPhiD")) temp->DrawLatex(.30, .08, "|#Delta#phi|_{trk,jet}<1.0");
+  else if(!strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutU") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "RCutEta") || !strcmp(CNCR, "RCutEtaU") || !strcmp(CNCR, "RCutEtaD")) temp->DrawLatex(.30, .08, "|#Delta#eta|_{trk,jet}<1.0");
 
   return;
 }
@@ -272,7 +320,7 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 {
   Int_t nBins = 4;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU"))
+  if(isAll(CNCR))
     nBins = 10;
   else if(strcmp(Tight, "") != 0)
     nBins = 8;
@@ -286,9 +334,9 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 
   const char* xTitle;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU")) xTitle = "#DeltaR";
-  else if(!strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU")) xTitle = "#Delta#eta";
-  else if(!strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")) xTitle = "#Delta#phi";
+  if(isR(CNCR)) xTitle = "#DeltaR";
+  else if(isEta(CNCR)) xTitle = "#Delta#eta";
+  else if(isPhi(CNCR)) xTitle = "#Delta#phi";
   else xTitle = "A_{J}";
 
   h_p[4]->SetXTitle(xTitle);
@@ -299,7 +347,7 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
   h_p[5]->SetXTitle(xTitle);
 
   if(pos == 1){
-    if(!strcmp(projMult.c_str(), "ImbProj")){
+    if(!strcmp(projMult.c_str(), "Proj")){
       h_p[4]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
       h_p[3]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
       h_p[2]->SetYTitle("   <#slash{p}_{T}^{||}> (GeV/c)");
@@ -326,12 +374,9 @@ void drawHistToPTStack(TH1F* drawHist_p, Int_t color, const char* drawOpt, const
   if(!strcmp(projMult.c_str(), "Mult")) lowBound = -5.;
 
   if(isSub){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU")|| !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU")|| !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU"))
-      niceTH1(drawHist_p, 4.999, lowBound, 505, 503);
-    else if(!strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3"))
-      niceTH1(drawHist_p, 9.999, -20., 505, 403);
-    else
-      niceTH1(drawHist_p, 59.999, -60., 505, 406);
+    if(isAll(CNCR)) niceTH1(drawHist_p, 4.999, lowBound, 505, 503);
+    else if(!strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3")) niceTH1(drawHist_p, 9.999, -20., 505, 403);
+    else niceTH1(drawHist_p, 59.999, -60., 505, 406);
   }
 
   drawHist_p->SetFillColor(color);
@@ -356,7 +401,7 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, const std::string pro
   drawHistToPTStack(h_p[4], kRed + 1, "E1 HIST SAME", projMult, isSub, CNCR);
 
   if(isSub){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU"))
+    if(isAll(CNCR))
       niceTH1(h_p[5], 4.999, lowBound, 505, 403);
     else
       niceTH1(h_p[5], 59.999, -60., 505, 406);
@@ -368,7 +413,7 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, const std::string pro
   h_p[5]->DrawCopy("SAME E1");
 
   if(isSub == false){
-    if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
+    if(isAll(CNCR)){
       for(Int_t hIter = 0; hIter < 9; hIter++){
 	h_p[5]->SetBinContent(hIter+2, h_p[5]->GetBinContent(hIter+1) + h_p[5]->GetBinContent(hIter+2));
       }
@@ -618,7 +663,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   TLegend* legA_p = new TLegend(0.25, 0.22, 0.99, 0.88);
   TLegend* legB_p;
   TLegend* legC_p;
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
+  if(isAll(CNCR)){
     legB_p = new TLegend(0.45, 0.1, 0.75, 0.40);
     legC_p = new TLegend(.20, .15, .45, .30);
 
@@ -655,7 +700,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   TLine* zeroLine_p;
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")) zeroLine_p = new TLine(0., 0., 2.0, 0.);
+  if(isAll(CNCR)) zeroLine_p = new TLine(0., 0., 2.0, 0.);
   else zeroLine_p = new TLine(0., 0., 0.5, 0.);
 
   zeroLine_p->SetLineColor(1);
@@ -683,7 +728,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   drawFullStack(hist1_p, 0, 28, projMult, 0, 2, false, CNCR);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
+  if(isAll(CNCR)){
     if(strcmp(projMult.c_str(), "Mult") != 0) histPP_p[5]->DrawCopy("SAME HIST C");
   }
 
@@ -701,7 +746,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.50, overCoord[1], "30-100%");
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
+  if(isAll(CNCR)){
     label1_p->DrawLatex(.20, .05, "#sqrt{s_{NN}} = 2.76 TeV");
     legC_p->AddEntry(hist1_p[5], "PbPb cumulative", "L");
     legC_p->Draw("SAME");
@@ -727,7 +772,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   drawFullStack(hist2_p, 0, 28, projMult, 0, 3, false, CNCR);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
+  if(isAll(CNCR)){
     if(strcmp(projMult.c_str(), "Mult") != 0) histPP_p[5]->DrawCopy("SAME HIST C");
   }
 
@@ -745,7 +790,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.60, overCoord[0], Form("%s", overLabel[2]));
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU"))
+  if(isAll(CNCR))
     label1_p->DrawLatex(.10, .05, Form("anti-k_{T} %sCalo R=%s", puVsString[setNum], radString[setNum]));
   else
     label1_p->DrawLatex(.05, .05, Form("anti-k_{T} %sCalo R=%s", puVsString[setNum], radString[setNum]));
@@ -890,7 +935,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.60, overCoord[3], ppChar[1]);
   }
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCut") || !strcmp(CNCR, "PhiCutD") || !strcmp(CNCR, "PhiCutU")){
+  if(!strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3") || isAll(CNCR)){
     label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<0.5");
     label1_p->DrawLatex(.45, .28, "#Delta#phi_{1,2}>5#pi/6");
   }
@@ -962,25 +1007,25 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
     jetAlgMax = 8;
   
   const char* corr[2] = {"", "Corr"};
-  const char* CNCR[25] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU", "Eta", "EtaD", "EtaU", "Phi", "PhiD", "PhiU", "RCut", "RCutD", "RCutU", "EtaCut", "EtaCutD", "EtaCutU", "PhiCut", "PhiCutD", "PhiCutU"};
+  const char* CNCR[31] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU", "Eta", "EtaD", "EtaU", "Phi", "PhiD", "PhiU", "RCut", "RCutD", "RCutU", "RCut", "RCutEtaD", "RCutEtaU", "RCutPhi", "RCutPhiD", "RCutPhiU", "EtaCut", "EtaCutD", "EtaCutU", "PhiCut", "PhiCutD", "PhiCutU"};
   const char* Tight[2] = {"", "Tight"};
 
   for(Int_t algIter = 4; algIter < 8; algIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
       for(Int_t corrIter = 1; corrIter < 2; corrIter++){
-	for(Int_t CNCRIter = 7; CNCRIter < 25; CNCRIter++){
+	for(Int_t CNCRIter = 7; CNCRIter < 31; CNCRIter++){
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1) continue;
 
 	  if(CNCRIter == 1 || CNCRIter == 2 || CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5 || CNCRIter == 6) continue;
 
 	  if(algIter ==4){
-	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, "ImbProj", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, "Proj", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 
 	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, "Mult", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 	  }
 	  
 	  if(montecarlo && corrIter > 0 && algIter == 7){
-	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, "ImbProj", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, "Proj", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, "Mult", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 	  }
 	  
