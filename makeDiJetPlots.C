@@ -27,6 +27,8 @@ const char* algTypePP[8] = {"Vs3Calo", "Vs4Calo", "Vs5Calo", "Vs2Calo", "Vs3Calo
 const char* radString[8] = {"0.3", "0.4", "0.5", "0.2", "0.3", "0.4", "0.5", "0.3"};
 const char* puVsString[8] = {"Pu", "Pu", "Pu", "Vs", "Vs", "Vs", "Vs", "T"};
 
+Bool_t isAll(const char* CNCR);
+
 Bool_t sameSign(Double_t num1, Double_t num2)
 {
   if((num1 > 0 && num2 > 0) || (num1 < 0 && num2 < 0)) return true;
@@ -53,7 +55,7 @@ void drawPatch(float x1, float y1, float x2, float y2){
 
 
 void makePatch(const char* CNCR){
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU"))
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "R2") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "PhiU"))
     drawPatch(.74, .001, .90, .25);
   else if(!strcmp(CNCR, "C") || !strcmp(CNCR, "NC"))
     drawPatch(.74, .001, .90, .25);
@@ -70,7 +72,7 @@ void drawNum(const char* CNCR){
   temp->SetTextFont(43);
   temp->SetTextSizePixels(27);
 
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RD"))
+  if(isAll(CNCR))
     temp->DrawLatex(.0000001, .945, "1.5");
   else if(!strcmp(CNCR, "C") || !strcmp(CNCR, "NC"))
     temp->DrawLatex(.0001, .945, "0.4");
@@ -83,7 +85,7 @@ void drawNum(const char* CNCR){
 
 Bool_t isR(const char* CNCR)
 {
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutEta") || !strcmp(CNCR, "RCutEtaD") || !strcmp(CNCR, "RCutEtaU") || !strcmp(CNCR, "RCutPhi") || !strcmp(CNCR, "RCutPhiD") || !strcmp(CNCR, "RCutPhiU")) return true;
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RD") || !strcmp(CNCR, "RU") || !strcmp(CNCR, "R2") || !strcmp(CNCR, "R2D") || !strcmp(CNCR, "R2U") || !strcmp(CNCR, "RFOR") || !strcmp(CNCR, "RFORD") || !strcmp(CNCR, "RFORU") || !strcmp(CNCR, "RFORMID") || !strcmp(CNCR, "RFORMIDD") || !strcmp(CNCR, "RFORMIDU") || !strcmp(CNCR, "RFORFOR") || !strcmp(CNCR, "RFORFORD") || !strcmp(CNCR, "RFORFORU") || !strcmp(CNCR, "RMID") || !strcmp(CNCR, "RMIDD") || !strcmp(CNCR, "RMIDU") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutEta") || !strcmp(CNCR, "RCutEtaD") || !strcmp(CNCR, "RCutEtaU") || !strcmp(CNCR, "RCutPhi") || !strcmp(CNCR, "RCutPhiD") || !strcmp(CNCR, "RCutPhiU")) return true;
   else return false;
 }
 
@@ -104,20 +106,20 @@ Bool_t isPhi(const char* CNCR)
 
 Bool_t isInc(const char* CNCR)
 {
-  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutEta") || !strcmp(CNCR, "RCutPhi") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "PhiCut")) return true;
+  if(!strcmp(CNCR, "R") || !strcmp(CNCR, "RFOR") || !strcmp(CNCR, "RFORMID") || !strcmp(CNCR, "RFORFOR") || !strcmp(CNCR, "RMID") || !strcmp(CNCR, "Eta") || !strcmp(CNCR, "Phi") || !strcmp(CNCR, "RCut") || !strcmp(CNCR, "RCutEta") || !strcmp(CNCR, "RCutPhi") || !strcmp(CNCR, "EtaCut") || !strcmp(CNCR, "PhiCut")) return true;
   else return false;
 }
 
 Bool_t isU(const char* CNCR)
 {
-  if(!strcmp(CNCR, "RU") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutEtaU") || !strcmp(CNCR, "RCutPhiU") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCutU")) return true;
+  if(!strcmp(CNCR, "RU") || !strcmp(CNCR, "R2U") || !strcmp(CNCR, "RFORU") || !strcmp(CNCR, "RFORMIDU") || !strcmp(CNCR, "RFORFORU") || !strcmp(CNCR, "RMIDU") || !strcmp(CNCR, "EtaU") || !strcmp(CNCR, "PhiU") || !strcmp(CNCR, "RCutU") || !strcmp(CNCR, "RCutEtaU") || !strcmp(CNCR, "RCutPhiU") || !strcmp(CNCR, "EtaCutU") || !strcmp(CNCR, "PhiCutU")) return true;
   else return false;
 }
 
 
 Bool_t isD(const char* CNCR)
 {
-  if(!strcmp(CNCR, "RD") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutEtaD") || !strcmp(CNCR, "RCutPhiD") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "PhiCutD")) return true;
+  if(!strcmp(CNCR, "RD") || !strcmp(CNCR, "R2D")|| !strcmp(CNCR, "RFORD") || !strcmp(CNCR, "RFORMIDD") || !strcmp(CNCR, "RFORFORD") || !strcmp(CNCR, "RMIDD") || !strcmp(CNCR, "EtaD") || !strcmp(CNCR, "PhiD") || !strcmp(CNCR, "RCutD") || !strcmp(CNCR, "RCutEtaD") || !strcmp(CNCR, "RCutPhiD") || !strcmp(CNCR, "EtaCutD") || !strcmp(CNCR, "PhiCutD")) return true;
   else return false;
 }
 
@@ -320,10 +322,9 @@ void makeHistForPtStack(TH1F* h_p[6], Int_t pos = 4, const char* Tight = "", con
 {
   Int_t nBins = 4;
 
-  if(isAll(CNCR))
-    nBins = 10;
-  else if(strcmp(Tight, "") != 0)
-    nBins = 8;
+  if(!strcmp(CNCR, "R2") || !strcmp(CNCR, "R2D") || !strcmp(CNCR, "R2U")) nBins = 9;
+  else if(isAll(CNCR)) nBins = 10;
+  else if(strcmp(Tight, "") != 0) nBins = 8;
 
   for(Int_t iter = 0; iter < nBins; iter++){
     h_p[0]->SetBinContent(iter + 1, sumYForPTStack(h_p[0]->GetBinContent(iter+1), h_p[1]->GetBinContent(iter+1), h_p[2]->GetBinContent(iter+1), h_p[3]->GetBinContent(iter+1), h_p[4]->GetBinContent(iter+1)));
@@ -412,9 +413,12 @@ void drawFullStack(TH1F* h_p[6], Int_t color, Int_t style, const std::string pro
 
   h_p[5]->DrawCopy("SAME E1");
 
+  Int_t nBins = 9;
+  if(!strcmp(CNCR, "R2") || !strcmp(CNCR, "R2U") || !strcmp(CNCR, "R2D")) nBins = 8;
+
   if(isSub == false){
     if(isAll(CNCR)){
-      for(Int_t hIter = 0; hIter < 9; hIter++){
+      for(Int_t hIter = 0; hIter < nBins; hIter++){
 	h_p[5]->SetBinContent(hIter+2, h_p[5]->GetBinContent(hIter+1) + h_p[5]->GetBinContent(hIter+2));
       }
       if(pos == 1)
@@ -628,6 +632,8 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   for(Int_t histIter = 0; histIter < 6; histIter++){
     if(strcmp(fileTagPP, "") != 0){
+      std::cout << Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPP) << std::endl;
+
       histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPP));
     }
 
@@ -638,6 +644,8 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
       hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_010_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
     else{
+      std::cout << Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb) << std::endl;
+
       hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
       hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
@@ -936,7 +944,9 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   }
 
   if(!strcmp(CNCR, "C0") || !strcmp(CNCR, "C1") || !strcmp(CNCR, "C2") || !strcmp(CNCR, "C3") || isAll(CNCR)){
-    label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<0.5");
+    if(!strcmp(CNCR, "R2") || !strcmp(CNCR, "R2U") || !strcmp(CNCR, "R2D")) label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<0.8");
+    else if(!strcmp(CNCR, "RMID") || !strcmp(CNCR, "RMIDU") || !strcmp(CNCR, "RMIDD")) label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<1.6");
+    else label1_p->DrawLatex(.45, .38, "|#eta|_{1},|#eta|_{2}<0.6");
     label1_p->DrawLatex(.45, .28, "#Delta#phi_{1,2}>5#pi/6");
   }
   else{
@@ -1007,13 +1017,13 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
     jetAlgMax = 8;
   
   const char* corr[2] = {"", "Corr"};
-  const char* CNCR[31] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU", "Eta", "EtaD", "EtaU", "Phi", "PhiD", "PhiU", "RCut", "RCutD", "RCutU", "RCut", "RCutEtaD", "RCutEtaU", "RCutPhi", "RCutPhiD", "RCutPhiU", "EtaCut", "EtaCutD", "EtaCutU", "PhiCut", "PhiCutD", "PhiCutU"};
+  const char* CNCR[46] = {"", "C", "NC", "C0", "C1", "C2", "C3", "R", "RD", "RU", "Eta", "EtaD", "EtaU", "Phi", "PhiD", "PhiU", "RCut", "RCutD", "RCutU", "RCutEta", "RCutEtaD", "RCutEtaU", "RCutPhi", "RCutPhiD", "RCutPhiU", "EtaCut", "EtaCutD", "EtaCutU", "PhiCut", "PhiCutD", "PhiCutU", "RFOR", "RFORD", "RFORU", "RFORMID", "RFORMIDD", "RFORMIDU", "RFORFOR", "RFORFORD", "RFORFORU", "RMID", "RMIDD", "RMIDU", "R2", "R2U", "R2D"};
   const char* Tight[2] = {"", "Tight"};
 
   for(Int_t algIter = 4; algIter < 8; algIter++){
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
       for(Int_t corrIter = 1; corrIter < 2; corrIter++){
-	for(Int_t CNCRIter = 7; CNCRIter < 31; CNCRIter++){
+	for(Int_t CNCRIter = 7; CNCRIter < 46; CNCRIter++){
 	  if((CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5) && tightIter == 1) continue;
 
 	  if(CNCRIter == 1 || CNCRIter == 2 || CNCRIter == 3 || CNCRIter == 4 || CNCRIter == 5 || CNCRIter == 6) continue;
@@ -1021,12 +1031,13 @@ void makeDiJetPlots(const char* filePbPbName, const char* fileTagPbPb, const cha
 	  if(algIter ==4){
 	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, "Proj", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 
-	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, "Mult", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+	    if(CNCRIter < 31) makeImbPtStack(filePbPbName, fileTagPbPb, outName, "r", algIter, "Mult", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 	  }
 	  
 	  if(montecarlo && corrIter > 0 && algIter == 7){
 	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, "Proj", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
-	    makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, "Mult", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
+
+	    if(CNCRIter < 31) makeImbPtStack(filePbPbName, fileTagPbPb, outName, "g", algIter, "Mult", corr[corrIter], CNCR[CNCRIter], montecarlo, filePPName, fileTagPP, Tight[tightIter], isHighPtTrk);
 	  }
 	  
 	}
