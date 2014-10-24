@@ -754,7 +754,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     label1_p->DrawLatex(.50, overCoord[1], "30-100%");
   }
 
-  if(isAll(CNCR)){
+  if(isAll(CNCR) && !strcmp(projMult.c_str(), "Proj")){
     label1_p->DrawLatex(.20, .05, "#sqrt{s_{NN}} = 2.76 TeV");
     legC_p->AddEntry(hist1_p[5], "PbPb cumulative", "L");
     legC_p->Draw("SAME");

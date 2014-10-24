@@ -82,6 +82,10 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
       std::cout << Form("ak%s_dataHiBin_h", algType[algIter].c_str()) << std::endl;
     }
   }
+
+  TFile* etaWeightFile_p = new TFile("etaWeightFile.root", "READ");
+  TH1F* leadEtaWeightHist_p = (TH1F*)etaWeightFile_p->Get("leadEtaWeightHist_h");
+  TH1F* subleadEtaWeightHist_p = (TH1F*)etaWeightFile_p->Get("subleadEtaWeightHist_h");
   
   std::string outName = listOfFiles[num];
   const std::string cutString = "/";
@@ -220,6 +224,11 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
           }
         }
       }
+    }
+
+    if(TMath::Abs(AlgJtEta_[4][0]) && TMath::Abs(AlgJtEta_[4][1]) < 0.6){
+	leadEtaWeight_ = leadEtaWeightHist_p->GetBinContent(leadEtaWeightHist_p->FindBin(AlgJtEta_[4][0]));
+	subleadEtaWeight_ = subleadEtaWeightHist_p->GetBinContent(subleadEtaWeightHist_p->FindBin(AlgJtEta_[4][1]));
     }
 
     if(sType == kHIMC){

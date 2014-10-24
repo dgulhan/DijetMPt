@@ -90,6 +90,8 @@ Bool_t isQuarkJet_[nJtAlg];
 Bool_t isGluonJet_[nJtAlg];
 
 Float_t pthatWeight_;
+Float_t leadEtaWeight_;
+Float_t subleadEtaWeight_;
 
 //Jet Set, Array by algorithm, according to enum above, 2nd, 0 = lead, 1 =sublead etc.
 
@@ -258,6 +260,8 @@ void SetAnaBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
   }
 
   jetTreeAna_p->Branch("pthatWeight", &pthatWeight_, "pthatWeight/F");
+  jetTreeAna_p->Branch("leadEtaWeight", &leadEtaWeight_, "leadEtaWeight/F");
+  jetTreeAna_p->Branch("subleadEtaWeight", &subleadEtaWeight_, "subleadEtaWeight/F");
 
   if(justJt)
     jetTreeAna_p->Branch("eventPt", eventPt_, "eventPt[2]/F");
@@ -391,6 +395,8 @@ void GetAnaBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
   }     
 
   jetTreeAna_p->SetBranchAddress("pthatWeight", &pthatWeight_);
+  jetTreeAna_p->SetBranchAddress("leadEtaWeight", &leadEtaWeight_);
+  jetTreeAna_p->SetBranchAddress("subleadEtaWeight", &subleadEtaWeight_);
   
   jetTreeAna_p->SetBranchAddress("AlgJtPt", AlgJtPt_);
   jetTreeAna_p->SetBranchAddress("AlgJtPhi", AlgJtPhi_);
@@ -586,6 +592,8 @@ void InitJetVar(sampleType sType = kHIDATA)
       isGluonJet_[initIter] = false;
 
       pthatWeight_ = -999;
+      leadEtaWeight_ = -999;
+      subleadEtaWeight_ = -999;
 
       for(Int_t initIter2 = 0; initIter2 < nJtMax; initIter2++){
 	AlgRefPt_[initIter][initIter2] = -999;
