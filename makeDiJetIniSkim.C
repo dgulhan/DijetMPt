@@ -150,7 +150,7 @@ void GetTrkJts(Int_t jtNum, sampleType sType, fastjet::PseudoJet inJtVect, Int_t
 
 
 
-int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETINISKIM.root", Int_t num = 0, Bool_t justJt = false)
+int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *outName = "defaultName_DIJETINISKIM.root", Int_t num = 0, Bool_t justJt = false, Bool_t oldSample = false)
 {
   //Define MC or Data
   Bool_t montecarlo = isMonteCarlo(sType);
@@ -198,7 +198,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   
   c->evtTree->SetBranchStatus("*", 0);
   c->evtTree->SetBranchStatus("vz", 1);
-  c->evtTree->SetBranchStatus("hiEvtPlanes", 1);
+  if(hi) c->evtTree->SetBranchStatus("hiEvtPlanes", 1);
   c->evtTree->SetBranchStatus("run", 1);
   c->evtTree->SetBranchStatus("evt", 1);
   c->evtTree->SetBranchStatus("lumi", 1);  
@@ -234,7 +234,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     setJtBranches(c->akPu3CaloJetTree, montecarlo);
     setJtBranches(c->akPu4CaloJetTree, montecarlo);
     setJtBranches(c->akPu5CaloJetTree, montecarlo);
-    setJtBranches(c->akVs2CaloJetTree, montecarlo);
+    if(!oldSample) setJtBranches(c->akVs2CaloJetTree, montecarlo);
     setJtBranches(c->akVs3CaloJetTree, montecarlo);
     setJtBranches(c->akVs4CaloJetTree, montecarlo);
     setJtBranches(c->akVs5CaloJetTree, montecarlo);
@@ -244,14 +244,14 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
   else{
     c->skimTree->SetBranchStatus("pPAcollisionEventSelectionPA", 1);
 
-    setJtBranches(c->akPu3CaloJetTree, montecarlo);
-    setJtBranches(c->akPu4CaloJetTree, montecarlo);
-    setJtBranches(c->akPu5CaloJetTree, montecarlo);
-    setJtBranches(c->ak2CaloJetTree, montecarlo);
+    if(!oldSample) setJtBranches(c->akPu3CaloJetTree, montecarlo);
+    if(!oldSample) setJtBranches(c->akPu4CaloJetTree, montecarlo);
+    if(!oldSample) setJtBranches(c->akPu5CaloJetTree, montecarlo);
+    if(!oldSample) setJtBranches(c->ak2CaloJetTree, montecarlo);
     setJtBranches(c->ak3CaloJetTree, montecarlo);
-    setJtBranches(c->ak4CaloJetTree, montecarlo);
-    setJtBranches(c->ak5CaloJetTree, montecarlo);
-    setJtBranches(c->akPu3PFJetTree, montecarlo, true);
+    if(!oldSample) setJtBranches(c->ak4CaloJetTree, montecarlo);
+    if(!oldSample) setJtBranches(c->ak5CaloJetTree, montecarlo);
+    if(!oldSample) setJtBranches(c->akPu3PFJetTree, montecarlo, true);
   }
 
   c->LoadNoTrees();
@@ -265,20 +265,20 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     c->hasAkPu3CaloJetTree = true;
     c->hasAkPu4CaloJetTree = true;
     c->hasAkPu5CaloJetTree = true;
-    c->hasAkVs2CaloJetTree = true;
+    if(!oldSample) c->hasAkVs2CaloJetTree = true;
     c->hasAkVs3CaloJetTree = true;
     c->hasAkVs4CaloJetTree = true;
     c->hasAkVs5CaloJetTree = true;
   }
   else{
-    c->hasAk2CaloJetTree = true;
+    if(!oldSample) c->hasAk2CaloJetTree = true;
     c->hasAk3CaloJetTree = true;
-    c->hasAk4CaloJetTree = true;
-    c->hasAk5CaloJetTree = true;
-    c->hasAkPu3CaloJetTree = true;
-    c->hasAkPu4CaloJetTree = true;
-    c->hasAkPu5CaloJetTree = true;
-    c->hasAkPu3JetTree = true;
+    if(!oldSample) c->hasAk4CaloJetTree = true;
+    if(!oldSample) c->hasAk5CaloJetTree = true;
+    if(!oldSample) c->hasAkPu3CaloJetTree = true;
+    if(!oldSample) c->hasAkPu4CaloJetTree = true;
+    if(!oldSample) c->hasAkPu5CaloJetTree = true;
+    if(!oldSample) c->hasAkPu3JetTree = true;
   }
 
   c->hasTrackTree = true;
@@ -355,7 +355,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       AlgJtCollection[0] = c->akPu3Calo;
       AlgJtCollection[1] = c->akPu4Calo;
       AlgJtCollection[2] = c->akPu5Calo;
-      AlgJtCollection[3] = c->akVs2Calo;
+      if(!oldSample) AlgJtCollection[3] = c->akVs2Calo;
       AlgJtCollection[4] = c->akVs3Calo;
       AlgJtCollection[5] = c->akVs4Calo;
       AlgJtCollection[6] = c->akVs5Calo;
@@ -363,13 +363,13 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       AlgJtCollection[9] = c->akVs3PF;
     }
     else{
-      AlgJtCollection[0] = c->akPu3Calo;
-      AlgJtCollection[1] = c->akPu4Calo;
-      AlgJtCollection[2] = c->akPu5Calo;
-      AlgJtCollection[3] = c->ak2Calo;
+      if(!oldSample) AlgJtCollection[0] = c->akPu3Calo;
+      if(!oldSample) AlgJtCollection[1] = c->akPu4Calo;
+      if(!oldSample) AlgJtCollection[2] = c->akPu5Calo;
+      if(!oldSample) AlgJtCollection[3] = c->ak2Calo;
       AlgJtCollection[4] = c->ak3Calo;
-      AlgJtCollection[5] = c->ak4Calo;
-      AlgJtCollection[6] = c->ak5Calo;
+      if(!oldSample) AlgJtCollection[5] = c->ak4Calo;
+      if(!oldSample) AlgJtCollection[6] = c->ak5Calo;
       algMax = 7;
     }
 
@@ -378,6 +378,9 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     for(Int_t algIter = 0; algIter < algMax; algIter++){
       if(algIter == 7)
 	continue;
+
+      if(oldSample && algIter == 3) continue;
+      else if(oldSample && !hi && algIter != 4) continue;
 
       algPasses[algIter] = passesDijet(AlgJtCollection[algIter], algIter, AlgLeadJtPtCut[algIter], AlgSubLeadJtPtCut[algIter]);
     }
@@ -926,17 +929,17 @@ collisionType getCType(sampleType sType)
 
 int main(int argc, char *argv[])
 {
-  if(argc != 6)
+  if(argc != 7)
     {
-      std::cout << "Usage: makeDiJetIniSkim <inputFile> <sType> <outputFile> <#> <justJtBool>" << std::endl;
+      std::cout << "Usage: makeDiJetIniSkim <inputFile> <sType> <outputFile> <#> <justJtBool> <oldSample>" << std::endl;
       std::cout << argc << std::endl;
-      std::cout << argv[0] << ", "  << argv[1] << ", " << argv[2] << ", " << argv[3]<< ", " << argv[4] << ", " << argv[5] << std::endl;
+      std::cout << argv[0] << ", "  << argv[1] << ", " << argv[2] << ", " << argv[3]<< ", " << argv[4] << ", " << argv[5] << ", " << argv[6] << std::endl;
       return 1;
     }
 
   int rStatus = -1;
 
-  rStatus = makeDiJetIniSkim(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]), Bool_t(atoi(argv[5])));
+  rStatus = makeDiJetIniSkim(argv[1], sampleType(atoi(argv[2])), argv[3], atoi(argv[4]), Bool_t(atoi(argv[5])), Bool_t(atoi(argv[6])));
 
   return rStatus;
 }

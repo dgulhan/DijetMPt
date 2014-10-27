@@ -842,10 +842,10 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	  else mean_projAR2U_p[iter][iter2]->Fill(rAlgImbProjAR_[setCorrNum][iter][iter2], weight);
 	}
         else if(strcmp(gR.c_str(), "g") == 0){
-          mean_projAR2_p[iter][iter2]->Fill(gAlgImbProjAR_[setCorrNum][iter][iter2], weight);
+          mean_projAR2_p[iter][iter2]->Fill(gAlgImbProjAR_[setNum][iter][iter2], weight);
 
-          if(AlgJtAsymm_[setNum] < 0.22) mean_projAR2D_p[iter][iter2]->Fill(gAlgImbProjAR_[setCorrNum][iter][iter2], weight);
-	  else mean_projAR2U_p[iter][iter2]->Fill(gAlgImbProjAR_[setCorrNum][iter][iter2], weight);
+          if(AlgJtAsymm_[setNum] < 0.22) mean_projAR2D_p[iter][iter2]->Fill(gAlgImbProjAR_[setNum][iter][iter2], weight);
+	  else mean_projAR2U_p[iter][iter2]->Fill(gAlgImbProjAR_[setNum][iter][iter2], weight);
 	}
       }
 
@@ -857,10 +857,10 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
 	else mean_projAR2U_p[iter][nBins2-1]->Fill(rAlgImbProjAR_[setCorrNum][iter][nBins2-1] + rAlgImbProjAR_[setCorrNum][iter][nBins2], weight);
       }
       else if(strcmp(gR.c_str(), "g") == 0){
-	mean_projAR2_p[iter][nBins2-1]->Fill(gAlgImbProjAR_[setCorrNum][iter][nBins2-1] + gAlgImbProjAR_[setCorrNum][iter][nBins2], weight);
+	mean_projAR2_p[iter][nBins2-1]->Fill(gAlgImbProjAR_[setNum][iter][nBins2-1] + gAlgImbProjAR_[setNum][iter][nBins2], weight);
 	
-	if(AlgJtAsymm_[setNum] < 0.22) mean_projAR2D_p[iter][nBins2-1]->Fill(gAlgImbProjAR_[setCorrNum][iter][nBins2-1] + gAlgImbProjAR_[setCorrNum][iter][nBins2], weight);
-	else mean_projAR2U_p[iter][nBins2-1]->Fill(gAlgImbProjAR_[setCorrNum][iter][nBins2-1] + gAlgImbProjAR_[setCorrNum][iter][nBins2], weight);
+	if(AlgJtAsymm_[setNum] < 0.22) mean_projAR2D_p[iter][nBins2-1]->Fill(gAlgImbProjAR_[setNum][iter][nBins2-1] + gAlgImbProjAR_[setNum][iter][nBins2], weight);
+	else mean_projAR2U_p[iter][nBins2-1]->Fill(gAlgImbProjAR_[setNum][iter][nBins2-1] + gAlgImbProjAR_[setNum][iter][nBins2], weight);
       }
     }
 
@@ -1518,11 +1518,9 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
       CleanHist(mean_projARD_p[iter][iter2]);
       CleanHist(mean_projARU_p[iter][iter2]);
 
-      if(iter2 < nBins2){
-	CleanHist(mean_projAR2_p[iter][iter2]);
-	CleanHist(mean_projAR2D_p[iter][iter2]);
-	CleanHist(mean_projAR2U_p[iter][iter2]);
-      }
+      CleanHist(mean_projAR2_p[iter][iter2]);
+      CleanHist(mean_projAR2D_p[iter][iter2]);
+      CleanHist(mean_projAR2U_p[iter][iter2]);
 
       CleanHist(mean_projARCut_p[iter][iter2]);
       CleanHist(mean_projARCutD_p[iter][iter2]);

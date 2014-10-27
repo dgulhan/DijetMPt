@@ -601,7 +601,7 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   if(strcmp(fileTagPP, "") != 0)
     histPPFile_p = new TFile(filePPName, "READ");
 
-  const char* mcLabel[4] = {"PYTHIA", "PYTHIA+HYDJET", "PYTHIA+HYDJET", "(PbPb)-P"};
+  const char* mcLabel[4] = {"PYTHIA", "PYTHIA+HYDJET", "PYTHIA+HYDJET", "(P+H)-P"};
   const char* dataLabel[4] = {"pp 5.3 pb^{-1}", "PbPb" /* 150 #mub^{-1}"*/, "PbPb", "PbPb-pp"};
 
   const char* overLabel[4];
@@ -632,8 +632,6 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
 
   for(Int_t histIter = 0; histIter < 6; histIter++){
     if(strcmp(fileTagPP, "") != 0){
-      std::cout << Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPP) << std::endl;
-
       histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPP));
     }
 
@@ -644,8 +642,6 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
       hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_010_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }
     else{
-      std::cout << Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb) << std::endl;
-
       hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
       hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
     }

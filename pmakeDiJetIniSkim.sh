@@ -1,7 +1,7 @@
 #!/bin/bash
-if [ $# -ne 5 ]
+if [ $# -ne 6 ]
 then 
-  echo "Usage: ./pmakeDiJetIniSkim.sh <inputList> <sampleType> <outName> <outDir> <justJtBool>"
+  echo "Usage: ./pmakeDiJetIniSkim.sh <inputList> <sampleType> <outName> <outDir> <justJtBool> <oldSample>"
   exit 1
 fi
 
@@ -19,7 +19,7 @@ g++ $NAME $(root-config --cflags --libs) -Werror -Wall -O2 -o "${NAME/%.C/}.exe"
 
 cp makeDiJetIniSkim.exe $now
 
-cat pmakeDiJetIniSkim.condor | sed "s@log_flag@$now@g" | sed "s@dir_flag@$PWD/$now@g" | sed "s@arg1@$1@g" | sed "s@arg2@$2@g" | sed "s@arg3@$3@g" | sed "s@arg4@$4@g" | sed "s@arg5@$5@g" | sed "s@njobs@$len@g" > $now/pmakeDiJetIniSkim.condor
+cat pmakeDiJetIniSkim.condor | sed "s@log_flag@$now@g" | sed "s@dir_flag@$PWD/$now@g" | sed "s@arg1@$1@g" | sed "s@arg2@$2@g" | sed "s@arg3@$3@g" | sed "s@arg4@$4@g" | sed "s@arg5@$5@g" | sed "s@arg6@$6@g" | sed "s@njobs@$len@g" > $now/pmakeDiJetIniSkim.condor
 echo -=-
 cat $now/pmakeDiJetIniSkim.condor
 echo -=-
