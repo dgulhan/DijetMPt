@@ -18,8 +18,6 @@
 
 #include <string>
 
-TFile* histFile_p = 0;
-
 TFile* plotFile_p = 0;
 
 const char* algType[8] = {"Pu3Calo", "Pu4Calo", "Pu5Calo", "Vs2Calo", "Vs3Calo", "Vs4Calo", "Vs5Calo", "T"};
@@ -296,6 +294,40 @@ void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, const Int_t rows,
 
   return;
 }
+
+
+void grabHistForStackPP(TFile* histFile_p, std::string gorr, std::string alg, std::string projMult, std::string CNCR, std::string Corr, std::string Tight, std::string fileTag, TH1F* histPP_p[6])
+{  
+  std::string FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
+
+  for(Int_t histIter = 0; histIter < 6; histIter++){
+    histPP_p[histIter] = (TH1F*)histFile_p->Get(Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr.c_str(), alg.c_str(), projMult.c_str(), CNCR.c_str(), FPT[histIter].c_str(), Corr.c_str(), Tight.c_str(), fileTag.c_str()));
+  }
+
+  return;
+}
+
+
+void grabHistForStackPbPb(TFile* histFile_p, std::string gorr, std::string alg, std::string projMult, std::string CNCR, std::string Corr, std::string Tight, std::string fileTag, TH1F* hist1_p[6], TH1F* hist2_p[6], TH1F* hist3_p[6], TH1F* hist4_p[6])
+{  
+  std::string FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
+
+  for(Int_t histIter = 0; histIter < 6; histIter++){
+    if(!strcmp(CNCR.c_str(), "")){
+      hist1_p[histIter] = (TH1F*)histFile_p->Get(Form("%s%s%sA%s%s%s%s_50100_%s_h", gorr.c_str(), alg.c_str(), projMult.c_str(), CNCR.c_str(), FPT[histIter].c_str(), Corr.c_str(), Tight.c_str(), fileTag.c_str()));
+      hist2_p[histIter] = (TH1F*)histFile_p->Get(Form("%s%s%sA%s%s%s%s_3050_%s_h", gorr.c_str(), alg.c_str(), projMult.c_str(), CNCR.c_str(), FPT[histIter].c_str(), Corr.c_str(), Tight.c_str(), fileTag.c_str()));
+      hist3_p[histIter] = (TH1F*)histFile_p->Get(Form("%s%s%sA%s%s%s%s_1030_%s_h", gorr.c_str(), alg.c_str(), projMult.c_str(), CNCR.c_str(), FPT[histIter].c_str(), Corr.c_str(), Tight.c_str(), fileTag.c_str()));
+      hist4_p[histIter] = (TH1F*)histFile_p->Get(Form("%s%s%sA%s%s%s%s_010_%s_h", gorr.c_str(), alg.c_str(), projMult.c_str(), CNCR.c_str(), FPT[histIter].c_str(), Corr.c_str(), Tight.c_str(), fileTag.c_str()));
+    }
+    else{
+      hist1_p[histIter] = (TH1F*)histFile_p->Get(Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr.c_str(), alg.c_str(), projMult.c_str(), CNCR.c_str(), FPT[histIter].c_str(), Corr.c_str(), Tight.c_str(), fileTag.c_str()));
+      hist2_p[histIter] = (TH1F*)histFile_p->Get(Form("%s%s%sA%s%s%s%s_030_%s_h", gorr.c_str(), alg.c_str(), projMult.c_str(), CNCR.c_str(), FPT[histIter].c_str(), Corr.c_str(), Tight.c_str(), fileTag.c_str()));
+    }
+  }
+
+  return;
+}
+
 
 
 Double_t sumYForPTStack(Double_t dIn = 0, Double_t comp1 = 0, Double_t comp2 = 0, Double_t comp3 = 0, Double_t comp4 = 0)
@@ -594,7 +626,7 @@ void makeMultStack(const char* filePbPbName, const char* fileTagPbPb, const char
 }
 
 
-void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const std::string projMult, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "", Bool_t isHighPtTrk = false)
+void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const char* outName, const char* gorr, Int_t setNum, const std::string projMult, const char* Corr = "", const char* CNCR = "", Bool_t montecarlo = false, const char* filePPName = "", const char* fileTagPP = "", const char* Tight = "", Bool_t isHighPtTrk = false, const char* filePbPbName2 = "", const char* fileTagPbPb2 = "", const char* filePPName2 = "", const char* fileTagPP2 = "")
 {
   TFile* histPbPbFile_p = new TFile(filePbPbName, "READ");
   TFile* histPPFile_p;
@@ -628,24 +660,8 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   TH1F* hist4_p[6];
   TH1F* histPP_p[6];
 
-  const char* FPT[6] = {"0_1", "1_2", "2_4", "4_8", "8_100", "F"};
-
-  for(Int_t histIter = 0; histIter < 6; histIter++){
-    if(strcmp(fileTagPP, "") != 0){
-      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPP));
-    }
-
-    if(!strcmp(CNCR, "")){
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_50100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_3050_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_1030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_010_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-    }
-    else{
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-    }
-  }
+  grabHistForStackPP(histPPFile_p, gorr, algTypePP[setNum], projMult, CNCR, Corr, Tight, fileTagPP, histPP_p);
+  grabHistForStackPbPb(histPbPbFile_p, gorr, algType[setNum], projMult, CNCR, Corr, Tight, fileTagPbPb, hist1_p, hist2_p, hist3_p, hist4_p);
 
   makeHistForPtStack(histPP_p, 1, Tight, CNCR, projMult);
 
@@ -846,28 +862,17 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
     histPPFile_p = new TFile(filePPName, "READ");
   }
 
+  grabHistForStackPP(histPPFile_p, gorr, algTypePP[setNum], projMult, CNCR, Corr, Tight, fileTagPP, histPP_p);
+  grabHistForStackPbPb(histPbPbFile_p, gorr, algType[setNum], projMult, CNCR, Corr, Tight, fileTagPbPb, hist1_p, hist2_p, hist3_p, hist4_p);
+
   for(Int_t histIter = 0; histIter < 6; histIter++){
-    if(strcmp(fileTagPP, "") != 0)
-      histPP_p[histIter] = (TH1F*)histPPFile_p->Get(Form("%s%s%sA%s%s%s%s_PP_%s_h", gorr, algTypePP[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPP));
-    
     if(!strcmp(CNCR, "")){
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_50100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_3050_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist3_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_1030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist4_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_010_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      
       hist3_p[histIter]->Add(histPP_p[histIter], -1);
       hist4_p[histIter]->Add(histPP_p[histIter], -1);
     }
-    else{
-      hist1_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_30100_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-      hist2_p[histIter] = (TH1F*)histPbPbFile_p->Get(Form("%s%s%sA%s%s%s%s_030_%s_h", gorr, algType[setNum], projMult.c_str(), CNCR, FPT[histIter], Corr, Tight, fileTagPbPb));
-    }
-
     hist1_p[histIter]->Add(histPP_p[histIter], -1);
     hist2_p[histIter]->Add(histPP_p[histIter], -1);
   }
-
 
   Int_t panels;
   Int_t ppStart;
@@ -982,6 +987,37 @@ void makeImbPtStack(const char* filePbPbName, const char* fileTagPbPb, const cha
   for(Int_t panelIter = 0; panelIter < panels; panelIter++){
     profPanel_p->cd(panelIter+1)->RedrawAxis();
   }
+
+  /* 
+  TFile* histPbPbFile2_p;
+  TFile* histPPFile2_p;
+  TH1F* hist1_2_p[6];
+  TH1F* hist2_2_p[6];
+  TH1F* hist3_2_p[6];
+  TH1F* hist4_2_p[6];
+  TH1F* histPP_2_p[6];
+
+  if(strcmp(filePbPbName2, "") != 0){
+    histPbPbFile_p->Close();
+    delete histPbPbFile_p;
+    histPbPbFile_p = new TFile(filePbPbName, "READ");
+
+    if(strcmp(fileTagPP, "") != 0){
+      histPPFile_p->Close();
+      delete histPPFile_p;
+      histPPFile_p = new TFile(filePPName, "READ");
+    }
+
+    grabHistForStackPP(histPPFile_p, gorr, algTypePP[setNum], projMult, CNCR, Corr, Tight, fileTagPP, histPP_p);
+    grabHistForStackPbPb(histPbPbFile_p, gorr, algType[setNum], projMult, CNCR, Corr, Tight, fileTagPbPb, hist1_p, hist2_p, hist3_p, hist4_p);
+
+    histPbPbFile2_p = new TFile(filePbPbName2, "READ");    
+    histPPFile2_p = new TFile(filePPName2, "READ");    
+
+    grabHistForStackPP(histPPFile2_p, gorr, algTypePP[setNum], projMult, CNCR, Corr, Tight, fileTagPP2, histPP_2_p);
+    grabHistForStackPbPb(histPbPbFile2_p, gorr, algType[setNum], projMult, CNCR, Corr, Tight, fileTagPbPb2, hist1_2_p, hist2_2_p, hist3_2_p, hist4_2_p);
+  }
+  */
 
   TFile* outFile_p = new TFile(outName, "UPDATE");
   profPanel_p->Write();
