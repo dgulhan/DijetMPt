@@ -33,7 +33,7 @@ const Int_t evtCutPos[7] = {2, 2, 2, 6, 6, 6, 6};
 const Bool_t inVenn = false;
 const Bool_t outVenn = false;
 
-const Float_t midRapCut = 0.6;
+const Float_t midRapCut = 0.5;
 const Float_t midRapCut2 = 0.8;
 
 Int_t retBinNumber(const std::string Tight)
@@ -748,7 +748,7 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
       mean_projARD_p[iter][iter2] = new TH1F(Form("mean_projARD_%d_%d_h", iter, iter2), Form("mean_projARD_%d_%d_h", iter, iter2), 100, -2000, 2000);
       mean_projARU_p[iter][iter2] = new TH1F(Form("mean_projARU_%d_%d_h", iter, iter2), Form("mean_projARU_%d_%d_h", iter, iter2), 100, -2000, 2000);
 
-      if(iter < nBins2){
+      if(iter2 < nBins2){
 	mean_projAR2_p[iter][iter2] = new TH1F(Form("mean_projAR2_%d_%d_h", iter, iter2), Form("mean_projAR2_%d_%d_h", iter, iter2), 100, -2000, 2000);
 	mean_projAR2D_p[iter][iter2] = new TH1F(Form("mean_projAR2D_%d_%d_h", iter, iter2), Form("mean_projAR2D_%d_%d_h", iter, iter2), 100, -2000, 2000);
 	mean_projAR2U_p[iter][iter2] = new TH1F(Form("mean_projAR2U_%d_%d_h", iter, iter2), Form("mean_projAR2U_%d_%d_h", iter, iter2), 100, -2000, 2000);
@@ -1518,9 +1518,11 @@ void makeImbARHist(TTree* anaTree_p, const std::string outName, const std::strin
       CleanHist(mean_projARD_p[iter][iter2]);
       CleanHist(mean_projARU_p[iter][iter2]);
 
-      CleanHist(mean_projAR2_p[iter][iter2]);
-      CleanHist(mean_projAR2D_p[iter][iter2]);
-      CleanHist(mean_projAR2U_p[iter][iter2]);
+      if(iter2 < nBins2){
+	CleanHist(mean_projAR2_p[iter][iter2]);
+	CleanHist(mean_projAR2D_p[iter][iter2]);
+	CleanHist(mean_projAR2U_p[iter][iter2]);
+      }
 
       CleanHist(mean_projARCut_p[iter][iter2]);
       CleanHist(mean_projARCutD_p[iter][iter2]);
@@ -1624,21 +1626,24 @@ int makeDiJetHists(const std::string inName, sampleType sType = kHIDATA, Bool_t 
     for(Int_t tightIter = 0; tightIter < 1; tightIter++){
       for(Int_t algIter = 4; algIter < 8; algIter++){
 
-	/*
-	makeImbAHist(jetTreeAna_p, outName, algIter, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-
-	if(isHI(sType)){
-	  makeImbAHist(jetTreeAna_p, outName, algIter, 20, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-	  makeImbAHist(jetTreeAna_p, outName, algIter, 60, 99, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-	  makeImbAHist(jetTreeAna_p, outName, algIter, 100, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-	}	
-	*/
+	if(algIter == 4  || algIter == 7){	
+	  makeImbAHist(jetTreeAna_p, outName, algIter, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	  
+	  if(isHI(sType)){
+	    makeImbAHist(jetTreeAna_p, outName, algIter, 20, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	    makeImbAHist(jetTreeAna_p, outName, algIter, 60, 99, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	    makeImbAHist(jetTreeAna_p, outName, algIter, 100, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	  }	
+	}
+	
 	/*	
 	makeImbACNCHist(jetTreeAna_p, outName, algIter, 0, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
 	if(isHI(sType))	makeImbACNCHist(jetTreeAna_p, outName, algIter, 60, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);      
 	*/
 	
-	if(algIter == 4){
+	std::cout << algIter << std::endl;
+
+	if(algIter == 4 || algIter == 7){
 	  makeImbARHist(jetTreeAna_p, outName, "r", algIter, 0, 59, Corr[corrIter], sType, isHighPtTrk);
 	  if(isHI(sType)) makeImbARHist(jetTreeAna_p, outName, "r", algIter, 60, 199, Corr[corrIter], sType, isHighPtTrk);
 	}
@@ -1647,8 +1652,6 @@ int makeDiJetHists(const std::string inName, sampleType sType = kHIDATA, Bool_t 
 	  makeImbARHist(jetTreeAna_p, outName, "g", algIter, 0, 59, Corr[corrIter], sType, isHighPtTrk);
 	  if(isHI(sType)) makeImbARHist(jetTreeAna_p, outName, "g", algIter, 60, 199, Corr[corrIter], sType, isHighPtTrk);
 	}
-	
-
       }
     }
   }
