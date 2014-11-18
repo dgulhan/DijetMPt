@@ -159,10 +159,10 @@ void makeImbAMeanHist(TTree* anaTree_p, const std::string outName, const std::st
 
   const std::string centString = getCentString(sType, centLow, centHi);
 
-  TH1F* mean_rProjA_p[6][nBins];
+  TH1F* mean_projA_p[6][nBins];
   for(Int_t iter = 0; iter < 6; iter++){
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
-      mean_rProjA_p[iter][iter2] = new TH1F(Form("mean_%s%sProjA%s_%s_%d_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), centString.c_str(), iter2), Form("mean_rProjA%s_%s_%d_h", FPT[iter].c_str(), centString.c_str(), iter2), 4000, -2000, 2000);
+      mean_projA_p[iter][iter2] = new TH1F(Form("mean_%s%sProjA%s_%s_%d_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), centString.c_str(), iter2), Form("mean_%s%sProjA%s_%s_%d_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), centString.c_str(), iter2), 4000, -2000, 2000);
     }
   }    
 
@@ -178,16 +178,25 @@ void makeImbAMeanHist(TTree* anaTree_p, const std::string outName, const std::st
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
       if(AlgJtAsymm_[setNum] < xArrCut[iter2+1]){
 
-	for(Int_t iter = 0; iter < 6; iter++){
-	  if(rAlgImbProjA_[setCorrNum][iter] == 0) continue;
+	Float_t weight = 1.0;
+	if(montecarlo){
+	  weight = pthatWeight_;
+	  if(isHI(sType)) weight *= centWeight_[setNum];
+	}
 
-	  Float_t weight = 1.0;
-	  if(montecarlo){
-	    weight = pthatWeight_;
-	    if(isHI(sType)) weight *= centWeight_[setNum];
+	if(!strcmp(gR.c_str(), "r")){
+	  for(Int_t iter = 0; iter < 6; iter++){
+	    if(rAlgImbProjA_[setCorrNum][iter] == 0) continue;
+
+	    mean_projA_p[iter][iter2]->Fill(rAlgImbProjA_[setCorrNum][iter], weight);
 	  }
+	}
+	else{
+	  for(Int_t iter = 0; iter < 6; iter++){
+	    if(gAlgImbProjA_[setCorrNum][iter] == 0) continue;
 
-	  mean_rProjA_p[iter][iter2]->Fill(rAlgImbProjA_[setCorrNum][iter], weight);
+	    mean_projA_p[iter][iter2]->Fill(gAlgImbProjA_[setNum][iter], weight);
+	  }
 	}
 
 	break;	
@@ -199,7 +208,7 @@ void makeImbAMeanHist(TTree* anaTree_p, const std::string outName, const std::st
 
   for(Int_t iter = 0; iter < 6; iter++){
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
-      mean_rProjA_p[iter][iter2]->Write("", TObject::kOverwrite);
+      mean_projA_p[iter][iter2]->Write("", TObject::kOverwrite);
     }
   }
 
@@ -215,7 +224,7 @@ void makeImbAMeanHist(TTree* anaTree_p, const std::string outName, const std::st
   
   for(Int_t iter = 0; iter < 6; iter++){
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
-      CleanHist(mean_rProjA_p[iter][iter2]);
+      CleanHist(mean_projA_p[iter][iter2]);
     }
   }
   return;

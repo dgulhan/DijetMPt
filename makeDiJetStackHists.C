@@ -146,7 +146,7 @@ void makeMultAHist(TTree* anaTree_p, const std::string outName, Int_t setNum, In
 }
 */
 
-void makeImbAHist(TFile* inF_p, const std::string outName, Int_t setNum, Int_t centLow, Int_t centHi, const std::string Corr = "", const std::string Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+void makeImbAHist(TFile* inF_p, const std::string outName, const std::string gR, Int_t setNum, Int_t centLow, Int_t centHi, const std::string Corr = "", const std::string Tight = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
 
@@ -167,12 +167,12 @@ void makeImbAHist(TFile* inF_p, const std::string outName, Int_t setNum, Int_t c
   TH1F* mean_rProjA_p[6][nBins];
   
   InitHist(rImbAHist_p);
-  BookHist(rImbAHist_p, "r", algType[setNum], "Proj", "", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
+  BookHist(rImbAHist_p, gR, algType[setNum], "Proj", "", Corr, centString, nBins, xArr, 0.50, niceNumCNC);
 
 
   for(Int_t iter = 0; iter < 6; iter++){
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
-      mean_rProjA_p[iter][iter2] = (TH1F*)inF_p->Get(Form("mean_r%sProjA%s_%s_%d_h", algType[setNum].c_str(), FPT[iter].c_str(), centString.c_str(), iter2));
+      mean_rProjA_p[iter][iter2] = (TH1F*)inF_p->Get(Form("mean_%s%sProjA%s_%s_%d_h", gR.c_str(), algType[setNum].c_str(), FPT[iter].c_str(), centString.c_str(), iter2));
     }
   }    
 
@@ -401,15 +401,6 @@ void makeImbACNCHist(TTree* anaTree_p, const std::string outName, Int_t setNum, 
 
 void makeImbARHist(TFile* inF_p, const std::string outName, const std::string gR, Int_t setNum, const std::string rStr, Int_t centLow, Int_t centHi, const std::string Corr = "", sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
 {
-  Bool_t montecarlo = isMonteCarlo(sType);                                                    
-
-  Int_t setCorrNum = setNum;
-  if(!strcmp("Corr", Corr.c_str())) setCorrNum = setNum + 8;
-
-  Int_t evtsPass = 0;
-  Int_t evtsPassU = 0;
-  Int_t evtsPassD = 0;
-
   const Int_t nBins = 10;
   Float_t rBins[11] = {0.0001, 0.20, 0.40, 0.60, 0.80, 1.00, 1.20, 1.40, 1.60, 1.80, 1.9999};
   const std::string centString = getCentString(sType, centLow, centHi);
@@ -424,7 +415,7 @@ void makeImbARHist(TFile* inF_p, const std::string outName, const std::string gR
 
   for(Int_t iter = 0; iter < 6; iter++){
     for(Int_t iter2 = 0; iter2 < nBins; iter2++){
-      mean_projAR_p[iter][iter2] = (TH1F*)inF_p->Get(Form("mean_r%sProj%s%s_%s_%d_h", algType[setNum].c_str(), rStr.c_str(), FPT[iter].c_str(), centString.c_str(), iter2));
+      mean_projAR_p[iter][iter2] = (TH1F*)inF_p->Get(Form("mean_%s%sProj%s%s_%s_%d_h", gR.c_str(), algType[setNum].c_str(), rStr.c_str(), FPT[iter].c_str(), centString.c_str(), iter2));
     }
   }
 
@@ -486,12 +477,22 @@ int makeDiJetStackHists(const std::string inName, sampleType sType = kHIDATA, Bo
       for(Int_t algIter = 4; algIter < 8; algIter++){
 
 	if(algIter == 4){	
-	  makeImbAHist(inFile_p, outName, algIter, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	  makeImbAHist(inFile_p, outName, "r", algIter, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
 	  
 	  if(isHI(sType)){
-	    makeImbAHist(inFile_p, outName, algIter, 20, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-	    makeImbAHist(inFile_p, outName, algIter, 60, 99, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
-	    makeImbAHist(inFile_p, outName, algIter, 100, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	    makeImbAHist(inFile_p, outName, "r", algIter, 20, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	    makeImbAHist(inFile_p, outName, "r", algIter, 60, 99, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	    makeImbAHist(inFile_p, outName, "r", algIter, 100, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	  }	
+	}
+
+	if(algIter == 4 || algIter == 7){	
+	  makeImbAHist(inFile_p, outName, "g", algIter, 0, 19, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	  
+	  if(isHI(sType)){
+	    makeImbAHist(inFile_p, outName, "g", algIter, 20, 59, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	    makeImbAHist(inFile_p, outName, "g", algIter, 60, 99, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
+	    makeImbAHist(inFile_p, outName, "g", algIter, 100, 199, Corr[corrIter], Tight[tightIter], sType, isHighPtTrk);
 	  }	
 	}
 	
@@ -503,14 +504,14 @@ int makeDiJetStackHists(const std::string inName, sampleType sType = kHIDATA, Bo
 	std::cout << algIter << std::endl;
 
 
-	for(Int_t rIter = 0; rIter < 3; rIter++){
+	for(Int_t rIter = 0; rIter < 36; rIter++){
 
 	  if(algIter == 4){
 	    makeImbARHist(inFile_p, outName, "r", algIter, rStr[rIter], 0, 59, Corr[corrIter], sType, isHighPtTrk);
 	    if(isHI(sType)) makeImbARHist(inFile_p, outName, "r", algIter, rStr[rIter], 60, 199, Corr[corrIter], sType, isHighPtTrk);
 	  }
 	
-	  if(algIter == 7 && montecarlo){
+	  if((algIter == 4 || algIter == 7) && montecarlo){
 	    makeImbARHist(inFile_p, outName, "g", algIter, rStr[rIter], 0, 59, Corr[corrIter], sType, isHighPtTrk);
 	    if(isHI(sType)) makeImbARHist(inFile_p, outName, "g", algIter, rStr[rIter], 60, 199, Corr[corrIter], sType, isHighPtTrk);
 	  }
