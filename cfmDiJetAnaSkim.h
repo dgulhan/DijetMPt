@@ -14,9 +14,9 @@ TTree* trackTreeAna_p = 0;
 TTree* jetTreeAna_p = 0;
 TTree* genTreeAna_p = 0;
 
-const Int_t nJtAlg = 10;
+const Int_t nJtAlg = 18;
 const Int_t nJtMax = 4;
-const Int_t nSumAlg = 8;
+const Int_t nSumAlg = 16;
 const Int_t nPtBins = 6;
 const Int_t nRBins = 10;
 
@@ -165,12 +165,12 @@ const Float_t rBounds[nRBins] = {.20, .40, .60, .80, 1.00, 1.20, 1.40, 1.60, 1.8
 //const Float_t leadJtPtCut[nJtAlg] = {120., 120., 120., 117.448, 120., 123.66, 127.89, 120., 120., 120.};
 //const Float_t subLeadJtPtCut[nJtAlg] = {50., 50., 50., 48.9367, 50., 51.5252, 53.2873, 50., 50., 50.};
 
-const Float_t leadJtPtCut[nJtAlg] = {120., 120., 120., 120., 120., 120., 120., 120., 120., 120.};
-const Float_t subLeadJtPtCut[nJtAlg] = {50., 50., 50., 50., 50., 50., 50., 50., 50., 50.};
+const Float_t leadJtPtCut[nJtAlg] = {120., 120., 120., 120., 120., 120., 120., 120., 120., 120., 120., 120., 120., 120., 120., 120., 120., 120.};
+const Float_t subLeadJtPtCut[nJtAlg] = {50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50.};
 
 const Float_t jtDelPhiCut = 0;
 const Float_t jtEtaCut = 2.0; // Default Max at 2.4 to avoid transition junk, otherwise vary as needed                                                 
-const std::string algType[nJtAlg] = {"Pu3Calo", "Pu4Calo", "Pu5Calo", "Vs2Calo", "Vs3Calo", "Vs4Calo", "Vs5Calo", "T", "PuPF", "VsPF"};
+const std::string algType[nJtAlg] = {"Pu3Calo", "Pu4Calo", "Pu5Calo", "Vs2Calo", "Vs3Calo", "Vs4Calo", "Vs5Calo", "Vs2CaloFrag", "Vs3CaloFrag", "Vs4CaloFrag", "Vs5CaloFrag", "Vs3CaloRes", "T2", "T3", "T4", "T5", "PuPF", "VsPF"};
 
 
 void SetAnaBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
@@ -967,6 +967,7 @@ void GetMixProjPerp(Float_t evPt[2], Int_t nConst, Float_t constPt[], Float_t co
 void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
 {
   if(pt < 0.5) return;
+  if(TMath::IsNaN(pt)) return;
 
   Int_t signVal = 1;
   if(cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])) < 0) signVal = -1;
