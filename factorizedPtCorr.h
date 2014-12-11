@@ -10,15 +10,7 @@
 #include "TProfile2D.h"
 #include "etaPhiFunc.h"
 #include <iostream>
-
-enum sampleType{
-  kHIDATA, //0                                                                                       
-  kHIMC,   //1                                                                                     
-  kPPDATA, //2                                                                        
-  kPPMC,   //3                                                                                   
-  kPADATA, //4                                                                              
-  kPAMC    //5                                                                                   
-};
+#include "sType.h"
 
 //Current # of correction histograms
 
@@ -59,7 +51,7 @@ TH2D* SecondCaloptEta_p;
 TFile* MultrecoCaloFile_p;
 TH2D* MultrecoCaloptEta_p;
 
-void InitCorrFiles(sampleType sType = kHIDATA, Bool_t isHITrk = false)
+void InitFactCorrFiles(sampleType sType = kHIDATA, Bool_t isHITrk = false)
 {
   //File names w/ various binnings, ordered by pt and then centrality. Each Jet Algorithm gets a file array
 
@@ -137,39 +129,25 @@ void InitCorrFiles(sampleType sType = kHIDATA, Bool_t isHITrk = false)
     FakeVsCaloFile_p[28] = new TFile("fake_pt800_30000_cent0_100.root", "READ");
   }
   else if(sType == kPPDATA || sType == kPPMC){
-    if(!isHITrk){
-      CaloFile_p[0] = new TFile("eff_pt0_1_ak3Calo_dogenjet0.root", "READ");
-      CaloFile_p[1] = new TFile("eff_pt1_3_ak3Calo_dogenjet0.root", "READ");
-      CaloFile_p[2] = new TFile("eff_pt3_8_ak3Calo_dogenjet0.root", "READ");
-      CaloFile_p[3] = new TFile("eff_pt8_300_ak3Calo_dogenjet0.root", "READ");
-      
-      FakeCaloFile_p[0] = new TFile("fake_pt0_1_ak3Calo_dogenjet0.root", "READ");
-      FakeCaloFile_p[1] = new TFile("fake_pt1_3_ak3Calo_dogenjet0.root", "READ");
-      FakeCaloFile_p[2] = new TFile("fake_pt3_8_ak3Calo_dogenjet0.root", "READ");
-      FakeCaloFile_p[3] = new TFile("fake_pt8_300_ak3Calo_dogenjet0.root", "READ");
-      
-      SecondCaloFile_p = new TFile("secondary_pp.root", "READ");
-    }
-    else{
-      CaloFile_p[0] = new TFile("eff_pt0_1_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
-      CaloFile_p[1] = new TFile("eff_pt1_3_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
-      CaloFile_p[2] = new TFile("eff_pt3_8_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
-      CaloFile_p[3] = new TFile("eff_pt8_300_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
-      
-      FakeCaloFile_p[0] = new TFile("fake_pt0_1_step_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
-      FakeCaloFile_p[1] = new TFile("fake_pt1_3_step_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
-      FakeCaloFile_p[2] = new TFile("fake_pt3_8_step_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
-      FakeCaloFile_p[3] = new TFile("fake_pt8_300_step_accept4pt4rmin3_ak3Calo_dogenjet0.root", "READ");
-      
-      SecondCaloFile_p = new TFile("secondary_pp_HIReco.root", "READ");
-    }
+    CaloFile_p[0] = new TFile("eff_pt0_1_ak3Calo_dogenjet0.root", "READ");
+    CaloFile_p[1] = new TFile("eff_pt1_3_ak3Calo_dogenjet0.root", "READ");
+    CaloFile_p[2] = new TFile("eff_pt3_8_ak3Calo_dogenjet0.root", "READ");
+    CaloFile_p[3] = new TFile("eff_pt8_300_ak3Calo_dogenjet0.root", "READ");
+    
+    FakeCaloFile_p[0] = new TFile("fake_pt0_1_ak3Calo_dogenjet0.root", "READ");
+    FakeCaloFile_p[1] = new TFile("fake_pt1_3_ak3Calo_dogenjet0.root", "READ");
+    FakeCaloFile_p[2] = new TFile("fake_pt3_8_ak3Calo_dogenjet0.root", "READ");
+    FakeCaloFile_p[3] = new TFile("fake_pt8_300_ak3Calo_dogenjet0.root", "READ");
+    
+    SecondCaloFile_p = new TFile("secondary_pp.root", "READ");
+    MultrecoCaloFile_p = new TFile("multiplereco_pp.root", "READ");
   }
 
   return;
 }
 
 
-void InitCorrHists(sampleType sType = kHIDATA)
+void InitFactCorrHists(sampleType sType = kHIDATA)
 {
   if(sType == kHIDATA || sType == kHIMC){
     for(Int_t hIter = 0; hIter < nHistPbPb; hIter++){
@@ -196,6 +174,7 @@ void InitCorrHists(sampleType sType = kHIDATA)
     }
 
     SecondCaloptEta_p = (TH2D*)SecondCaloFile_p->Get("hpt_eta");
+    MultrecoCaloptEta_p = (TH2D*)MultrecoCaloFile_p->Get("hpt_eta");
   }
 
   return;
@@ -279,17 +258,18 @@ Float_t getTrkRMin(Float_t trkPhi, Float_t trkEta, Int_t nJt, Float_t jtPt[], Fl
 Float_t getEffCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Float_t eta, Float_t rmin, sampleType sType = kHIDATA)
 {
   Float_t effCorr = 1;
+  Bool_t isR = (rmin < 198);
 
   if(sType == kHIDATA || sType == kHIMC){
     effCorr = effCorr*(VsCalocent_p[corrBin]->GetBinContent(VsCalocent_p[corrBin]->FindBin(hiBin)));
     effCorr = effCorr*(VsCalophiEta_p[corrBin]->GetBinContent(VsCalophiEta_p[corrBin]->FindBin(phi, eta)));
     effCorr = effCorr*(VsCalopt_p[corrBin]->GetBinContent(VsCalopt_p[corrBin]->FindBin(pt)));
-    effCorr = effCorr*(VsCalodelR_p[corrBin]->GetBinContent(VsCalodelR_p[corrBin]->FindBin(rmin)));
+    if(isR) effCorr = effCorr*(VsCalodelR_p[corrBin]->GetBinContent(VsCalodelR_p[corrBin]->FindBin(rmin)));
   }
   else if(sType == kPPDATA || kPPMC){
     effCorr = effCorr*(CalophiEta_p[corrBin]->GetBinContent(CalophiEta_p[corrBin]->FindBin(phi, eta)));
     effCorr = effCorr*(Calopt_p[corrBin]->GetBinContent(Calopt_p[corrBin]->FindBin(pt)));
-    effCorr = effCorr*(CalodelR_p[corrBin]->GetBinContent(CalodelR_p[corrBin]->FindBin(rmin)));
+    if(isR) effCorr = effCorr*(CalodelR_p[corrBin]->GetBinContent(CalodelR_p[corrBin]->FindBin(rmin)));
   }
 
   return effCorr;
@@ -299,17 +279,18 @@ Float_t getEffCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Float_t 
 Float_t getFakeCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Float_t eta, Float_t rmin, sampleType sType = kHIDATA)
 {
   Float_t fakeCorr = 0;
+  Bool_t isR = (rmin < 198);
 
   if(sType == kHIDATA || sType == kHIMC){
     fakeCorr = fakeCorr + (FakeVsCalocent_p[corrBin]->GetBinContent(FakeVsCalocent_p[corrBin]->FindBin(hiBin)));
     fakeCorr = fakeCorr + (FakeVsCalophiEta_p[corrBin]->GetBinContent(FakeVsCalophiEta_p[corrBin]->FindBin(phi, eta)));
     fakeCorr = fakeCorr + (FakeVsCalopt_p[corrBin]->GetBinContent(FakeVsCalopt_p[corrBin]->FindBin(pt)));
-    fakeCorr = fakeCorr + (FakeVsCalodelR_p[corrBin]->GetBinContent(FakeVsCalodelR_p[corrBin]->FindBin(rmin)));
+    if(isR) fakeCorr = fakeCorr + (FakeVsCalodelR_p[corrBin]->GetBinContent(FakeVsCalodelR_p[corrBin]->FindBin(rmin)));
   }
   else if(sType == kPPDATA || kPPMC){
     fakeCorr = fakeCorr + (FakeCalophiEta_p[corrBin]->GetBinContent(FakeCalophiEta_p[corrBin]->FindBin(phi, eta)));
     fakeCorr = fakeCorr + (FakeCalopt_p[corrBin]->GetBinContent(FakeCalopt_p[corrBin]->FindBin(pt)));
-    fakeCorr = fakeCorr + (FakeCalodelR_p[corrBin]->GetBinContent(FakeCalodelR_p[corrBin]->FindBin(rmin)));
+    if(isR) fakeCorr = fakeCorr + (FakeCalodelR_p[corrBin]->GetBinContent(FakeCalodelR_p[corrBin]->FindBin(rmin)));
   }
 
   return fakeCorr;
@@ -334,6 +315,7 @@ Float_t factorizedPtCorr(Int_t corrBin, Int_t hiBin, Float_t pt, Float_t phi, Fl
 
   if(sType == kPPDATA || sType == kPPMC){
     corrFactor = corrFactor*(1 - SecondCaloptEta_p->GetBinContent(SecondCaloptEta_p->FindBin(pt, eta)));
+    corrFactor = corrFactor/(1 + MultrecoCaloptEta_p->GetBinContent(MultrecoCaloptEta_p->FindBin(pt, eta)));
   }
 
   if(corrFactor > 1000){

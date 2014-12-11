@@ -11,18 +11,18 @@
 #include "etaPhiFunc.h"
 #include "sType.h"
 
-const Int_t nFilePbPb = 4;
-const Int_t nFilePP = 4;
+const Int_t nFileFRAGPbPb = 4;
+const Int_t nFileFRAGPP = 4;
 
-TFile* FRAG_VsCaloFile_p[nFilePbPb];
-TH2D* FRAG_VsCaloCorr_010_h[nFilePbPb];
-TH2D* FRAG_VsCaloCorr_1030_h[nFilePbPb];
-TH2D* FRAG_VsCaloCorr_3050_h[nFilePbPb];
-TH2D* FRAG_VsCaloCorr_50100_h[nFilePbPb];
+TFile* FRAG_VsCaloFile_p[nFileFRAGPbPb];
+TH2D* FRAG_VsCaloCorr_010_h[nFileFRAGPbPb];
+TH2D* FRAG_VsCaloCorr_1030_h[nFileFRAGPbPb];
+TH2D* FRAG_VsCaloCorr_3050_h[nFileFRAGPbPb];
+TH2D* FRAG_VsCaloCorr_50100_h[nFileFRAGPbPb];
 
 
-TFile* FRAG_CaloFile_p[nFilePP];
-TH2D* FRAG_CaloCorr_PP_h[nFilePP];
+TFile* FRAG_CaloFile_p[nFileFRAGPP];
+TH2D* FRAG_CaloCorr_PP_h[nFileFRAGPP];
 
 void InitFRAGCorrFiles(sampleType sType = kHIDATA)
 {

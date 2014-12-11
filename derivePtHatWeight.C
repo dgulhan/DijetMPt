@@ -7,11 +7,11 @@
 #include "TChain.h"
 #include "TMath.h"
 
-const Float_t ptHatCuts_PYTH[6] = {30, 50, 80, 120, 170, 1000000};
-const Float_t crossSections_PYTH[6] = {.01075, .001025, .00009865, .00001129, .000001465, 0.000000000};
+const Float_t ptHatCuts_PYTH[7] = {15, 30, 50, 80, 120, 170, 1000000};
+const Float_t crossSections_PYTH[7] = {.20340, .01075, .001025, .00009865, .00001129, .000001465, 0.000000000};
 
-const Float_t ptHatCuts_PYTHHYD[9] = {15, 30, 50, 80, 120, 220, 280, 370, 1000000};
-const Float_t crossSections_PYTHHYD[9] = {.20340, .01075, .001025, .00009865, .00001129, .0000002837, .00000005323, .000000005934, .0000000000};
+const Float_t ptHatCuts_PYTHHYD[11] = {15, 30, 50, 80, 100, 120, 170, 220, 280, 370, 1000000};
+const Float_t crossSections_PYTHHYD[11] = {.20340, .01075, .001025, .00009865, .00003069, .00001129, .000001465, .0000002837, .00000005323, .000000005934, .0000000000};
 
 void derivePtHatWeights(const Int_t numCut,Float_t ptHatCuts[], Float_t crossSect[], std::string fList = "")
 {
@@ -28,8 +28,9 @@ void derivePtHatWeights(const Int_t numCut,Float_t ptHatCuts[], Float_t crossSec
     return;
   }
   else{
-    while(!inFile.eof()){
+    while(true){
       inFile >> buffer;
+      if(inFile.eof()) break;
       listOfFiles.push_back(buffer);
       nLines++;
     }
@@ -40,6 +41,7 @@ void derivePtHatWeights(const Int_t numCut,Float_t ptHatCuts[], Float_t crossSec
   TChain* ptHatChain_p = new TChain("akVs3CaloJetAnalyzer/t");
 
   for(Int_t iter = 0; iter < (Int_t)(listOfFiles.size()); iter++){
+    std::cout << listOfFiles[iter].c_str() << std::endl;
     ptHatChain_p->Add(listOfFiles[iter].c_str());
   }
 

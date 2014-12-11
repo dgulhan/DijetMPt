@@ -15,6 +15,7 @@
 #include "TMath.h"
 #include "factorizedPtCorr.h"
 #include "jecPtCorr.h"
+#include "resPtCorr.h"
 
 enum AlgoType_PbPb{
   Pu3Calo,     //0
@@ -24,16 +25,17 @@ enum AlgoType_PbPb{
   Vs3Calo,     //4
   Vs4Calo,     //5
   Vs5Calo,     //6
-  Vs2CaloCorr, //7
-  Vs3CaloCorr, //8
-  Vs4CaloCorr, //9
-  Vs5CaloCorr, //10
-  T2,          //11
-  T3,          //12
-  T4,          //13
-  T5,          //14
-  PuPF,        //15
-  VsPF         //16
+  Vs2CaloFrag, //7
+  Vs3CaloFrag, //8
+  Vs4CaloFrag, //9
+  Vs5CaloFrag, //10
+  Vs3CaloRes,  //11
+  T2,          //12
+  T3,          //13
+  T4,          //14
+  T5,          //15
+  PuPF,        //16
+  VsPF         //17
 };
 
 
@@ -178,49 +180,61 @@ Float_t Vs5CaloRefEta_[maxJets];
 Int_t Vs5CaloRefPart_[maxJets];
 
 
-Int_t nVs2CaloCorr_;
-Float_t Vs2CaloCorrPt_[maxJets];
-Float_t Vs2CaloCorrPhi_[maxJets];
-Float_t Vs2CaloCorrEta_[maxJets];
-Float_t Vs2CaloCorrTrkMax_[maxJets];
-Float_t Vs2CaloCorrRawPt_[maxJets];
-Float_t Vs2CaloCorrRefPt_[maxJets];
-Float_t Vs2CaloCorrRefPhi_[maxJets];
-Float_t Vs2CaloCorrRefEta_[maxJets];
-Int_t Vs2CaloCorrRefPart_[maxJets];
+Int_t nVs2CaloFrag_;
+Float_t Vs2CaloFragPt_[maxJets];
+Float_t Vs2CaloFragPhi_[maxJets];
+Float_t Vs2CaloFragEta_[maxJets];
+Float_t Vs2CaloFragTrkMax_[maxJets];
+Float_t Vs2CaloFragRawPt_[maxJets];
+Float_t Vs2CaloFragRefPt_[maxJets];
+Float_t Vs2CaloFragRefPhi_[maxJets];
+Float_t Vs2CaloFragRefEta_[maxJets];
+Int_t Vs2CaloFragRefPart_[maxJets];
 
-Int_t nVs3CaloCorr_;
-Float_t Vs3CaloCorrPt_[maxJets];
-Float_t Vs3CaloCorrPhi_[maxJets];
-Float_t Vs3CaloCorrEta_[maxJets];
-Float_t Vs3CaloCorrTrkMax_[maxJets];
-Float_t Vs3CaloCorrRawPt_[maxJets];
-Float_t Vs3CaloCorrRefPt_[maxJets];
-Float_t Vs3CaloCorrRefPhi_[maxJets];
-Float_t Vs3CaloCorrRefEta_[maxJets];
-Int_t Vs3CaloCorrRefPart_[maxJets];
+Int_t nVs3CaloFrag_;
+Float_t Vs3CaloFragPt_[maxJets];
+Float_t Vs3CaloFragPhi_[maxJets];
+Float_t Vs3CaloFragEta_[maxJets];
+Float_t Vs3CaloFragTrkMax_[maxJets];
+Float_t Vs3CaloFragRawPt_[maxJets];
+Float_t Vs3CaloFragRefPt_[maxJets];
+Float_t Vs3CaloFragRefPhi_[maxJets];
+Float_t Vs3CaloFragRefEta_[maxJets];
+Int_t Vs3CaloFragRefPart_[maxJets];
 
-Int_t nVs4CaloCorr_;
-Float_t Vs4CaloCorrPt_[maxJets];
-Float_t Vs4CaloCorrPhi_[maxJets];
-Float_t Vs4CaloCorrEta_[maxJets];
-Float_t Vs4CaloCorrTrkMax_[maxJets];
-Float_t Vs4CaloCorrRawPt_[maxJets];
-Float_t Vs4CaloCorrRefPt_[maxJets];
-Float_t Vs4CaloCorrRefPhi_[maxJets];
-Float_t Vs4CaloCorrRefEta_[maxJets];
-Int_t Vs4CaloCorrRefPart_[maxJets];
+Int_t nVs4CaloFrag_;
+Float_t Vs4CaloFragPt_[maxJets];
+Float_t Vs4CaloFragPhi_[maxJets];
+Float_t Vs4CaloFragEta_[maxJets];
+Float_t Vs4CaloFragTrkMax_[maxJets];
+Float_t Vs4CaloFragRawPt_[maxJets];
+Float_t Vs4CaloFragRefPt_[maxJets];
+Float_t Vs4CaloFragRefPhi_[maxJets];
+Float_t Vs4CaloFragRefEta_[maxJets];
+Int_t Vs4CaloFragRefPart_[maxJets];
 
-Int_t nVs5CaloCorr_;
-Float_t Vs5CaloCorrPt_[maxJets];
-Float_t Vs5CaloCorrPhi_[maxJets];
-Float_t Vs5CaloCorrEta_[maxJets];
-Float_t Vs5CaloCorrTrkMax_[maxJets];
-Float_t Vs5CaloCorrRawPt_[maxJets];
-Float_t Vs5CaloCorrRefPt_[maxJets];
-Float_t Vs5CaloCorrRefPhi_[maxJets];
-Float_t Vs5CaloCorrRefEta_[maxJets];
-Int_t Vs5CaloCorrRefPart_[maxJets];
+Int_t nVs5CaloFrag_;
+Float_t Vs5CaloFragPt_[maxJets];
+Float_t Vs5CaloFragPhi_[maxJets];
+Float_t Vs5CaloFragEta_[maxJets];
+Float_t Vs5CaloFragTrkMax_[maxJets];
+Float_t Vs5CaloFragRawPt_[maxJets];
+Float_t Vs5CaloFragRefPt_[maxJets];
+Float_t Vs5CaloFragRefPhi_[maxJets];
+Float_t Vs5CaloFragRefEta_[maxJets];
+Int_t Vs5CaloFragRefPart_[maxJets];
+
+
+Int_t nVs3CaloRes_;
+Float_t Vs3CaloResPt_[maxJets];
+Float_t Vs3CaloResPhi_[maxJets];
+Float_t Vs3CaloResEta_[maxJets];
+Float_t Vs3CaloResTrkMax_[maxJets];
+Float_t Vs3CaloResRawPt_[maxJets];
+Float_t Vs3CaloResRefPt_[maxJets];
+Float_t Vs3CaloResRefPhi_[maxJets];
+Float_t Vs3CaloResRefEta_[maxJets];
+Int_t Vs3CaloResRefPart_[maxJets];
 
 
 Int_t nT2_;
@@ -420,33 +434,40 @@ void SetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
   jetTreeIni_p->Branch("Vs5CaloRawPt", Vs5CaloRawPt_, "Vs5CaloRawPt[nVs5Calo]/F");
 
 
-  jetTreeIni_p->Branch("nVs2CaloCorr", &nVs2CaloCorr_, "nVs2CaloCorr/I");
-  jetTreeIni_p->Branch("Vs2CaloCorrPt", Vs2CaloCorrPt_, "Vs2CaloCorrPt[nVs2CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs2CaloCorrPhi", Vs2CaloCorrPhi_, "Vs2CaloCorrPhi[nVs2CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs2CaloCorrEta", Vs2CaloCorrEta_, "Vs2CaloCorrEta[nVs2CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs2CaloCorrTrkMax", Vs2CaloCorrTrkMax_, "Vs2CaloCorrTrkMax[nVs2CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs2CaloCorrRawPt", Vs2CaloCorrRawPt_, "Vs2CaloCorrRawPt[nVs2CaloCorr]/F");
+  jetTreeIni_p->Branch("nVs2CaloFrag", &nVs2CaloFrag_, "nVs2CaloFrag/I");
+  jetTreeIni_p->Branch("Vs2CaloFragPt", Vs2CaloFragPt_, "Vs2CaloFragPt[nVs2CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs2CaloFragPhi", Vs2CaloFragPhi_, "Vs2CaloFragPhi[nVs2CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs2CaloFragEta", Vs2CaloFragEta_, "Vs2CaloFragEta[nVs2CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs2CaloFragTrkMax", Vs2CaloFragTrkMax_, "Vs2CaloFragTrkMax[nVs2CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs2CaloFragRawPt", Vs2CaloFragRawPt_, "Vs2CaloFragRawPt[nVs2CaloFrag]/F");
 
-  jetTreeIni_p->Branch("nVs3CaloCorr", &nVs3CaloCorr_, "nVs3CaloCorr/I");
-  jetTreeIni_p->Branch("Vs3CaloCorrPt", Vs3CaloCorrPt_, "Vs3CaloCorrPt[nVs3CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs3CaloCorrPhi", Vs3CaloCorrPhi_, "Vs3CaloCorrPhi[nVs3CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs3CaloCorrEta", Vs3CaloCorrEta_, "Vs3CaloCorrEta[nVs3CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs3CaloCorrTrkMax", Vs3CaloCorrTrkMax_, "Vs3CaloCorrTrkMax[nVs3CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs3CaloCorrRawPt", Vs3CaloCorrRawPt_, "Vs3CaloCorrRawPt[nVs3CaloCorr]/F");
+  jetTreeIni_p->Branch("nVs3CaloFrag", &nVs3CaloFrag_, "nVs3CaloFrag/I");
+  jetTreeIni_p->Branch("Vs3CaloFragPt", Vs3CaloFragPt_, "Vs3CaloFragPt[nVs3CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs3CaloFragPhi", Vs3CaloFragPhi_, "Vs3CaloFragPhi[nVs3CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs3CaloFragEta", Vs3CaloFragEta_, "Vs3CaloFragEta[nVs3CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs3CaloFragTrkMax", Vs3CaloFragTrkMax_, "Vs3CaloFragTrkMax[nVs3CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs3CaloFragRawPt", Vs3CaloFragRawPt_, "Vs3CaloFragRawPt[nVs3CaloFrag]/F");
 
-  jetTreeIni_p->Branch("nVs4CaloCorr", &nVs4CaloCorr_, "nVs4CaloCorr/I");
-  jetTreeIni_p->Branch("Vs4CaloCorrPt", Vs4CaloCorrPt_, "Vs4CaloCorrPt[nVs4CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs4CaloCorrPhi", Vs4CaloCorrPhi_, "Vs4CaloCorrPhi[nVs4CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs4CaloCorrEta", Vs4CaloCorrEta_, "Vs4CaloCorrEta[nVs4CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs4CaloCorrTrkMax", Vs4CaloCorrTrkMax_, "Vs4CaloCorrTrkMax[nVs4CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs4CaloCorrRawPt", Vs4CaloCorrRawPt_, "Vs4CaloCorrRawPt[nVs4CaloCorr]/F");
+  jetTreeIni_p->Branch("nVs4CaloFrag", &nVs4CaloFrag_, "nVs4CaloFrag/I");
+  jetTreeIni_p->Branch("Vs4CaloFragPt", Vs4CaloFragPt_, "Vs4CaloFragPt[nVs4CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs4CaloFragPhi", Vs4CaloFragPhi_, "Vs4CaloFragPhi[nVs4CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs4CaloFragEta", Vs4CaloFragEta_, "Vs4CaloFragEta[nVs4CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs4CaloFragTrkMax", Vs4CaloFragTrkMax_, "Vs4CaloFragTrkMax[nVs4CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs4CaloFragRawPt", Vs4CaloFragRawPt_, "Vs4CaloFragRawPt[nVs4CaloFrag]/F");
 
-  jetTreeIni_p->Branch("nVs5CaloCorr", &nVs5CaloCorr_, "nVs5CaloCorr/I");
-  jetTreeIni_p->Branch("Vs5CaloCorrPt", Vs5CaloCorrPt_, "Vs5CaloCorrPt[nVs5CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs5CaloCorrPhi", Vs5CaloCorrPhi_, "Vs5CaloCorrPhi[nVs5CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs5CaloCorrEta", Vs5CaloCorrEta_, "Vs5CaloCorrEta[nVs5CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs5CaloCorrTrkMax", Vs5CaloCorrTrkMax_, "Vs5CaloCorrTrkMax[nVs5CaloCorr]/F");
-  jetTreeIni_p->Branch("Vs5CaloCorrRawPt", Vs5CaloCorrRawPt_, "Vs5CaloCorrRawPt[nVs5CaloCorr]/F");
+  jetTreeIni_p->Branch("nVs5CaloFrag", &nVs5CaloFrag_, "nVs5CaloFrag/I");
+  jetTreeIni_p->Branch("Vs5CaloFragPt", Vs5CaloFragPt_, "Vs5CaloFragPt[nVs5CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs5CaloFragPhi", Vs5CaloFragPhi_, "Vs5CaloFragPhi[nVs5CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs5CaloFragEta", Vs5CaloFragEta_, "Vs5CaloFragEta[nVs5CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs5CaloFragTrkMax", Vs5CaloFragTrkMax_, "Vs5CaloFragTrkMax[nVs5CaloFrag]/F");
+  jetTreeIni_p->Branch("Vs5CaloFragRawPt", Vs5CaloFragRawPt_, "Vs5CaloFragRawPt[nVs5CaloFrag]/F");
+
+  jetTreeIni_p->Branch("nVs3CaloRes", &nVs3CaloRes_, "nVs3CaloRes/I");
+  jetTreeIni_p->Branch("Vs3CaloResPt", Vs3CaloResPt_, "Vs3CaloResPt[nVs3CaloRes]/F");
+  jetTreeIni_p->Branch("Vs3CaloResPhi", Vs3CaloResPhi_, "Vs3CaloResPhi[nVs3CaloRes]/F");
+  jetTreeIni_p->Branch("Vs3CaloResEta", Vs3CaloResEta_, "Vs3CaloResEta[nVs3CaloRes]/F");
+  jetTreeIni_p->Branch("Vs3CaloResTrkMax", Vs3CaloResTrkMax_, "Vs3CaloResTrkMax[nVs3CaloRes]/F");
+  jetTreeIni_p->Branch("Vs3CaloResRawPt", Vs3CaloResRawPt_, "Vs3CaloResRawPt[nVs3CaloRes]/F");
 
 
   if(montecarlo){
@@ -471,26 +492,30 @@ void SetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     jetTreeIni_p->Branch("Vs5CaloRefPart", Vs5CaloRefPart_, "Vs5CaloRefPart[nVs5Calo]/I");
 
 
-    jetTreeIni_p->Branch("Vs2CaloCorrRefPt", Vs2CaloCorrRefPt_, "Vs2CaloCorrRefPt[nVs2CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs2CaloCorrRefPhi", Vs2CaloCorrRefPhi_, "Vs2CaloCorrRefPhi[nVs2CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs2CaloCorrRefEta", Vs2CaloCorrRefEta_, "Vs2CaloCorrRefEta[nVs2CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs2CaloCorrRefPart", Vs2CaloCorrRefPart_, "Vs2CaloCorrRefPart[nVs2CaloCorr]/I");
+    jetTreeIni_p->Branch("Vs2CaloFragRefPt", Vs2CaloFragRefPt_, "Vs2CaloFragRefPt[nVs2CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs2CaloFragRefPhi", Vs2CaloFragRefPhi_, "Vs2CaloFragRefPhi[nVs2CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs2CaloFragRefEta", Vs2CaloFragRefEta_, "Vs2CaloFragRefEta[nVs2CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs2CaloFragRefPart", Vs2CaloFragRefPart_, "Vs2CaloFragRefPart[nVs2CaloFrag]/I");
 
-    jetTreeIni_p->Branch("Vs3CaloCorrRefPt", Vs3CaloCorrRefPt_, "Vs3CaloCorrRefPt[nVs3CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs3CaloCorrRefPhi", Vs3CaloCorrRefPhi_, "Vs3CaloCorrRefPhi[nVs3CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs3CaloCorrRefEta", Vs3CaloCorrRefEta_, "Vs3CaloCorrRefEta[nVs3CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs3CaloCorrRefPart", Vs3CaloCorrRefPart_, "Vs3CaloCorrRefPart[nVs3CaloCorr]/I");
+    jetTreeIni_p->Branch("Vs3CaloFragRefPt", Vs3CaloFragRefPt_, "Vs3CaloFragRefPt[nVs3CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs3CaloFragRefPhi", Vs3CaloFragRefPhi_, "Vs3CaloFragRefPhi[nVs3CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs3CaloFragRefEta", Vs3CaloFragRefEta_, "Vs3CaloFragRefEta[nVs3CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs3CaloFragRefPart", Vs3CaloFragRefPart_, "Vs3CaloFragRefPart[nVs3CaloFrag]/I");
 
-    jetTreeIni_p->Branch("Vs4CaloCorrRefPt", Vs4CaloCorrRefPt_, "Vs4CaloCorrRefPt[nVs4CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs4CaloCorrRefPhi", Vs4CaloCorrRefPhi_, "Vs4CaloCorrRefPhi[nVs4CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs4CaloCorrRefEta", Vs4CaloCorrRefEta_, "Vs4CaloCorrRefEta[nVs4CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs4CaloCorrRefPart", Vs4CaloCorrRefPart_, "Vs4CaloCorrRefPart[nVs4CaloCorr]/I");
+    jetTreeIni_p->Branch("Vs4CaloFragRefPt", Vs4CaloFragRefPt_, "Vs4CaloFragRefPt[nVs4CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs4CaloFragRefPhi", Vs4CaloFragRefPhi_, "Vs4CaloFragRefPhi[nVs4CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs4CaloFragRefEta", Vs4CaloFragRefEta_, "Vs4CaloFragRefEta[nVs4CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs4CaloFragRefPart", Vs4CaloFragRefPart_, "Vs4CaloFragRefPart[nVs4CaloFrag]/I");
 
-    jetTreeIni_p->Branch("Vs5CaloCorrRefPt", Vs5CaloCorrRefPt_, "Vs5CaloCorrRefPt[nVs5CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs5CaloCorrRefPhi", Vs5CaloCorrRefPhi_, "Vs5CaloCorrRefPhi[nVs5CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs5CaloCorrRefEta", Vs5CaloCorrRefEta_, "Vs5CaloCorrRefEta[nVs5CaloCorr]/F");
-    jetTreeIni_p->Branch("Vs5CaloCorrRefPart", Vs5CaloCorrRefPart_, "Vs5CaloCorrRefPart[nVs5CaloCorr]/I");
+    jetTreeIni_p->Branch("Vs5CaloFragRefPt", Vs5CaloFragRefPt_, "Vs5CaloFragRefPt[nVs5CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs5CaloFragRefPhi", Vs5CaloFragRefPhi_, "Vs5CaloFragRefPhi[nVs5CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs5CaloFragRefEta", Vs5CaloFragRefEta_, "Vs5CaloFragRefEta[nVs5CaloFrag]/F");
+    jetTreeIni_p->Branch("Vs5CaloFragRefPart", Vs5CaloFragRefPart_, "Vs5CaloFragRefPart[nVs5CaloFrag]/I");
 
+    jetTreeIni_p->Branch("Vs3CaloResRefPt", Vs3CaloResRefPt_, "Vs3CaloResRefPt[nVs3CaloRes]/F");
+    jetTreeIni_p->Branch("Vs3CaloResRefPhi", Vs3CaloResRefPhi_, "Vs3CaloResRefPhi[nVs3CaloRes]/F");
+    jetTreeIni_p->Branch("Vs3CaloResRefEta", Vs3CaloResRefEta_, "Vs3CaloResRefEta[nVs3CaloRes]/F");
+    jetTreeIni_p->Branch("Vs3CaloResRefPart", Vs3CaloResRefPart_, "Vs3CaloResRefPart[nVs3CaloRes]/I");
 
 
     jetTreeIni_p->Branch("nT2", &nT2_, "nT2/I");
@@ -697,29 +722,35 @@ void GetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
   jetTreeIni_p->SetBranchAddress("Vs5CaloTrkMax", Vs5CaloTrkMax_);
 
 
-  jetTreeIni_p->SetBranchAddress("nVs2CaloCorr", &nVs2CaloCorr_);
-  jetTreeIni_p->SetBranchAddress("Vs2CaloCorrPt", Vs2CaloCorrPt_);
-  jetTreeIni_p->SetBranchAddress("Vs2CaloCorrPhi", Vs2CaloCorrPhi_);
-  jetTreeIni_p->SetBranchAddress("Vs2CaloCorrEta", Vs2CaloCorrEta_);
-  jetTreeIni_p->SetBranchAddress("Vs2CaloCorrTrkMax", Vs2CaloCorrTrkMax_);
+  jetTreeIni_p->SetBranchAddress("nVs2CaloFrag", &nVs2CaloFrag_);
+  jetTreeIni_p->SetBranchAddress("Vs2CaloFragPt", Vs2CaloFragPt_);
+  jetTreeIni_p->SetBranchAddress("Vs2CaloFragPhi", Vs2CaloFragPhi_);
+  jetTreeIni_p->SetBranchAddress("Vs2CaloFragEta", Vs2CaloFragEta_);
+  jetTreeIni_p->SetBranchAddress("Vs2CaloFragTrkMax", Vs2CaloFragTrkMax_);
 
-  jetTreeIni_p->SetBranchAddress("nVs3CaloCorr", &nVs3CaloCorr_);
-  jetTreeIni_p->SetBranchAddress("Vs3CaloCorrPt", Vs3CaloCorrPt_);
-  jetTreeIni_p->SetBranchAddress("Vs3CaloCorrPhi", Vs3CaloCorrPhi_);
-  jetTreeIni_p->SetBranchAddress("Vs3CaloCorrEta", Vs3CaloCorrEta_);
-  jetTreeIni_p->SetBranchAddress("Vs3CaloCorrTrkMax", Vs3CaloCorrTrkMax_);
+  jetTreeIni_p->SetBranchAddress("nVs3CaloFrag", &nVs3CaloFrag_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloFragPt", Vs3CaloFragPt_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloFragPhi", Vs3CaloFragPhi_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloFragEta", Vs3CaloFragEta_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloFragTrkMax", Vs3CaloFragTrkMax_);
 
-  jetTreeIni_p->SetBranchAddress("nVs4CaloCorr", &nVs4CaloCorr_);
-  jetTreeIni_p->SetBranchAddress("Vs4CaloCorrPt", Vs4CaloCorrPt_);
-  jetTreeIni_p->SetBranchAddress("Vs4CaloCorrPhi", Vs4CaloCorrPhi_);
-  jetTreeIni_p->SetBranchAddress("Vs4CaloCorrEta", Vs4CaloCorrEta_);
-  jetTreeIni_p->SetBranchAddress("Vs4CaloCorrTrkMax", Vs4CaloCorrTrkMax_);
+  jetTreeIni_p->SetBranchAddress("nVs4CaloFrag", &nVs4CaloFrag_);
+  jetTreeIni_p->SetBranchAddress("Vs4CaloFragPt", Vs4CaloFragPt_);
+  jetTreeIni_p->SetBranchAddress("Vs4CaloFragPhi", Vs4CaloFragPhi_);
+  jetTreeIni_p->SetBranchAddress("Vs4CaloFragEta", Vs4CaloFragEta_);
+  jetTreeIni_p->SetBranchAddress("Vs4CaloFragTrkMax", Vs4CaloFragTrkMax_);
 
-  jetTreeIni_p->SetBranchAddress("nVs5CaloCorr", &nVs5CaloCorr_);
-  jetTreeIni_p->SetBranchAddress("Vs5CaloCorrPt", Vs5CaloCorrPt_);
-  jetTreeIni_p->SetBranchAddress("Vs5CaloCorrPhi", Vs5CaloCorrPhi_);
-  jetTreeIni_p->SetBranchAddress("Vs5CaloCorrEta", Vs5CaloCorrEta_);
-  jetTreeIni_p->SetBranchAddress("Vs5CaloCorrTrkMax", Vs5CaloCorrTrkMax_);
+  jetTreeIni_p->SetBranchAddress("nVs5CaloFrag", &nVs5CaloFrag_);
+  jetTreeIni_p->SetBranchAddress("Vs5CaloFragPt", Vs5CaloFragPt_);
+  jetTreeIni_p->SetBranchAddress("Vs5CaloFragPhi", Vs5CaloFragPhi_);
+  jetTreeIni_p->SetBranchAddress("Vs5CaloFragEta", Vs5CaloFragEta_);
+  jetTreeIni_p->SetBranchAddress("Vs5CaloFragTrkMax", Vs5CaloFragTrkMax_);
+
+  jetTreeIni_p->SetBranchAddress("nVs3CaloRes", &nVs3CaloRes_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloResPt", Vs3CaloResPt_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloResPhi", Vs3CaloResPhi_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloResEta", Vs3CaloResEta_);
+  jetTreeIni_p->SetBranchAddress("Vs3CaloResTrkMax", Vs3CaloResTrkMax_);
 
   if(montecarlo){
     jetTreeIni_p->SetBranchAddress("Vs2CaloRefPt", Vs2CaloRefPt_);
@@ -742,26 +773,30 @@ void GetIniBranches(sampleType sType = kHIDATA, Bool_t justJt = false)
     jetTreeIni_p->SetBranchAddress("Vs5CaloRefEta", Vs5CaloRefEta_);
     jetTreeIni_p->SetBranchAddress("Vs5CaloRefPart", Vs5CaloRefPart_);
 
+    jetTreeIni_p->SetBranchAddress("Vs2CaloFragRefPt", Vs2CaloFragRefPt_);
+    jetTreeIni_p->SetBranchAddress("Vs2CaloFragRefPhi", Vs2CaloFragRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Vs2CaloFragRefEta", Vs2CaloFragRefEta_);
+    jetTreeIni_p->SetBranchAddress("Vs2CaloFragRefPart", Vs2CaloFragRefPart_);
 
-    jetTreeIni_p->SetBranchAddress("Vs2CaloCorrRefPt", Vs2CaloCorrRefPt_);
-    jetTreeIni_p->SetBranchAddress("Vs2CaloCorrRefPhi", Vs2CaloCorrRefPhi_);
-    jetTreeIni_p->SetBranchAddress("Vs2CaloCorrRefEta", Vs2CaloCorrRefEta_);
-    jetTreeIni_p->SetBranchAddress("Vs2CaloCorrRefPart", Vs2CaloCorrRefPart_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloFragRefPt", Vs3CaloFragRefPt_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloFragRefPhi", Vs3CaloFragRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloFragRefEta", Vs3CaloFragRefEta_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloFragRefPart", Vs3CaloFragRefPart_);
 
-    jetTreeIni_p->SetBranchAddress("Vs3CaloCorrRefPt", Vs3CaloCorrRefPt_);
-    jetTreeIni_p->SetBranchAddress("Vs3CaloCorrRefPhi", Vs3CaloCorrRefPhi_);
-    jetTreeIni_p->SetBranchAddress("Vs3CaloCorrRefEta", Vs3CaloCorrRefEta_);
-    jetTreeIni_p->SetBranchAddress("Vs3CaloCorrRefPart", Vs3CaloCorrRefPart_);
+    jetTreeIni_p->SetBranchAddress("Vs4CaloFragRefPt", Vs4CaloFragRefPt_);
+    jetTreeIni_p->SetBranchAddress("Vs4CaloFragRefPhi", Vs4CaloFragRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Vs4CaloFragRefEta", Vs4CaloFragRefEta_);
+    jetTreeIni_p->SetBranchAddress("Vs4CaloFragRefPart", Vs4CaloFragRefPart_);
 
-    jetTreeIni_p->SetBranchAddress("Vs4CaloCorrRefPt", Vs4CaloCorrRefPt_);
-    jetTreeIni_p->SetBranchAddress("Vs4CaloCorrRefPhi", Vs4CaloCorrRefPhi_);
-    jetTreeIni_p->SetBranchAddress("Vs4CaloCorrRefEta", Vs4CaloCorrRefEta_);
-    jetTreeIni_p->SetBranchAddress("Vs4CaloCorrRefPart", Vs4CaloCorrRefPart_);
+    jetTreeIni_p->SetBranchAddress("Vs5CaloFragRefPt", Vs5CaloFragRefPt_);
+    jetTreeIni_p->SetBranchAddress("Vs5CaloFragRefPhi", Vs5CaloFragRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Vs5CaloFragRefEta", Vs5CaloFragRefEta_);
+    jetTreeIni_p->SetBranchAddress("Vs5CaloFragRefPart", Vs5CaloFragRefPart_);
 
-    jetTreeIni_p->SetBranchAddress("Vs5CaloCorrRefPt", Vs5CaloCorrRefPt_);
-    jetTreeIni_p->SetBranchAddress("Vs5CaloCorrRefPhi", Vs5CaloCorrRefPhi_);
-    jetTreeIni_p->SetBranchAddress("Vs5CaloCorrRefEta", Vs5CaloCorrRefEta_);
-    jetTreeIni_p->SetBranchAddress("Vs5CaloCorrRefPart", Vs5CaloCorrRefPart_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloResRefPt", Vs3CaloResRefPt_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloResRefPhi", Vs3CaloResRefPhi_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloResRefEta", Vs3CaloResRefEta_);
+    jetTreeIni_p->SetBranchAddress("Vs3CaloResRefPart", Vs3CaloResRefPart_);
 
 
     jetTreeIni_p->SetBranchAddress("nT2", &nT2_);
