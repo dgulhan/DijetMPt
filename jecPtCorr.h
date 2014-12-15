@@ -83,7 +83,7 @@ Float_t GetJtFRAGCorrPt(sampleType sType, Int_t jtRBin, Int_t hiBin, Float_t jtP
   Float_t corrPt = 1.0;
   const Int_t hiBinCut[4] = {19, 59, 99, 199};
 
-  if(jtPt > 20){
+  if(jtPt > 20 && jtPt < 700){
     if(sType == kHIDATA || sType == kHIMC){
       if(hiBin <= hiBinCut[0]) corrPt = FRAG_VsCaloCorr_010_h[jtRBin]->GetBinContent(FRAG_VsCaloCorr_010_h[jtRBin]->GetXaxis()->FindBin(nPF), FRAG_VsCaloCorr_010_h[jtRBin]->GetYaxis()->FindBin(jtPt));
       else if(hiBin <= hiBinCut[1]) corrPt = FRAG_VsCaloCorr_1030_h[jtRBin]->GetBinContent(FRAG_VsCaloCorr_1030_h[jtRBin]->GetXaxis()->FindBin(nPF), FRAG_VsCaloCorr_1030_h[jtRBin]->GetYaxis()->FindBin(jtPt));

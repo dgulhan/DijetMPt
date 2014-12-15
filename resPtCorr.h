@@ -64,7 +64,7 @@ Float_t GetJtRESCorrPt(sampleType sType, Int_t jtRBin, Int_t hiBin, Float_t jtPt
   Float_t corrPt = 1.0;
   const Int_t hiBinCut[4] = {19, 59, 99, 199};
 
-  if(jtPt > 20){
+  if(jtPt > 20 && jtPt < 700){
     if(sType == kHIDATA || sType == kHIMC){
       if(hiBin <= hiBinCut[0]) corrPt = RES_VsCaloCorr_010_f[jtRBin]->Eval(jtPt);
       else if(hiBin <= hiBinCut[1]) corrPt = RES_VsCaloCorr_1030_f[jtRBin]->Eval(jtPt);
