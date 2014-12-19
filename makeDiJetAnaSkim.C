@@ -54,10 +54,6 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 
   std::cout << "FileList Loaded" << std::endl;
 
-  for(Int_t iter = 0; iter < (Int_t)(listOfFiles.size()); iter++){
-    std::cout << listOfFiles[iter] << std::endl;
-  }
-
   std::cout << "FileJob: " << listOfFiles[num] << std::endl;
 
   TFile* iniSkim_p = new TFile(listOfFiles[num].data(), "READ");
@@ -133,30 +129,30 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 
     InitJetVar(sType);
 
-    getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, Pu3CaloTrkMax_, Pu3CaloRawPt_, Pu3CaloRefPt_, Pu3CaloRefPhi_, Pu3CaloRefEta_, 0, montecarlo);
-    getJtVar(nPu4Calo_, Pu4CaloPt_, Pu4CaloPhi_, Pu4CaloEta_, Pu4CaloTrkMax_, Pu4CaloRawPt_, Pu4CaloRefPt_, Pu4CaloRefPhi_, Pu4CaloRefEta_, 1, montecarlo);
-    getJtVar(nPu5Calo_, Pu5CaloPt_, Pu5CaloPhi_, Pu5CaloEta_, Pu5CaloTrkMax_, Pu5CaloRawPt_, Pu5CaloRefPt_, Pu5CaloRefPhi_, Pu5CaloRefEta_, 2, montecarlo);
-    getJtVar(nVs2Calo_, Vs2CaloPt_, Vs2CaloPhi_, Vs2CaloEta_, Vs2CaloTrkMax_, Vs2CaloRawPt_, Vs2CaloRefPt_, Vs2CaloRefPhi_, Vs2CaloRefEta_, 3, montecarlo);
-    getJtVar(nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_, Vs3CaloTrkMax_, Vs3CaloRawPt_, Vs3CaloRefPt_, Vs3CaloRefPhi_, Vs3CaloRefEta_, 4, montecarlo);
-    getJtVar(nVs4Calo_, Vs4CaloPt_, Vs4CaloPhi_, Vs4CaloEta_, Vs4CaloTrkMax_, Vs4CaloRawPt_, Vs4CaloRefPt_, Vs4CaloRefPhi_, Vs4CaloRefEta_, 5, montecarlo);
-    getJtVar(nVs5Calo_, Vs5CaloPt_, Vs5CaloPhi_, Vs5CaloEta_, Vs5CaloTrkMax_, Vs5CaloRawPt_, Vs5CaloRefPt_, Vs5CaloRefPhi_, Vs5CaloRefEta_, 6, montecarlo);
+    getJtVar(nPu3Calo_, Pu3CaloPt_, Pu3CaloPhi_, Pu3CaloEta_, Pu3CaloTrkMax_, Pu3CaloRawPt_, Pu3CaloRefPt_, Pu3CaloRefPhi_, Pu3CaloRefEta_, 0, montecarlo, false);
+    getJtVar(nPu4Calo_, Pu4CaloPt_, Pu4CaloPhi_, Pu4CaloEta_, Pu4CaloTrkMax_, Pu4CaloRawPt_, Pu4CaloRefPt_, Pu4CaloRefPhi_, Pu4CaloRefEta_, 1, montecarlo, false);
+    getJtVar(nPu5Calo_, Pu5CaloPt_, Pu5CaloPhi_, Pu5CaloEta_, Pu5CaloTrkMax_, Pu5CaloRawPt_, Pu5CaloRefPt_, Pu5CaloRefPhi_, Pu5CaloRefEta_, 2, montecarlo, false);
+    getJtVar(nVs2Calo_, Vs2CaloPt_, Vs2CaloPhi_, Vs2CaloEta_, Vs2CaloTrkMax_, Vs2CaloRawPt_, Vs2CaloRefPt_, Vs2CaloRefPhi_, Vs2CaloRefEta_, 3, montecarlo, false);
+    getJtVar(nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_, Vs3CaloTrkMax_, Vs3CaloRawPt_, Vs3CaloRefPt_, Vs3CaloRefPhi_, Vs3CaloRefEta_, 4, montecarlo, false);
+    getJtVar(nVs4Calo_, Vs4CaloPt_, Vs4CaloPhi_, Vs4CaloEta_, Vs4CaloTrkMax_, Vs4CaloRawPt_, Vs4CaloRefPt_, Vs4CaloRefPhi_, Vs4CaloRefEta_, 5, montecarlo, false);
+    getJtVar(nVs5Calo_, Vs5CaloPt_, Vs5CaloPhi_, Vs5CaloEta_, Vs5CaloTrkMax_, Vs5CaloRawPt_, Vs5CaloRefPt_, Vs5CaloRefPhi_, Vs5CaloRefEta_, 6, montecarlo, false);
 
-    getJtVar(nVs2CaloFrag_, Vs2CaloFragPt_, Vs2CaloFragPhi_, Vs2CaloFragEta_, Vs2CaloFragTrkMax_, Vs2CaloFragRawPt_, Vs2CaloFragRefPt_, Vs2CaloFragRefPhi_, Vs2CaloFragRefEta_, 7, montecarlo);
-    getJtVar(nVs3CaloFrag_, Vs3CaloFragPt_, Vs3CaloFragPhi_, Vs3CaloFragEta_, Vs3CaloFragTrkMax_, Vs3CaloFragRawPt_, Vs3CaloFragRefPt_, Vs3CaloFragRefPhi_, Vs3CaloFragRefEta_, 8, montecarlo);
-    getJtVar(nVs4CaloFrag_, Vs4CaloFragPt_, Vs4CaloFragPhi_, Vs4CaloFragEta_, Vs4CaloFragTrkMax_, Vs4CaloFragRawPt_, Vs4CaloFragRefPt_, Vs4CaloFragRefPhi_, Vs4CaloFragRefEta_, 9, montecarlo);
-    getJtVar(nVs5CaloFrag_, Vs5CaloFragPt_, Vs5CaloFragPhi_, Vs5CaloFragEta_, Vs5CaloFragTrkMax_, Vs5CaloFragRawPt_, Vs5CaloFragRefPt_, Vs5CaloFragRefPhi_, Vs5CaloFragRefEta_, 10, montecarlo);
-    getJtVar(nVs3CaloRes_, Vs3CaloResPt_, Vs3CaloResPhi_, Vs3CaloResEta_, Vs3CaloResTrkMax_, Vs3CaloResRawPt_, Vs3CaloResRefPt_, Vs3CaloResRefPhi_, Vs3CaloResRefEta_, 11, montecarlo);
+    getJtVar(nVs2CaloFrag_, Vs2CaloFragPt_, Vs2CaloFragPhi_, Vs2CaloFragEta_, Vs2CaloFragTrkMax_, Vs2CaloFragRawPt_, Vs2CaloFragRefPt_, Vs2CaloFragRefPhi_, Vs2CaloFragRefEta_, 7, montecarlo, false);
+    getJtVar(nVs3CaloFrag_, Vs3CaloFragPt_, Vs3CaloFragPhi_, Vs3CaloFragEta_, Vs3CaloFragTrkMax_, Vs3CaloFragRawPt_, Vs3CaloFragRefPt_, Vs3CaloFragRefPhi_, Vs3CaloFragRefEta_, 8, montecarlo, false);
+    getJtVar(nVs4CaloFrag_, Vs4CaloFragPt_, Vs4CaloFragPhi_, Vs4CaloFragEta_, Vs4CaloFragTrkMax_, Vs4CaloFragRawPt_, Vs4CaloFragRefPt_, Vs4CaloFragRefPhi_, Vs4CaloFragRefEta_, 9, montecarlo, false);
+    getJtVar(nVs5CaloFrag_, Vs5CaloFragPt_, Vs5CaloFragPhi_, Vs5CaloFragEta_, Vs5CaloFragTrkMax_, Vs5CaloFragRawPt_, Vs5CaloFragRefPt_, Vs5CaloFragRefPhi_, Vs5CaloFragRefEta_, 10, montecarlo, false);
+    getJtVar(nVs3CaloRes_, Vs3CaloResPt_, Vs3CaloResPhi_, Vs3CaloResEta_, Vs3CaloResTrkMax_, Vs3CaloResRawPt_, Vs3CaloResRefPt_, Vs3CaloResRefPhi_, Vs3CaloResRefEta_, 11, montecarlo, false);
 
     Float_t dummyArray2[nT2_];
     Float_t dummyArray3[nT3_];
     Float_t dummyArray4[nT4_];
     Float_t dummyArray5[nT5_];
-    getJtVar(nT2_, T2Pt_, T2Phi_, T2Eta_, dummyArray2, dummyArray2, dummyArray2, dummyArray2, dummyArray2, 12, montecarlo);
-    getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray3, dummyArray3, dummyArray3, dummyArray3, dummyArray3, 13, montecarlo);
-    getJtVar(nT4_, T4Pt_, T4Phi_, T4Eta_, dummyArray4, dummyArray4, dummyArray4, dummyArray4, dummyArray4, 14, montecarlo);
-    getJtVar(nT5_, T5Pt_, T5Phi_, T5Eta_, dummyArray5, dummyArray5, dummyArray5, dummyArray5, dummyArray5, 15, montecarlo);
-    getJtVar(nPu3PF_, Pu3PFPt_, Pu3PFPhi_, Pu3PFEta_, Pu3PFTrkMax_, Pu3PFRawPt_, Pu3PFRefPt_, Pu3PFRefPhi_, Pu3PFRefEta_, 16, montecarlo);
-    getJtVar(nVs3PF_, Vs3PFPt_, Vs3PFPhi_, Vs3PFEta_, Vs3PFTrkMax_, Vs3PFRawPt_, Vs3PFRefPt_, Vs3PFRefPhi_, Vs3PFRefEta_, 17, montecarlo);
+    getJtVar(nT2_, T2Pt_, T2Phi_, T2Eta_, dummyArray2, dummyArray2, dummyArray2, dummyArray2, dummyArray2, 12, montecarlo, true);
+    getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray3, dummyArray3, dummyArray3, dummyArray3, dummyArray3, 13, montecarlo, true);
+    getJtVar(nT4_, T4Pt_, T4Phi_, T4Eta_, dummyArray4, dummyArray4, dummyArray4, dummyArray4, dummyArray4, 14, montecarlo, true);
+    getJtVar(nT5_, T5Pt_, T5Phi_, T5Eta_, dummyArray5, dummyArray5, dummyArray5, dummyArray5, dummyArray5, 15, montecarlo, true);
+    getJtVar(nPu3PF_, Pu3PFPt_, Pu3PFPhi_, Pu3PFEta_, Pu3PFTrkMax_, Pu3PFRawPt_, Pu3PFRefPt_, Pu3PFRefPhi_, Pu3PFRefEta_, 16, montecarlo, false);
+    getJtVar(nVs3PF_, Vs3PFPt_, Vs3PFPhi_, Vs3PFEta_, Vs3PFTrkMax_, Vs3PFRawPt_, Vs3PFRefPt_, Vs3PFRefPhi_, Vs3PFRefEta_, 17, montecarlo, false);
 
     if(eventSet_[Pu3Calo] == false && eventSet_[Pu4Calo] == false && eventSet_[Pu5Calo] == false && eventSet_[Vs2Calo] == false && eventSet_[Vs3Calo] == false && eventSet_[Vs4Calo] == false && eventSet_[Vs5Calo] == false && eventSet_[Vs2CaloFrag] == false && eventSet_[Vs3CaloFrag] == false && eventSet_[Vs4CaloFrag] == false && eventSet_[Vs5CaloFrag] == false && eventSet_[Vs3CaloRes] == false && eventSet_[T2] == false && eventSet_[T3] == false && eventSet_[T4] == false && eventSet_[T5] == false && eventSet_[PuPF] == false && eventSet_[VsPF] == false){
       std::cout << "No event pass after IniSkim; Potential bug" << std::endl;
@@ -301,7 +297,6 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 	if(eventSet_[T4]) tempRMin[T4] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
 	if(eventSet_[T5]) tempRMin[T5] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
 
-
 	if(eventSet_[Pu3Calo]){
 	  tempFact[Pu3Calo] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[Pu3Calo], sType);
 	  tempCorr[Pu3Calo] = trkPt_[trkEntry]*tempFact[Pu3Calo];
@@ -350,7 +345,6 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 	  tempFact[Vs3CaloRes] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[Vs3CaloRes], sType);
 	  tempCorr[Vs3CaloRes] = trkPt_[trkEntry]*tempFact[Vs3CaloRes];
 	}
-
 	if(montecarlo){
 	  if(eventSet_[T2]){
 	    tempFact[T2] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T2], sType);
@@ -375,6 +369,7 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 	
 	for(Int_t jtIter = 0; jtIter < nSumAlg; jtIter++){
 	  if(eventSet_[jtIter]) GetTrkProjPerp(jtIter, jtIter+nSumAlg, trkPt_[trkEntry], tempCorr[jtIter], trkPhi_[trkEntry], trkEta_[trkEntry]);
+
 	}	
       }
 

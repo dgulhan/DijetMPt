@@ -493,9 +493,9 @@ void GetDiJetAnaSkim(TFile* anaFile_p, sampleType sType = kHIDATA, Bool_t justJt
 }
 
 
-Float_t getAbsDphi(Float_t phi1, Float_t phi2)
+Float_t getAbsDphi(Float_t phi1, Float_t phi2, Int_t tag, Int_t tag2 = -1, Int_t tag3 = -1)
 {
-  return TMath::Abs(getDPHI(phi1, phi2));
+  return TMath::Abs(getDPHI(phi1, phi2, tag, tag2, tag3));
 }
 
 
@@ -700,10 +700,9 @@ void InitProjPerp(sampleType sType = kHIDATA)
 }
 
 
-void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float_t trkMax[], Float_t rawPt[], Float_t refPt[], Float_t refPhi[], Float_t refEta[], Int_t algNum, Bool_t montecarlo = false)
+void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float_t trkMax[], Float_t rawPt[], Float_t refPt[], Float_t refPhi[], Float_t refEta[], Int_t algNum, Bool_t montecarlo = false, Bool_t truth = false)
 {
-  if(nJt == 0 || nJt == 1 || jtPt[0] < leadJtPtCut[algNum] || jtPt[1] < subLeadJtPtCut[algNum])
-    return;
+  if(nJt == 0 || nJt == 1 || jtPt[0] < leadJtPtCut[algNum] || jtPt[1] < subLeadJtPtCut[algNum]) return;
 
   eventSet_[algNum] = true;
 
@@ -715,7 +714,7 @@ void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float
     AlgJtPhi_[algNum][leadIter] = jtPhi[leadIter];
     AlgJtEta_[algNum][leadIter] = jtEta[leadIter];
 
-    if(algNum!=2){
+    if(!truth){
       AlgJtTrkMax_[algNum][leadIter] = trkMax[leadIter];
       AlgJtRawPt_[algNum][leadIter] = rawPt[leadIter];
 
@@ -728,24 +727,24 @@ void getJtVar(Int_t nJt, Float_t jtPt[], Float_t jtPhi[], Float_t jtEta[], Float
   }
 
   AlgJtAvePhi_[algNum] = getAvePhi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][1]);
-  AlgJtDelPhi12_[algNum] = getAbsDphi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][1]);
+  AlgJtDelPhi12_[algNum] = getAbsDphi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][1], 5);
   
   if(AlgJtPt_[algNum][2] > 30 && TMath::Abs(AlgJtEta_[algNum][2]) < 2.0){
-    AlgJtDelPhi13_[algNum] = getAbsDphi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][2]);
-    AlgJtDelPhi23_[algNum] = getAbsDphi(AlgJtPhi_[algNum][1], AlgJtPhi_[algNum][2]);
+    AlgJtDelPhi13_[algNum] = getAbsDphi(AlgJtPhi_[algNum][0], AlgJtPhi_[algNum][2], 6);
+    AlgJtDelPhi23_[algNum] = getAbsDphi(AlgJtPhi_[algNum][1], AlgJtPhi_[algNum][2], 7);
   }
   
   AlgJtAsymm_[algNum] = (AlgJtPt_[algNum][0] - AlgJtPt_[algNum][1])/(AlgJtPt_[algNum][0] + AlgJtPt_[algNum][1]);
     
-  if(montecarlo && algNum != 2){
+  if(montecarlo && !truth){
     if(AlgRefPhi_[algNum][0] > -9 && AlgRefPhi_[algNum][1] > -9){
       AlgRefAvePhi_[algNum] = getAvePhi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][1]);
 
-      AlgRefDelPhi12_[algNum] = getAbsDphi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][1]);
+      AlgRefDelPhi12_[algNum] = getAbsDphi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][1], 8);
 
-      if(AlgRefPhi_[algNum][2] > -9){
-	AlgRefDelPhi13_[algNum] = getAbsDphi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][2]);
-	AlgRefDelPhi23_[algNum] = getAbsDphi(AlgRefPhi_[algNum][1], AlgRefPhi_[algNum][2]);
+      if(AlgRefPhi_[algNum][2] > -9 && nJt > 2){
+	AlgRefDelPhi13_[algNum] = getAbsDphi(AlgRefPhi_[algNum][0], AlgRefPhi_[algNum][2], 9);
+	AlgRefDelPhi23_[algNum] = getAbsDphi(AlgRefPhi_[algNum][1], AlgRefPhi_[algNum][2], 10);
       }
 
       AlgRefAsymm_[algNum] = (AlgRefPt_[algNum][0] - AlgRefPt_[algNum][1])/(AlgRefPt_[algNum][0] + AlgRefPt_[algNum][1]);
@@ -771,59 +770,59 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
   else multVal = corrPt/rawPt;
 
   Int_t signVal = 1;
-  if(cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])) < 0) signVal = -1;
+  if(cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2)) < 0) signVal = -1;
 
-  if(getAbsDphi(AlgJtAvePhi_[jtAlg], phi) < TMath::Pi()/2) rAlgJtMult_[jtAlgCorr][0] += multVal;
+  if(getAbsDphi(AlgJtAvePhi_[jtAlg], phi, 2) < TMath::Pi()/2) rAlgJtMult_[jtAlgCorr][0] += multVal;
   else rAlgJtMult_[jtAlgCorr][1] += multVal;
 
   Int_t ptIter = getPtRange(rawPt);
-  Float_t tempLeadDelR = getDR(eta, phi, AlgJtEta_[jtAlg][0], AlgJtPhi_[jtAlg][0]);
-  Float_t tempSubLeadDelR = getDR(eta, phi, AlgJtEta_[jtAlg][1], AlgJtPhi_[jtAlg][1]);
+  Float_t tempLeadDelR = getDR(eta, phi, AlgJtEta_[jtAlg][0], AlgJtPhi_[jtAlg][0], 2);
+  Float_t tempSubLeadDelR = getDR(eta, phi, AlgJtEta_[jtAlg][1], AlgJtPhi_[jtAlg][1], 2);
   Float_t tempLeadDelEta = TMath::Abs(eta - AlgJtEta_[jtAlg][0]);
   Float_t tempSubLeadDelEta = TMath::Abs(eta - AlgJtEta_[jtAlg][1]);
-  Float_t tempLeadDelPhi = TMath::Abs(getDPHI(phi, AlgJtPhi_[jtAlg][0]));
-  Float_t tempSubLeadDelPhi = TMath::Abs(getDPHI(phi, AlgJtPhi_[jtAlg][1]));
+  Float_t tempLeadDelPhi = TMath::Abs(getDPHI(phi, AlgJtPhi_[jtAlg][0], 2));
+  Float_t tempSubLeadDelPhi = TMath::Abs(getDPHI(phi, AlgJtPhi_[jtAlg][1], 2));
 
-  rAlgImbProjA_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-  rAlgImbProjA_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+  rAlgImbProjA_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+  rAlgImbProjA_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
   if(tempLeadDelR > 0 && tempSubLeadDelR > 0){
     if(tempLeadDelR < 0.8 || tempSubLeadDelR < 0.8){
-      rAlgImbProjAC_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-      rAlgImbProjAC_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+      rAlgImbProjAC_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
     }
     else{
-      rAlgImbProjANC_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-      rAlgImbProjANC_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjANC_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+      rAlgImbProjANC_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
     }
 
     if(tempLeadDelR < 0.5 || tempSubLeadDelR < 0.5){
-      rAlgImbProjAC0_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-      rAlgImbProjAC0_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC0_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+      rAlgImbProjAC0_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
     }
     else if(tempLeadDelR < 1.0 || tempSubLeadDelR < 1.0){
-      rAlgImbProjAC1_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-      rAlgImbProjAC1_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC1_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+      rAlgImbProjAC1_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
     }
     else if(tempLeadDelR < 1.5 || tempSubLeadDelR < 1.5){
-      rAlgImbProjAC2_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-      rAlgImbProjAC2_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC2_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+      rAlgImbProjAC2_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
     }
     else{
-      rAlgImbProjAC3_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-      rAlgImbProjAC3_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      rAlgImbProjAC3_[jtAlgCorr][5] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+      rAlgImbProjAC3_[jtAlgCorr][ptIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
     }
 
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	rAlgImbProjAR_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
-	rAlgImbProjAR_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAR_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));	
+	rAlgImbProjAR_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
 	rAlgMultAR_[jtAlgCorr][5][rIter] -= signVal*multVal;	
 	rAlgMultAR_[jtAlgCorr][ptIter][rIter] -= signVal*multVal;
 
-	rAlgImbRawAR_[jtAlgCorr][5][rIter] += TMath::Abs(corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])));	
-	rAlgImbRawAR_[jtAlgCorr][ptIter][rIter] += TMath::Abs(corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])));
+	rAlgImbRawAR_[jtAlgCorr][5][rIter] += TMath::Abs(corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2)));	
+	rAlgImbRawAR_[jtAlgCorr][ptIter][rIter] += TMath::Abs(corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2)));
 	break;
       }
     }
@@ -833,8 +832,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
       if(tempLeadDelPhi > 1.0 && tempSubLeadDelPhi > 1.0) break;
 
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	rAlgImbProjAR_Cut_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
-	rAlgImbProjAR_Cut_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAR_Cut_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));	
+	rAlgImbProjAR_Cut_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
 	rAlgMultAR_Cut_[jtAlgCorr][5][rIter] -= signVal*multVal;	
 	rAlgMultAR_Cut_[jtAlgCorr][ptIter][rIter] -= signVal*multVal;
@@ -847,8 +846,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
       if(tempLeadDelEta > 1.0 && tempSubLeadDelEta > 1.0) break;
 
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	rAlgImbProjAR_CutEta_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
-	rAlgImbProjAR_CutEta_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAR_CutEta_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));	
+	rAlgImbProjAR_CutEta_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
 	rAlgMultAR_CutEta_[jtAlgCorr][5][rIter] -= signVal*multVal;	
 	rAlgMultAR_CutEta_[jtAlgCorr][ptIter][rIter] -= signVal*multVal;
@@ -861,8 +860,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
       if(tempLeadDelPhi > 1.0 && tempSubLeadDelPhi > 1.0) break;
 
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	rAlgImbProjAR_CutPhi_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
-	rAlgImbProjAR_CutPhi_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAR_CutPhi_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));	
+	rAlgImbProjAR_CutPhi_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
 	rAlgMultAR_CutPhi_[jtAlgCorr][5][rIter] -= signVal*multVal;	
 	rAlgMultAR_CutPhi_[jtAlgCorr][ptIter][rIter] -= signVal*multVal;
@@ -873,8 +872,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
 
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelPhi < rBounds[rIter] || tempSubLeadDelPhi < rBounds[rIter]){
-	rAlgImbProjAPhi_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
-	rAlgImbProjAPhi_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAPhi_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));	
+	rAlgImbProjAPhi_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
 	rAlgMultAPhi_[jtAlgCorr][5][rIter] -= signVal*multVal;
 	rAlgMultAPhi_[jtAlgCorr][ptIter][rIter] -= signVal*multVal;
@@ -886,8 +885,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelEta > 1.0 && tempSubLeadDelEta > 1.0) break;
       if(tempLeadDelPhi < rBounds[rIter] || tempSubLeadDelPhi < rBounds[rIter]){
-	rAlgImbProjAPhi_Cut_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
-	rAlgImbProjAPhi_Cut_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAPhi_Cut_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));	
+	rAlgImbProjAPhi_Cut_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
 	rAlgMultAPhi_Cut_[jtAlgCorr][5][rIter] -= signVal*multVal;	
 	rAlgMultAPhi_Cut_[jtAlgCorr][ptIter][rIter] -= signVal*multVal;
@@ -898,8 +897,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
 
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelEta < rBounds[rIter] || tempSubLeadDelEta < rBounds[rIter]){
-	rAlgImbProjAEta_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
-	rAlgImbProjAEta_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAEta_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));	
+	rAlgImbProjAEta_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
 	rAlgMultAEta_[jtAlgCorr][5][rIter] -= signVal*multVal;	
 	rAlgMultAEta_[jtAlgCorr][ptIter][rIter] -= signVal*multVal;
@@ -911,8 +910,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelPhi > 1.0 && tempSubLeadDelPhi > 1.0) break;
       if(tempLeadDelEta < rBounds[rIter] || tempSubLeadDelEta < rBounds[rIter]){
-	rAlgImbProjAEta_Cut_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));	
-	rAlgImbProjAEta_Cut_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	rAlgImbProjAEta_Cut_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));	
+	rAlgImbProjAEta_Cut_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 
 	rAlgMultAEta_Cut_[jtAlgCorr][5][rIter] -= signVal*multVal;	
 	rAlgMultAEta_Cut_[jtAlgCorr][ptIter][rIter] -= signVal*multVal;
@@ -925,8 +924,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
       if(eta > TMath::Min(AlgJtEta_[jtAlg][0], AlgJtEta_[jtAlg][1]) - 0.3){
 	for(Int_t rIter = 0; rIter < 10; rIter++){
 	  if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	    rAlgImbProjAR_FOR_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	    rAlgImbProjAR_FOR_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	    rAlgImbProjAR_FOR_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+	    rAlgImbProjAR_FOR_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 	    break;
 	  }
 	}
@@ -936,8 +935,8 @@ void GetTrkProjPerp(Int_t jtAlg, Int_t jtAlgCorr, Float_t rawPt, Float_t corrPt,
       if(eta < TMath::Max(AlgJtEta_[jtAlg][0], AlgJtEta_[jtAlg][1]) + 0.3){
 	for(Int_t rIter = 0; rIter < 10; rIter++){
 	  if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	    rAlgImbProjAR_FOR_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	    rAlgImbProjAR_FOR_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	    rAlgImbProjAR_FOR_[jtAlgCorr][5][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
+	    rAlgImbProjAR_FOR_[jtAlgCorr][ptIter][rIter] -= corrPt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 2));
 	    break;
 	  }
 	}
@@ -970,42 +969,42 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
   if(TMath::IsNaN(pt)) return;
 
   Int_t signVal = 1;
-  if(cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])) < 0) signVal = -1;
+  if(cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3)) < 0) signVal = -1;
 
-  if(getAbsDphi(AlgJtAvePhi_[jtAlg], phi) < TMath::Pi()/2) gAlgJtMult_[jtAlg][0] += 1;
+  if(getAbsDphi(AlgJtAvePhi_[jtAlg], phi, 3) < TMath::Pi()/2) gAlgJtMult_[jtAlg][0] += 1;
   else gAlgJtMult_[jtAlg][1] += 1;
 
   Int_t ptIter = getPtRange(pt);
-  Float_t tempLeadDelR = getDR(eta, phi, AlgJtEta_[jtAlg][0], AlgJtPhi_[jtAlg][0]);
-  Float_t tempSubLeadDelR = getDR(eta, phi, AlgJtEta_[jtAlg][1], AlgJtPhi_[jtAlg][1]);
+  Float_t tempLeadDelR = getDR(eta, phi, AlgJtEta_[jtAlg][0], AlgJtPhi_[jtAlg][0], 3);
+  Float_t tempSubLeadDelR = getDR(eta, phi, AlgJtEta_[jtAlg][1], AlgJtPhi_[jtAlg][1], 3);
   Float_t tempLeadDelEta = TMath::Abs(eta - AlgJtEta_[jtAlg][0]);
   Float_t tempSubLeadDelEta = TMath::Abs(eta - AlgJtEta_[jtAlg][1]);
-  Float_t tempLeadDelPhi = TMath::Abs(getDPHI(phi, AlgJtPhi_[jtAlg][0]));
-  Float_t tempSubLeadDelPhi = TMath::Abs(getDPHI(phi, AlgJtPhi_[jtAlg][1]));
+  Float_t tempLeadDelPhi = TMath::Abs(getDPHI(phi, AlgJtPhi_[jtAlg][0], 3));
+  Float_t tempSubLeadDelPhi = TMath::Abs(getDPHI(phi, AlgJtPhi_[jtAlg][1], 3));
 
-  gAlgImbProjA_[jtAlg][5] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-  gAlgImbProjA_[jtAlg][ptIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+  gAlgImbProjA_[jtAlg][5] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+  gAlgImbProjA_[jtAlg][ptIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
   if(tempLeadDelR > 0 && tempSubLeadDelR > 0){
     if(tempLeadDelR < 0.8 || tempSubLeadDelR < 0.8){
-      gAlgImbProjAC_[jtAlg][5] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-      gAlgImbProjAC_[jtAlg][ptIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      gAlgImbProjAC_[jtAlg][5] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+      gAlgImbProjAC_[jtAlg][ptIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
     }
     else{
-      gAlgImbProjANC_[jtAlg][5] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-      gAlgImbProjANC_[jtAlg][ptIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+      gAlgImbProjANC_[jtAlg][5] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+      gAlgImbProjANC_[jtAlg][ptIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
     }
 
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	gAlgImbProjAR_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	gAlgImbProjAR_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	gAlgImbProjAR_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	gAlgImbProjAR_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
 	gAlgMultAR_[jtAlg][5][rIter] -= signVal;
 	gAlgMultAR_[jtAlg][ptIter][rIter] -= signVal;
 
-	gAlgImbRawAR_[jtAlg][5][rIter] += TMath::Abs(pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])));
-	gAlgImbRawAR_[jtAlg][ptIter][rIter] += TMath::Abs(pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg])));
+	gAlgImbRawAR_[jtAlg][5][rIter] += TMath::Abs(pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3)));
+	gAlgImbRawAR_[jtAlg][ptIter][rIter] += TMath::Abs(pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3)));
 	break;
       }
     }
@@ -1015,8 +1014,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
       if(tempLeadDelPhi > 1.0 && tempSubLeadDelPhi > 1.0) break;
 
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	gAlgImbProjAR_Cut_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	gAlgImbProjAR_Cut_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	gAlgImbProjAR_Cut_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	gAlgImbProjAR_Cut_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
 	gAlgMultAR_Cut_[jtAlg][5][rIter] -= signVal;
 	gAlgMultAR_Cut_[jtAlg][ptIter][rIter] -= signVal;
@@ -1029,8 +1028,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
       if(tempLeadDelEta > 1.0 && tempSubLeadDelEta > 1.0) break;
 
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	gAlgImbProjAR_CutEta_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	gAlgImbProjAR_CutEta_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	gAlgImbProjAR_CutEta_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	gAlgImbProjAR_CutEta_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
 	gAlgMultAR_CutEta_[jtAlg][5][rIter] -= signVal;
 	gAlgMultAR_CutEta_[jtAlg][ptIter][rIter] -= signVal;
@@ -1043,8 +1042,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
       if(tempLeadDelPhi > 1.0 && tempSubLeadDelPhi > 1.0) break;
 
       if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	gAlgImbProjAR_CutPhi_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	gAlgImbProjAR_CutPhi_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	gAlgImbProjAR_CutPhi_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	gAlgImbProjAR_CutPhi_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
 	gAlgMultAR_CutPhi_[jtAlg][5][rIter] -= signVal;
 	gAlgMultAR_CutPhi_[jtAlg][ptIter][rIter] -= signVal;
@@ -1056,8 +1055,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
 
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelEta < rBounds[rIter] || tempSubLeadDelEta < rBounds[rIter]){
-	gAlgImbProjAEta_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	gAlgImbProjAEta_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	gAlgImbProjAEta_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	gAlgImbProjAEta_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
 	gAlgMultAEta_[jtAlg][5][rIter] -= signVal;
 	gAlgMultAEta_[jtAlg][ptIter][rIter] -= signVal;
@@ -1071,8 +1070,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
       if(tempLeadDelPhi > 1.0 && tempSubLeadDelPhi > 1.0) break;
 
       if(tempLeadDelEta < rBounds[rIter] || tempSubLeadDelEta < rBounds[rIter]){
-	gAlgImbProjAEta_Cut_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	gAlgImbProjAEta_Cut_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	gAlgImbProjAEta_Cut_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	gAlgImbProjAEta_Cut_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
 	gAlgMultAEta_Cut_[jtAlg][5][rIter] -= signVal;
 	gAlgMultAEta_Cut_[jtAlg][ptIter][rIter] -= signVal;
@@ -1083,8 +1082,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
 
     for(Int_t rIter = 0; rIter < 10; rIter++){
       if(tempLeadDelPhi < rBounds[rIter] || tempSubLeadDelPhi < rBounds[rIter]){
-	gAlgImbProjAPhi_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	gAlgImbProjAPhi_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	gAlgImbProjAPhi_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	gAlgImbProjAPhi_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
 	gAlgMultAPhi_[jtAlg][5][rIter] -= signVal;
 	gAlgMultAPhi_[jtAlg][ptIter][rIter] -= signVal;
@@ -1098,8 +1097,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
       if(tempLeadDelEta > 1.0 && tempSubLeadDelEta > 1.0) break;
 
       if(tempLeadDelPhi < rBounds[rIter] || tempSubLeadDelPhi < rBounds[rIter]){
-	gAlgImbProjAPhi_Cut_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	gAlgImbProjAPhi_Cut_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	gAlgImbProjAPhi_Cut_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	gAlgImbProjAPhi_Cut_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 
 	gAlgMultAPhi_Cut_[jtAlg][5][rIter] -= signVal;
 	gAlgMultAPhi_Cut_[jtAlg][ptIter][rIter] -= signVal;
@@ -1113,8 +1112,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
       if(eta > TMath::Min(AlgJtEta_[jtAlg][0], AlgJtEta_[jtAlg][1]) - 0.3){
 	for(Int_t rIter = 0; rIter < 10; rIter++){
 	  if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	    gAlgImbProjAR_FOR_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	    gAlgImbProjAR_FOR_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	    gAlgImbProjAR_FOR_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	    gAlgImbProjAR_FOR_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 	    break;
 	  }
 	}
@@ -1124,8 +1123,8 @@ void GetGenProjPerp(Int_t jtAlg, Float_t pt, Float_t phi, Float_t eta)
       if(eta < TMath::Max(AlgJtEta_[jtAlg][0], AlgJtEta_[jtAlg][1]) + 0.3){
 	for(Int_t rIter = 0; rIter < 10; rIter++){
 	  if(tempLeadDelR < rBounds[rIter] || tempSubLeadDelR < rBounds[rIter]){
-	    gAlgImbProjAR_FOR_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
-	    gAlgImbProjAR_FOR_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg]));
+	    gAlgImbProjAR_FOR_[jtAlg][5][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
+	    gAlgImbProjAR_FOR_[jtAlg][ptIter][rIter] -= pt*cos(getDPHI(phi, AlgJtAvePhi_[jtAlg], 3));
 	    break;
 	  }
 	}
