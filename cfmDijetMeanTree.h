@@ -7,7 +7,7 @@
 #ifndef cfmDiJetMeanTree_h
 #define cfmDiJetMeanTree_h
 
-#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_20/src/DijetAnalysisSkim/cfmDiJetAnaSkim.h"
+#include "/net/hidsk0001/d00/scratch/dgulhan/missingPt_chris/copy/DijetAnalysisSkim/cfmDiJetAnaSkim_Beta.h"
 #include <string>
 
 TTree* trackTreeMean_p = 0;
@@ -22,6 +22,8 @@ const Int_t nRCentBins = 2;
 const Float_t rCentBins[nRCentBins] = {60, 200};
 
 //Track Tree Variables
+
+std::string fileName_;
 
 Int_t rProjA_MULT_[2*nSumAlg][nPtBins][nAjCentBins][nAjBins];
 Float_t rProjA_MEAN_[2*nSumAlg][nPtBins][nAjCentBins][nAjBins];
@@ -84,6 +86,8 @@ void SetMeanBranches(sampleType sType = kHIDATA)
 
   //Track Tree Branches
   //Tracks proj. onto Alg, ordered according to enum above, All, Cone, and NotCone
+
+  trackTreeMean_p->Branch("fileName", &fileName_);
 
   trackTreeMean_p->Branch("rProjA_MULT", rProjA_MULT_, Form("rProjA_MULT[%d][%d][%d][%d]/I", 2*nSumAlg, nPtBins, nAjCentBins, nAjBins));
   trackTreeMean_p->Branch("rProjA_MEAN", rProjA_MEAN_, Form("rProjA_MEAN[%d][%d][%d][%d]/F", 2*nSumAlg, nPtBins, nAjCentBins, nAjBins));

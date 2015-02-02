@@ -14,7 +14,7 @@
 #include "diJetFileTag.h"
 #include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_20/src/DijetInitialSkim/cfmVectFunc.h"
 #include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_20/src/DijetHists/getWeightedMean.h"
-#include "/net/hisrv0001/home/cfmcginn/DijetMPt/CMSSW_5_3_20/src/DijetHists/cfmDijetMeanTree.h"
+#include "cfmDijetMeanTree.h"
 
 #include <fstream>
 
@@ -46,6 +46,7 @@ Bool_t isEventCut(Int_t setNum, sampleType sType, Bool_t isHighPtTrk = false)
   if(TMath::Abs(AlgJtEta_[setNum][0]) > 1.6 || TMath::Abs(AlgJtEta_[setNum][1]) > 1.6) return true;
   if(AlgJtDelPhi12_[setNum] < 5.0*TMath::Pi()/6.0) return true;
 
+  //  if(AlgRefPt_[setNum][0] < AlgRefPt_[setNum][1]) return true;
 
   if(inVenn){
     if(!eventSet_[evtCutPos[setNum]]) return true;
@@ -101,7 +102,7 @@ void makeMultAHist(TTree* anaTree_p, const std::string outName, Int_t setNum, In
 }
 */
 
-void makeImbAMeanTree(TTree* anaTree_p, const std::string outName, sampleType sType = kHIDATA, Bool_t isHighPtTrk = false)
+void makeImbAMeanTree(TTree* anaTree_p, const std::string outName, sampleType sType = kHIDATA, Bool_t isHighPtTrk = false, Bool_t isCombined = false)
 {
   Bool_t montecarlo = isMonteCarlo(sType);
   Bool_t hi = isHI(sType);
@@ -214,7 +215,7 @@ void makeImbAMeanTree(TTree* anaTree_p, const std::string outName, sampleType sT
 
       Int_t ajPos = -1;
       for(Int_t ajIter = 0; ajIter < nAjBins; ajIter++){
-	if(AlgJtAsymm_[algIter] < ajBins[ajIter]){
+	if(AlgJtAsymm12_[algIter] < ajBins[ajIter]){
 	  ajPos = ajIter;
 	  break;
 	}
@@ -236,39 +237,48 @@ void makeImbAMeanTree(TTree* anaTree_p, const std::string outName, sampleType sT
       if(TMath::Abs(AlgJtEta_[algIter][0]) < 0.5 && TMath::Abs(AlgJtEta_[algIter][1]) < 0.5){
 	for(Int_t ptIter = 0; ptIter < nPtBins; ptIter++){
 	  for(Int_t rIter = 0; rIter < nRBins; rIter++){
-	    rProjARVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter][ptIter][rIter]);
+ 	    if(isCombined) rProjARVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_Comb_[algIter][ptIter][rIter]);
+	    else rProjARVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter][ptIter][rIter]);
 	    rProjARWeight_p[algIter][ptIter][rCentPos][rIter]->push_back(weight);
-
-	    rProjARVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter+nSumAlg][ptIter][rIter]);
+	    
+      if(isCombined) rProjARVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_Comb_[algIter+nSumAlg][ptIter][rIter]);
+	    else rProjARVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter+nSumAlg][ptIter][rIter]);
 	    rProjARWeight_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(weight);
 
 	    if(montecarlo){
-	      gProjARVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_[algIter][ptIter][rIter]);
+ 	      if(isCombined) gProjARVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_Comb_[algIter][ptIter][rIter]);
+        else gProjARVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_[algIter][ptIter][rIter]);
 	      gProjARWeight_p[algIter][ptIter][rCentPos][rIter]->push_back(weight);
 	    }
 	    
 	    if(ajPos < 2){
-	      rProjARDVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter][ptIter][rIter]);
+	      if(isCombined) rProjARDVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_Comb_[algIter][ptIter][rIter]);
+	      else rProjARDVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter][ptIter][rIter]);
 	      rProjARDWeight_p[algIter][ptIter][rCentPos][rIter]->push_back(weight);
 	      
-	      rProjARDVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter+nSumAlg][ptIter][rIter]);
+	      if(isCombined) rProjARDVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_Comb_[algIter+nSumAlg][ptIter][rIter]);
+ 	      else rProjARDVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter+nSumAlg][ptIter][rIter]);
 	      rProjARDWeight_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(weight);
 
 	      if(montecarlo){
-		gProjARDVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_[algIter][ptIter][rIter]);
+		if(isCombined) gProjARDVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_Comb_[algIter][ptIter][rIter]);
+ 		else gProjARDVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_[algIter][ptIter][rIter]);
 		gProjARDWeight_p[algIter][ptIter][rCentPos][rIter]->push_back(weight);
 	      }
 	    }
-	    else{
-	      rProjARUVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter][ptIter][rIter]);
+	    else{	      
+        if(isCombined) rProjARUVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_Comb_[algIter][ptIter][rIter]);
+	      else rProjARUVal_p[algIter][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter][ptIter][rIter]);
 	      rProjARUWeight_p[algIter][ptIter][rCentPos][rIter]->push_back(weight);
-	      
-	      rProjARUVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter+nSumAlg][ptIter][rIter]);
+	      	      
+        if(isCombined) rProjARUVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_Comb_[algIter+nSumAlg][ptIter][rIter]);
+	      else rProjARUVal_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(rAlgImbProjAR_[algIter+nSumAlg][ptIter][rIter]);
 	      rProjARUWeight_p[algIter+nSumAlg][ptIter][rCentPos][rIter]->push_back(weight);
 
 	      if(montecarlo){
-		gProjARUVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_[algIter][ptIter][rIter]);
-		gProjARUWeight_p[algIter][ptIter][rCentPos][rIter]->push_back(weight);
+		     if(isCombined) gProjARUVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_Comb_[algIter][ptIter][rIter]);
+    		 else gProjARUVal_p[algIter][ptIter][rCentPos][rIter]->push_back(gAlgImbProjAR_[algIter][ptIter][rIter]);
+		     gProjARUWeight_p[algIter][ptIter][rCentPos][rIter]->push_back(weight);
 	      }
 	    }
 	  }
@@ -314,6 +324,9 @@ void makeImbAMeanTree(TTree* anaTree_p, const std::string outName, sampleType sT
   }
 
   InitDiJetMeanTree(sType);
+  std::size_t pos = outName.find_last_of("_");
+  fileName_ = outName.substr(pos-2);
+
   trackTreeMean_p->Fill();
   if(montecarlo) genTreeMean_p->Fill();
 
