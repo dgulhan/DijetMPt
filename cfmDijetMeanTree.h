@@ -7,7 +7,7 @@
 #ifndef cfmDiJetMeanTree_h
 #define cfmDiJetMeanTree_h
 
-#include "/net/hidsk0001/d00/scratch/dgulhan/missingPt_chris/copy/DijetAnalysisSkim/cfmDiJetAnaSkim_Beta.h"
+#include "/net/hidsk0001/d00/scratch/dgulhan/missingPt_chris/copy/DijetAnalysisSkim/cfmDiJetAnaSkim.h"
 #include <string>
 
 TTree* trackTreeMean_p = 0;
