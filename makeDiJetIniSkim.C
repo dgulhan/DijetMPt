@@ -29,10 +29,10 @@ const Float_t jtEtaCut = 2.0; // Default Max at 2.4 to avoid transition junk, ot
 
 const Int_t nEvtPerFile = 10000;
 
-const Int_t algMaxHi = 18;
-const Float_t jtAlgR[algMaxHi] = {0.3, 0.4, 0.5, 0.2, 0.3, 0.4, 0.5, 0.2, 0.3, 0.4, 0.5, 0.3, 0.2, 0.3, 0.4, 0.5, 0.3, 0.3};
-const Float_t jtAlgRBin[algMaxHi] = {1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 0, 1, 2, 3, 1, 1};
-const Bool_t isReco[algMaxHi] = {true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, true, true};
+const Int_t algMaxHi = 21;
+const Float_t jtAlgR[algMaxHi] = {0.3, 0.4, 0.5, 0.2, 0.3, 0.4, 0.5, 0.2, 0.3, 0.4, 0.5, 0.2, 0.3, 0.4, 0.5, 0.2, 0.3, 0.4, 0.5, 0.3, 0.3};
+const Float_t jtAlgRBin[algMaxHi] = {1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 1};
+const Bool_t isReco[algMaxHi] = {true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, true, true};
 
 collisionType getCType(sampleType sType);
 
@@ -67,21 +67,23 @@ void setJtBranches(TTree* inJtTree, Bool_t montecarlo = false, Bool_t isGen = fa
 }
 
 
-void getCorrJtCollection(Int_t algNum, Jets* inJt, PFs *pf, sampleType sType, Int_t hiBin, Bool_t isRes = false)
+void getCorrJtCollection(Int_t algNum, Jets* inJt, PFs *pf, sampleType sType, Int_t hiBin, Bool_t isRes = false, Bool_t isEffNPF = false)
 {
   for(Int_t jtIter = 0; jtIter < inJt->nref; jtIter++){
-    if(inJt->jtpt[jtIter] < 20) break;
+    if(inJt->jtpt[jtIter] < 15) break;
 
-    Int_t nPF = 0;
-    if(sType == kHIDATA || sType == kHIMC) nPF = Get2PFCand(jtAlgR[algNum], inJt->jtphi[jtIter], inJt->jteta[jtIter], pf->nPFpart, pf->pfVsPt, pf->pfId, pf->pfPhi, pf->pfEta);
-    else if(sType == kPPDATA || sType == kPPMC) nPF = Get2PFCand(jtAlgR[algNum], inJt->jtphi[jtIter], inJt->jteta[jtIter], pf->nPFpart, pf->pfPt, pf->pfId, pf->pfPhi, pf->pfEta);
+    Float_t nPF = 0;
+    if(sType == kHIDATA || sType == kHIMC) nPF = (Float_t)Get2PFCand(jtAlgR[algNum], inJt->jtphi[jtIter], inJt->jteta[jtIter], pf->nPFpart, pf->pfVsPt, pf->pfId, pf->pfPhi, pf->pfEta);
+    else if(sType == kPPDATA || sType == kPPMC) nPF = (Float_t)Get2PFCand(jtAlgR[algNum], inJt->jtphi[jtIter], inJt->jteta[jtIter], pf->nPFpart, pf->pfPt, pf->pfId, pf->pfPhi, pf->pfEta);
 
+    if(isEffNPF && (sType == kHIDATA || sType == kHIMC)) nPF *= GetEFFCorr(jtAlgR[algNum], inJt->jtpt[jtIter], inJt->jteta[jtIter], hiBin);
+    
     inJt->jtpt[jtIter] = inJt->jtpt[jtIter]*GetJtFRAGCorrPt(sType, jtAlgRBin[algNum], hiBin, inJt->jtpt[jtIter], nPF);
   }
 
   if(isRes){
     for(Int_t jtIter = 0; jtIter < inJt->nref; jtIter++){
-      if(inJt->jtpt[jtIter] < 20) continue;
+      if(inJt->jtpt[jtIter] < 15) continue;
       
       inJt->jtpt[jtIter] = inJt->jtpt[jtIter]*GetJtRESCorrPt(sType, jtAlgRBin[algNum], hiBin, inJt->jtpt[jtIter]);
     }
@@ -446,6 +448,9 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 
   InitRESCorrFiles(sType);
   InitRESCorrFits(sType);
+  if(sType == kHIDATA || sType == kHIMC)
+  InitEFFCorrFiles();
+  InitEFFCorrHists();
 
   Int_t totEv = 0;
   Int_t selectCut = 0;
@@ -474,12 +479,12 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       selectCut++;
       continue;
     }
-
+	
     if(TMath::Abs(c->evt.vz - meanVz) > 15){
       vzCut++;
       continue;
     }
-
+    	
     //particle flow
 
     Jets AlgJtCollection[algMaxHi];
@@ -494,7 +499,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       AlgJtCollection[6] = c->akVs5Calo;
       if(!oldSample){
 	AlgJtCollection[7] = c->akVs2Calo;
-        getCorrJtCollection(7, &(AlgJtCollection[7]), &(c->pf), sType, c->evt.hiBin);
+	getCorrJtCollection(7, &(AlgJtCollection[7]), &(c->pf), sType, c->evt.hiBin);
       }
       AlgJtCollection[8] = c->akVs3Calo;
       getCorrJtCollection(8, &(AlgJtCollection[8]), &(c->pf), sType, c->evt.hiBin);
@@ -502,14 +507,20 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       getCorrJtCollection(9, &(AlgJtCollection[9]), &(c->pf), sType, c->evt.hiBin);
       AlgJtCollection[10] = c->akVs5Calo;
       getCorrJtCollection(10, &(AlgJtCollection[10]), &(c->pf), sType, c->evt.hiBin);
-      AlgJtCollection[11] = c->akVs3Calo;
+      AlgJtCollection[11] = c->akVs2Calo;
       getCorrJtCollection(11, &(AlgJtCollection[11]), &(c->pf), sType, c->evt.hiBin, true);
-      if(!oldSample) AlgJtCollection[12] = c->akVs2Calo;
-      AlgJtCollection[13] = c->akVs3Calo;
-      AlgJtCollection[14] = c->akVs4Calo;
-      AlgJtCollection[15] = c->akVs5Calo;
-      AlgJtCollection[16] = c->akPu3PF;
-      AlgJtCollection[17] = c->akVs3PF;
+      AlgJtCollection[12] = c->akVs3Calo;
+      getCorrJtCollection(12, &(AlgJtCollection[12]), &(c->pf), sType, c->evt.hiBin, true);
+      AlgJtCollection[13] = c->akVs4Calo;
+      getCorrJtCollection(13, &(AlgJtCollection[13]), &(c->pf), sType, c->evt.hiBin, true);
+      AlgJtCollection[14] = c->akVs5Calo;
+      getCorrJtCollection(14, &(AlgJtCollection[14]), &(c->pf), sType, c->evt.hiBin, true);
+      if(!oldSample) AlgJtCollection[15] = c->akVs2Calo;
+      AlgJtCollection[16] = c->akVs3Calo;
+      AlgJtCollection[17] = c->akVs4Calo;
+      AlgJtCollection[18] = c->akVs5Calo;
+      AlgJtCollection[19] = c->akPu3PF;
+      AlgJtCollection[20] = c->akVs3PF;
     }
     else{
       if(!oldSample) AlgJtCollection[0] = c->akPu3Calo;
@@ -528,18 +539,24 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       if(!oldSample){
 	AlgJtCollection[9] = c->ak4Calo;
 	getCorrJtCollection(9, &(AlgJtCollection[9]), &(c->pf), sType, c->evt.hiBin);
-      }
-      if(!oldSample){
-	AlgJtCollection[10] = c->ak5Calo;
+     	AlgJtCollection[10] = c->ak5Calo;
 	getCorrJtCollection(10, &(AlgJtCollection[10]), &(c->pf), sType, c->evt.hiBin);
+	AlgJtCollection[11] = c->ak2Calo;
+	getCorrJtCollection(11, &(AlgJtCollection[11]), &(c->pf), sType, c->evt.hiBin, true);
       }
-      AlgJtCollection[11] = c->ak3Calo;
-      getCorrJtCollection(11, &(AlgJtCollection[11]), &(c->pf), sType, c->evt.hiBin, true);
-      if(!oldSample) AlgJtCollection[12] = c->ak2Calo;
-      AlgJtCollection[13] = c->ak3Calo;
-      if(!oldSample) AlgJtCollection[14] = c->ak4Calo;
-      if(!oldSample) AlgJtCollection[15] = c->ak5Calo;
-      algMax = 16;
+      AlgJtCollection[12] = c->ak3Calo;
+      getCorrJtCollection(12, &(AlgJtCollection[12]), &(c->pf), sType, c->evt.hiBin, true);
+      if(!oldSample){
+	AlgJtCollection[13] = c->ak4Calo;
+	getCorrJtCollection(13, &(AlgJtCollection[13]), &(c->pf), sType, c->evt.hiBin, true);
+	AlgJtCollection[14] = c->ak5Calo;
+       	getCorrJtCollection(14, &(AlgJtCollection[14]), &(c->pf), sType, c->evt.hiBin, true);
+	AlgJtCollection[15] = c->ak2Calo;
+      }
+      AlgJtCollection[16] = c->ak3Calo;
+      if(!oldSample) AlgJtCollection[17] = c->ak4Calo;
+      if(!oldSample) AlgJtCollection[18] = c->ak5Calo;
+      algMax = 19;
     }
 
     Bool_t algPasses[algMaxHi];
@@ -569,7 +586,6 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     if(montecarlo) c->hasGenParticleTree = true;
 
     c->GetEntry(jentry);
-
     /*
     Bool_t novaBool = false;
     for(Int_t contIter = 0; contIter < algMax; contIter++){
@@ -614,7 +630,10 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     nVs3CaloFrag_ = 0;
     nVs4CaloFrag_ = 0;
     nVs5CaloFrag_ = 0;
+    nVs2CaloRes_ = 0;
     nVs3CaloRes_ = 0;
+    nVs4CaloRes_ = 0;
+    nVs5CaloRes_ = 0;
     nT2_ = 0;
     nT3_ = 0;
     nT4_ = 0;
@@ -856,116 +875,179 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
     }
 
 
-    for(Int_t Vs3CaloResIter = 0; Vs3CaloResIter < AlgJtCollection[11].nref; Vs3CaloResIter++){
-      if(AlgJtCollection[11].jtpt[Vs3CaloResIter] < jtThreshPtCut) break;
-      else if(TMath::Abs(AlgJtCollection[11].jteta[Vs3CaloResIter]) > jtEtaCut) continue;
+    for(Int_t Vs2CaloResIter = 0; Vs2CaloResIter < AlgJtCollection[11].nref; Vs2CaloResIter++){
+      if(AlgJtCollection[11].jtpt[Vs2CaloResIter] < jtThreshPtCut) break;
+      else if(TMath::Abs(AlgJtCollection[11].jteta[Vs2CaloResIter]) > jtEtaCut) continue;
       
-      Vs3CaloResPt_[nVs3CaloRes_] = AlgJtCollection[11].jtpt[Vs3CaloResIter];
-      Vs3CaloResPhi_[nVs3CaloRes_] = AlgJtCollection[11].jtphi[Vs3CaloResIter];
-      Vs3CaloResEta_[nVs3CaloRes_] = AlgJtCollection[11].jteta[Vs3CaloResIter];
+      Vs2CaloResPt_[nVs2CaloRes_] = AlgJtCollection[11].jtpt[Vs2CaloResIter];
+      Vs2CaloResPhi_[nVs2CaloRes_] = AlgJtCollection[11].jtphi[Vs2CaloResIter];
+      Vs2CaloResEta_[nVs2CaloRes_] = AlgJtCollection[11].jteta[Vs2CaloResIter];
       
-      Vs3CaloResTrkMax_[nVs3CaloRes_] = AlgJtCollection[11].trackMax[Vs3CaloResIter];
-      Vs3CaloResRawPt_[nVs3CaloRes_] = AlgJtCollection[11].rawpt[Vs3CaloResIter];
+      Vs2CaloResTrkMax_[nVs2CaloRes_] = AlgJtCollection[11].trackMax[Vs2CaloResIter];
+      Vs2CaloResRawPt_[nVs2CaloRes_] = AlgJtCollection[11].rawpt[Vs2CaloResIter];
 
       if(montecarlo){
-	Vs3CaloResRefPt_[nVs3CaloRes_] = AlgJtCollection[11].refpt[Vs3CaloResIter];
-	Vs3CaloResRefPhi_[nVs3CaloRes_] = AlgJtCollection[11].refphi[Vs3CaloResIter];
-	Vs3CaloResRefEta_[nVs3CaloRes_] = AlgJtCollection[11].refeta[Vs3CaloResIter];
-	Vs3CaloResRefPart_[nVs3CaloRes_] = AlgJtCollection[11].refparton_flavor[Vs3CaloResIter];
+	Vs2CaloResRefPt_[nVs2CaloRes_] = AlgJtCollection[11].refpt[Vs2CaloResIter];
+	Vs2CaloResRefPhi_[nVs2CaloRes_] = AlgJtCollection[11].refphi[Vs2CaloResIter];
+	Vs2CaloResRefEta_[nVs2CaloRes_] = AlgJtCollection[11].refeta[Vs2CaloResIter];
+	Vs2CaloResRefPart_[nVs2CaloRes_] = AlgJtCollection[11].refparton_flavor[Vs2CaloResIter];
+      }
+      
+      nVs2CaloRes_++;
+    }
+
+
+    for(Int_t Vs3CaloResIter = 0; Vs3CaloResIter < AlgJtCollection[12].nref; Vs3CaloResIter++){
+      if(AlgJtCollection[12].jtpt[Vs3CaloResIter] < jtThreshPtCut) break;
+      else if(TMath::Abs(AlgJtCollection[12].jteta[Vs3CaloResIter]) > jtEtaCut) continue;
+      
+      Vs3CaloResPt_[nVs3CaloRes_] = AlgJtCollection[12].jtpt[Vs3CaloResIter];
+      Vs3CaloResPhi_[nVs3CaloRes_] = AlgJtCollection[12].jtphi[Vs3CaloResIter];
+      Vs3CaloResEta_[nVs3CaloRes_] = AlgJtCollection[12].jteta[Vs3CaloResIter];
+      
+      Vs3CaloResTrkMax_[nVs3CaloRes_] = AlgJtCollection[12].trackMax[Vs3CaloResIter];
+      Vs3CaloResRawPt_[nVs3CaloRes_] = AlgJtCollection[12].rawpt[Vs3CaloResIter];
+
+      if(montecarlo){
+	Vs3CaloResRefPt_[nVs3CaloRes_] = AlgJtCollection[12].refpt[Vs3CaloResIter];
+	Vs3CaloResRefPhi_[nVs3CaloRes_] = AlgJtCollection[12].refphi[Vs3CaloResIter];
+	Vs3CaloResRefEta_[nVs3CaloRes_] = AlgJtCollection[12].refeta[Vs3CaloResIter];
+	Vs3CaloResRefPart_[nVs3CaloRes_] = AlgJtCollection[12].refparton_flavor[Vs3CaloResIter];
       }
       
       nVs3CaloRes_++;
     }
 
+    for(Int_t Vs4CaloResIter = 0; Vs4CaloResIter < AlgJtCollection[13].nref; Vs4CaloResIter++){
+      if(AlgJtCollection[13].jtpt[Vs4CaloResIter] < jtThreshPtCut) break;
+      else if(TMath::Abs(AlgJtCollection[13].jteta[Vs4CaloResIter]) > jtEtaCut) continue;
+      
+      Vs4CaloResPt_[nVs4CaloRes_] = AlgJtCollection[13].jtpt[Vs4CaloResIter];
+      Vs4CaloResPhi_[nVs4CaloRes_] = AlgJtCollection[13].jtphi[Vs4CaloResIter];
+      Vs4CaloResEta_[nVs4CaloRes_] = AlgJtCollection[13].jteta[Vs4CaloResIter];
+      
+      Vs4CaloResTrkMax_[nVs4CaloRes_] = AlgJtCollection[13].trackMax[Vs4CaloResIter];
+      Vs4CaloResRawPt_[nVs4CaloRes_] = AlgJtCollection[13].rawpt[Vs4CaloResIter];
+
+      if(montecarlo){
+	Vs4CaloResRefPt_[nVs4CaloRes_] = AlgJtCollection[13].refpt[Vs4CaloResIter];
+	Vs4CaloResRefPhi_[nVs4CaloRes_] = AlgJtCollection[13].refphi[Vs4CaloResIter];
+	Vs4CaloResRefEta_[nVs4CaloRes_] = AlgJtCollection[13].refeta[Vs4CaloResIter];
+	Vs4CaloResRefPart_[nVs4CaloRes_] = AlgJtCollection[13].refparton_flavor[Vs4CaloResIter];
+      }
+      
+      nVs4CaloRes_++;
+    }
+
+    for(Int_t Vs5CaloResIter = 0; Vs5CaloResIter < AlgJtCollection[14].nref; Vs5CaloResIter++){
+      if(AlgJtCollection[14].jtpt[Vs5CaloResIter] < jtThreshPtCut) break;
+      else if(TMath::Abs(AlgJtCollection[14].jteta[Vs5CaloResIter]) > jtEtaCut) continue;
+      
+      Vs5CaloResPt_[nVs5CaloRes_] = AlgJtCollection[14].jtpt[Vs5CaloResIter];
+      Vs5CaloResPhi_[nVs5CaloRes_] = AlgJtCollection[14].jtphi[Vs5CaloResIter];
+      Vs5CaloResEta_[nVs5CaloRes_] = AlgJtCollection[14].jteta[Vs5CaloResIter];
+      
+      Vs5CaloResTrkMax_[nVs5CaloRes_] = AlgJtCollection[14].trackMax[Vs5CaloResIter];
+      Vs5CaloResRawPt_[nVs5CaloRes_] = AlgJtCollection[14].rawpt[Vs5CaloResIter];
+
+      if(montecarlo){
+	Vs5CaloResRefPt_[nVs5CaloRes_] = AlgJtCollection[14].refpt[Vs5CaloResIter];
+	Vs5CaloResRefPhi_[nVs5CaloRes_] = AlgJtCollection[14].refphi[Vs5CaloResIter];
+	Vs5CaloResRefEta_[nVs5CaloRes_] = AlgJtCollection[14].refeta[Vs5CaloResIter];
+	Vs5CaloResRefPart_[nVs5CaloRes_] = AlgJtCollection[14].refparton_flavor[Vs5CaloResIter];
+      }
+      
+      nVs5CaloRes_++;
+    }
 
     if(montecarlo){
-      for(Int_t T2Iter = 0; T2Iter < AlgJtCollection[12].ngen; T2Iter++){
-	if(AlgJtCollection[12].genpt[T2Iter] < jtThreshPtCut) break;
-	else if(TMath::Abs(AlgJtCollection[12].geneta[T2Iter]) > jtEtaCut) continue;
+      for(Int_t T2Iter = 0; T2Iter < AlgJtCollection[15].ngen; T2Iter++){
+	if(AlgJtCollection[15].genpt[T2Iter] < jtThreshPtCut) break;
+	else if(TMath::Abs(AlgJtCollection[15].geneta[T2Iter]) > jtEtaCut) continue;
 	
-	T2Pt_[nT2_] = AlgJtCollection[12].genpt[T2Iter];
-	T2Phi_[nT2_] = AlgJtCollection[12].genphi[T2Iter];
-	T2Eta_[nT2_] = AlgJtCollection[12].geneta[T2Iter];
-	T2Part_[nT2_] = AlgJtCollection[12].refparton_flavor[AlgJtCollection[12].genmatchindex[T2Iter]];
+	T2Pt_[nT2_] = AlgJtCollection[15].genpt[T2Iter];
+	T2Phi_[nT2_] = AlgJtCollection[15].genphi[T2Iter];
+	T2Eta_[nT2_] = AlgJtCollection[15].geneta[T2Iter];
+	T2Part_[nT2_] = AlgJtCollection[15].refparton_flavor[AlgJtCollection[15].genmatchindex[T2Iter]];
 	
 	nT2_++;
       }
 
-      for(Int_t T3Iter = 0; T3Iter < AlgJtCollection[13].ngen; T3Iter++){
-	if(AlgJtCollection[13].genpt[T3Iter] < jtThreshPtCut) break;
-	else if(TMath::Abs(AlgJtCollection[13].geneta[T3Iter]) > jtEtaCut) continue;
+      for(Int_t T3Iter = 0; T3Iter < AlgJtCollection[16].ngen; T3Iter++){
+	if(AlgJtCollection[16].genpt[T3Iter] < jtThreshPtCut) break;
+	else if(TMath::Abs(AlgJtCollection[16].geneta[T3Iter]) > jtEtaCut) continue;
 	
-	T3Pt_[nT3_] = AlgJtCollection[13].genpt[T3Iter];
-	T3Phi_[nT3_] = AlgJtCollection[13].genphi[T3Iter];
-	T3Eta_[nT3_] = AlgJtCollection[13].geneta[T3Iter];
-	T3Part_[nT3_] = AlgJtCollection[13].refparton_flavor[AlgJtCollection[13].genmatchindex[T3Iter]];
+	T3Pt_[nT3_] = AlgJtCollection[16].genpt[T3Iter];
+	T3Phi_[nT3_] = AlgJtCollection[16].genphi[T3Iter];
+	T3Eta_[nT3_] = AlgJtCollection[16].geneta[T3Iter];
+	T3Part_[nT3_] = AlgJtCollection[16].refparton_flavor[AlgJtCollection[16].genmatchindex[T3Iter]];
 	
 	nT3_++;
       }
 
-      for(Int_t T4Iter = 0; T4Iter < AlgJtCollection[14].ngen; T4Iter++){
-	if(AlgJtCollection[14].genpt[T4Iter] < jtThreshPtCut) break;
-	else if(TMath::Abs(AlgJtCollection[14].geneta[T4Iter]) > jtEtaCut) continue;
+      for(Int_t T4Iter = 0; T4Iter < AlgJtCollection[17].ngen; T4Iter++){
+	if(AlgJtCollection[17].genpt[T4Iter] < jtThreshPtCut) break;
+	else if(TMath::Abs(AlgJtCollection[17].geneta[T4Iter]) > jtEtaCut) continue;
 	
-	T4Pt_[nT4_] = AlgJtCollection[14].genpt[T4Iter];
-	T4Phi_[nT4_] = AlgJtCollection[14].genphi[T4Iter];
-	T4Eta_[nT4_] = AlgJtCollection[14].geneta[T4Iter];
-	T4Part_[nT4_] = AlgJtCollection[14].refparton_flavor[AlgJtCollection[14].genmatchindex[T4Iter]];
+	T4Pt_[nT4_] = AlgJtCollection[17].genpt[T4Iter];
+	T4Phi_[nT4_] = AlgJtCollection[17].genphi[T4Iter];
+	T4Eta_[nT4_] = AlgJtCollection[17].geneta[T4Iter];
+	T4Part_[nT4_] = AlgJtCollection[17].refparton_flavor[AlgJtCollection[17].genmatchindex[T4Iter]];
 	
 	nT4_++;
       }
 
-      for(Int_t T5Iter = 0; T5Iter < AlgJtCollection[15].ngen; T5Iter++){
-	if(AlgJtCollection[15].genpt[T5Iter] < jtThreshPtCut) break;
-	else if(TMath::Abs(AlgJtCollection[15].geneta[T5Iter]) > jtEtaCut) continue;
+      for(Int_t T5Iter = 0; T5Iter < AlgJtCollection[18].ngen; T5Iter++){
+	if(AlgJtCollection[18].genpt[T5Iter] < jtThreshPtCut) break;
+	else if(TMath::Abs(AlgJtCollection[18].geneta[T5Iter]) > jtEtaCut) continue;
 	
-	T5Pt_[nT5_] = AlgJtCollection[15].genpt[T5Iter];
-	T5Phi_[nT5_] = AlgJtCollection[15].genphi[T5Iter];
-	T5Eta_[nT5_] = AlgJtCollection[15].geneta[T5Iter];
-	T5Part_[nT5_] = AlgJtCollection[15].refparton_flavor[AlgJtCollection[15].genmatchindex[T5Iter]];
+	T5Pt_[nT5_] = AlgJtCollection[18].genpt[T5Iter];
+	T5Phi_[nT5_] = AlgJtCollection[18].genphi[T5Iter];
+	T5Eta_[nT5_] = AlgJtCollection[18].geneta[T5Iter];
+	T5Part_[nT5_] = AlgJtCollection[18].refparton_flavor[AlgJtCollection[18].genmatchindex[T5Iter]];
 	
 	nT5_++;
       }
     }
     
     if(hi){
-      for(Int_t Pu3PFIter = 0; Pu3PFIter < AlgJtCollection[16].nref; Pu3PFIter++){
-	if(AlgJtCollection[16].jtpt[Pu3PFIter] < jtThreshPtCut) break;
-	else if(TMath::Abs(AlgJtCollection[16].jteta[Pu3PFIter]) > jtEtaCut) continue;
+      for(Int_t Pu3PFIter = 0; Pu3PFIter < AlgJtCollection[19].nref; Pu3PFIter++){
+	if(AlgJtCollection[19].jtpt[Pu3PFIter] < jtThreshPtCut) break;
+	else if(TMath::Abs(AlgJtCollection[19].jteta[Pu3PFIter]) > jtEtaCut) continue;
 	
-	Pu3PFPt_[nPu3PF_] = AlgJtCollection[16].jtpt[Pu3PFIter];
-	Pu3PFPhi_[nPu3PF_] = AlgJtCollection[16].jtphi[Pu3PFIter];
-	Pu3PFEta_[nPu3PF_] = AlgJtCollection[16].jteta[Pu3PFIter];
+	Pu3PFPt_[nPu3PF_] = AlgJtCollection[19].jtpt[Pu3PFIter];
+	Pu3PFPhi_[nPu3PF_] = AlgJtCollection[19].jtphi[Pu3PFIter];
+	Pu3PFEta_[nPu3PF_] = AlgJtCollection[19].jteta[Pu3PFIter];
 	
-	Pu3PFTrkMax_[nPu3PF_] = AlgJtCollection[16].trackMax[Pu3PFIter];
-	Pu3PFRawPt_[nPu3PF_] = AlgJtCollection[16].rawpt[Pu3PFIter];
+	Pu3PFTrkMax_[nPu3PF_] = AlgJtCollection[19].trackMax[Pu3PFIter];
+	Pu3PFRawPt_[nPu3PF_] = AlgJtCollection[19].rawpt[Pu3PFIter];
 	
 	if(montecarlo){
-	  Pu3PFRefPt_[nPu3PF_] = AlgJtCollection[16].refpt[Pu3PFIter];
-	  Pu3PFRefPhi_[nPu3PF_] = AlgJtCollection[16].refphi[Pu3PFIter];
-	  Pu3PFRefEta_[nPu3PF_] = AlgJtCollection[16].refeta[Pu3PFIter];
-	  Pu3PFRefPart_[nPu3PF_] = AlgJtCollection[16].refparton_flavor[Pu3PFIter];
+	  Pu3PFRefPt_[nPu3PF_] = AlgJtCollection[19].refpt[Pu3PFIter];
+	  Pu3PFRefPhi_[nPu3PF_] = AlgJtCollection[19].refphi[Pu3PFIter];
+	  Pu3PFRefEta_[nPu3PF_] = AlgJtCollection[19].refeta[Pu3PFIter];
+	  Pu3PFRefPart_[nPu3PF_] = AlgJtCollection[19].refparton_flavor[Pu3PFIter];
 	}
 	
 	nPu3PF_++;
       }
       
-      for(Int_t Vs3PFIter = 0; Vs3PFIter < AlgJtCollection[17].nref; Vs3PFIter++){
-	if(AlgJtCollection[17].jtpt[Vs3PFIter] < jtThreshPtCut) break;
-	else if(TMath::Abs(AlgJtCollection[17].jteta[Vs3PFIter]) > jtEtaCut) continue;
+      for(Int_t Vs3PFIter = 0; Vs3PFIter < AlgJtCollection[20].nref; Vs3PFIter++){
+	if(AlgJtCollection[20].jtpt[Vs3PFIter] < jtThreshPtCut) break;
+	else if(TMath::Abs(AlgJtCollection[20].jteta[Vs3PFIter]) > jtEtaCut) continue;
 	
-	Vs3PFPt_[nVs3PF_] = AlgJtCollection[17].jtpt[Vs3PFIter];
-	Vs3PFPhi_[nVs3PF_] = AlgJtCollection[17].jtphi[Vs3PFIter];
-	Vs3PFEta_[nVs3PF_] = AlgJtCollection[17].jteta[Vs3PFIter];
+	Vs3PFPt_[nVs3PF_] = AlgJtCollection[20].jtpt[Vs3PFIter];
+	Vs3PFPhi_[nVs3PF_] = AlgJtCollection[20].jtphi[Vs3PFIter];
+	Vs3PFEta_[nVs3PF_] = AlgJtCollection[20].jteta[Vs3PFIter];
 	
-	Vs3PFTrkMax_[nVs3PF_] = AlgJtCollection[17].trackMax[Vs3PFIter];
-	Vs3PFRawPt_[nVs3PF_] = AlgJtCollection[17].rawpt[Vs3PFIter];
+	Vs3PFTrkMax_[nVs3PF_] = AlgJtCollection[20].trackMax[Vs3PFIter];
+	Vs3PFRawPt_[nVs3PF_] = AlgJtCollection[20].rawpt[Vs3PFIter];
 
 	if(montecarlo){
-	  Vs3PFRefPt_[nVs3PF_] = AlgJtCollection[17].refpt[Vs3PFIter];
-	  Vs3PFRefPhi_[nVs3PF_] = AlgJtCollection[17].refphi[Vs3PFIter];
-	  Vs3PFRefEta_[nVs3PF_] = AlgJtCollection[17].refeta[Vs3PFIter];
-	  Vs3PFRefPart_[nVs3PF_] = AlgJtCollection[17].refparton_flavor[Vs3PFIter];
+	  Vs3PFRefPt_[nVs3PF_] = AlgJtCollection[20].refpt[Vs3PFIter];
+	  Vs3PFRefPhi_[nVs3PF_] = AlgJtCollection[20].refphi[Vs3PFIter];
+	  Vs3PFRefEta_[nVs3PF_] = AlgJtCollection[20].refeta[Vs3PFIter];
+	  Vs3PFRefPart_[nVs3PF_] = AlgJtCollection[20].refparton_flavor[Vs3PFIter];
 	}
 	
 	nVs3PF_++;
@@ -987,7 +1069,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       
       if(TMath::Abs(trkCollection.trkEta[trkEntry]) > 2.4) continue;
       
-      if(trkCollection.trkPt[trkEntry] <= 0.5) continue;
+      //      if(trkCollection.trkPt[trkEntry] <= 0.5) continue;
 	
       if(!trkCollection.highPurity[trkEntry]) continue;
 	
@@ -1002,10 +1084,7 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
       trkEta_[nTrk_] = trkCollection.trkEta[trkEntry];
       tempTL.SetPtEtaPhiM(trkCollection.trkPt[trkEntry], trkCollection.trkEta[trkEntry], trkCollection.trkPhi[trkEntry], 0);
       jtVect_p->push_back(tempTL);
-	
-      Float_t tempRMin = getTrkRMin(trkPhi_[nTrk_], trkEta_[nTrk_], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
-      trkCorr_[nTrk_] = factorizedPtCorr(getPtBin(trkPt_[nTrk_], sType), hiBinIni_, trkPt_[nTrk_], trkPhi_[nTrk_], trkEta_[nTrk_], tempRMin, sType);
-
+      
       //Grab proj. Pt Spectra For Tracks in each Event Subset    
 	
       nTrk_++;
@@ -1068,14 +1147,11 @@ int makeDiJetIniSkim(string fList = "", sampleType sType = kHIDATA, const char *
 	genCollection = c->genparticle;
 	
 	for(Int_t genEntry = 0; genEntry < genCollection.mult; genEntry++){
-	  if(genCollection.chg[genEntry] == 0)
-	    continue;
+	  if(genCollection.chg[genEntry] == 0) continue;
 	
-	  if(TMath::Abs(genCollection.eta[genEntry]) > 2.4)
-	    continue;
+	  if(TMath::Abs(genCollection.eta[genEntry]) > 2.4) continue;
 	  
-	  if(genCollection.pt[genEntry] < 0.5)
-	    continue;
+	  //	  if(genCollection.pt[genEntry] < 0.5) continue;
 	
 	  genPt_[nGen_] = genCollection.pt[genEntry];
 	  genPhi_[nGen_] = genCollection.phi[genEntry];

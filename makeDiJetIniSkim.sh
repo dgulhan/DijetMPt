@@ -8,9 +8,15 @@ fi
 if [ $2 -eq 0 ]
 then
     tar -xzvf corrFilePbPb_20140429.tar.gz
+    tar -xzvf FFJEC_correction_PF_akVs_PbPb_20150118.tar.gz
+    tar -xzvf residualcorr_akVs_PbPb_20150118.tar.gz
+    tar -xzvf effCorrNPF_PbPb_20150118.tar.gz
 elif [ $2 -eq 1 ]
 then
     tar -xzvf corrFilePbPb_20140429.tar.gz
+    tar -xzvf FFJEC_correction_PF_akVs_PbPb_20150118.tar.gz
+    tar -xzvf residualcorr_akVs_PbPb_20150118.tar.gz
+    tar -xzvf effCorrNPF_PbPb_20150118.tar.gz
 elif [ $2 -eq 2 ]
 then
     tar -xzvf corrFilePP_20140430.tar.gz

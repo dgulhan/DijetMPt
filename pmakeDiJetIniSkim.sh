@@ -10,8 +10,11 @@ mkdir $now
 mkdir -p $4
 len=`wc -l $1 | awk '{print $1}'`
 cp makeDiJetIniSkim.sh $now
-cp ptCorrDirPbPb/*.tar.gz $now
-cp ptCorrDirPP/*.tar.gz $now
+cp ptCorrDirPbPb/*20140429*.tar.gz $now
+# cp ptCorrDirPbPb/*20141220*.tar.gz $now
+cp ptCorrDirPbPb/*20150118*.tar.gz $now
+cp ptCorrDirPP/*20141105.tar.gz $now
+cp ptCorrDirPP/*20141220.tar.gz $now
 cp $1 $now
 
 NAME="makeDiJetIniSkim.C"
