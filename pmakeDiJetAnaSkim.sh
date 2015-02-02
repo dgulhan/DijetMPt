@@ -11,10 +11,18 @@ mkdir $now
 mkdir -p $3
 len=`wc -l $1 | awk '{print $1}'`
 cp makeDiJetAnaSkim.sh $now
-cp ptCorrDirPbPb/*.tar.gz $now
-cp ptCorrDirPP/*.tar.gz $now
+
+cp ptCorrDirPbPb/*20141219.tar.gz $now
+# cp ptCorrDirPbPb/*20140429.tar.gz $now
+# cp ptCorrDirPbPb/swapCorrPbPbv6.tar.gz $now
+cp ptCorrDirPbPb/swapCorrPbPbv5.tar.gz $now
+#cp ptCorrDirPbPb/*20141209_HI.tar.gz $now
+
+cp ptCorrDirPP/*20141105.tar.gz $now
+cp ptCorrDirPP/swapCorrPPv5.tar.gz $now
 cp centWeightDir/centHist_eventSet_*.root $now
 cp histWeightFile.root $now
+cp etaWeightFile.root $now
 cp $1 $now
 
 NAME="makeDiJetAnaSkim.C"

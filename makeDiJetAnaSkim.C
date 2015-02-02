@@ -22,6 +22,8 @@ const Float_t pthatWeights_PYTH_PPTrk[6] = {.161482, .00749461, .000752396, .000
 const Int_t pthatCuts_PYTH_HYD[11] = {15, 30, 50, 80, 100, 120, 170, 220, 280, 370, 10000000};
 const Float_t pthatWeights_PYTH_HYD[10] = {.611066, .0374106, .00232016, .00014917, .0000822379, .0000142819, .00000296162, .00000102099, .000000522123, .000000232907};
 
+const Float_t jtAlgRBin[21] = {1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 1};
+
 int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t num = 0, Bool_t justJt = false, Bool_t isHITrk = false)
 {
   //Define MC or Data
@@ -59,20 +61,24 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
   TFile* iniSkim_p = new TFile(listOfFiles[num].data(), "READ");
 
   GetDiJetIniSkim(iniSkim_p, sType, justJt);
-
+    
   std::cout << "IniSkim Loaded" << std::endl;
 
   //Setup correction tables
 
   InitFactCorrFiles(sType, isHITrk);
   InitFactCorrHists(sType);
+  std::cout<<"swap corrections will be initialized"<<std::endl;
+  InitSWAPCorrFiles(sType);
+  InitSWAPCorrFits(sType);
+  std::cout<<"swap corrections are initialized"<<std::endl;
+
+  TFile *histWeightFile_p = new TFile("histWeightFile.root", "READ");
+  TH1F *hist_DataOverMC_p[nSumAlg - 4];
 
   
-  TFile *histWeightFile_p = new TFile("histWeightFile.root", "READ");
-  TH1F *hist_DataOverMC_p[11];
-
   if(sType == kHIMC){
-    for(Int_t algIter = 0; algIter < 12; algIter++){
+    for(Int_t algIter = 0; algIter < nSumAlg-4; algIter++){
       hist_DataOverMC_p[algIter] = (TH1F*)histWeightFile_p->Get(Form("ak%s_dataHiBin_h", algType[algIter].c_str()));
       std::cout << Form("ak%s_dataHiBin_h", algType[algIter].c_str()) << std::endl;
     }
@@ -141,20 +147,35 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
     getJtVar(nVs3CaloFrag_, Vs3CaloFragPt_, Vs3CaloFragPhi_, Vs3CaloFragEta_, Vs3CaloFragTrkMax_, Vs3CaloFragRawPt_, Vs3CaloFragRefPt_, Vs3CaloFragRefPhi_, Vs3CaloFragRefEta_, 8, montecarlo, false);
     getJtVar(nVs4CaloFrag_, Vs4CaloFragPt_, Vs4CaloFragPhi_, Vs4CaloFragEta_, Vs4CaloFragTrkMax_, Vs4CaloFragRawPt_, Vs4CaloFragRefPt_, Vs4CaloFragRefPhi_, Vs4CaloFragRefEta_, 9, montecarlo, false);
     getJtVar(nVs5CaloFrag_, Vs5CaloFragPt_, Vs5CaloFragPhi_, Vs5CaloFragEta_, Vs5CaloFragTrkMax_, Vs5CaloFragRawPt_, Vs5CaloFragRefPt_, Vs5CaloFragRefPhi_, Vs5CaloFragRefEta_, 10, montecarlo, false);
-    getJtVar(nVs3CaloRes_, Vs3CaloResPt_, Vs3CaloResPhi_, Vs3CaloResEta_, Vs3CaloResTrkMax_, Vs3CaloResRawPt_, Vs3CaloResRefPt_, Vs3CaloResRefPhi_, Vs3CaloResRefEta_, 11, montecarlo, false);
+
+    getJtVar(nVs2CaloRes_, Vs2CaloResPt_, Vs2CaloResPhi_, Vs2CaloResEta_, Vs2CaloResTrkMax_, Vs2CaloResRawPt_, Vs2CaloResRefPt_, Vs2CaloResRefPhi_, Vs2CaloResRefEta_, 11, montecarlo, false);
+
+    getJtVar(nVs3CaloRes_, Vs3CaloResPt_, Vs3CaloResPhi_, Vs3CaloResEta_, Vs3CaloResTrkMax_, Vs3CaloResRawPt_, Vs3CaloResRefPt_, Vs3CaloResRefPhi_, Vs3CaloResRefEta_, 12, montecarlo, false);
+
+    getJtVar(nVs4CaloRes_, Vs4CaloResPt_, Vs4CaloResPhi_, Vs4CaloResEta_, Vs4CaloResTrkMax_, Vs4CaloResRawPt_, Vs4CaloResRefPt_, Vs4CaloResRefPhi_, Vs4CaloResRefEta_, 13, montecarlo, false);
+
+    getJtVar(nVs5CaloRes_, Vs5CaloResPt_, Vs5CaloResPhi_, Vs5CaloResEta_, Vs5CaloResTrkMax_, Vs5CaloResRawPt_, Vs5CaloResRefPt_, Vs5CaloResRefPhi_, Vs5CaloResRefEta_, 14, montecarlo, false);
 
     Float_t dummyArray2[nT2_];
     Float_t dummyArray3[nT3_];
     Float_t dummyArray4[nT4_];
     Float_t dummyArray5[nT5_];
-    getJtVar(nT2_, T2Pt_, T2Phi_, T2Eta_, dummyArray2, dummyArray2, dummyArray2, dummyArray2, dummyArray2, 12, montecarlo, true);
-    getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray3, dummyArray3, dummyArray3, dummyArray3, dummyArray3, 13, montecarlo, true);
-    getJtVar(nT4_, T4Pt_, T4Phi_, T4Eta_, dummyArray4, dummyArray4, dummyArray4, dummyArray4, dummyArray4, 14, montecarlo, true);
-    getJtVar(nT5_, T5Pt_, T5Phi_, T5Eta_, dummyArray5, dummyArray5, dummyArray5, dummyArray5, dummyArray5, 15, montecarlo, true);
-    getJtVar(nPu3PF_, Pu3PFPt_, Pu3PFPhi_, Pu3PFEta_, Pu3PFTrkMax_, Pu3PFRawPt_, Pu3PFRefPt_, Pu3PFRefPhi_, Pu3PFRefEta_, 16, montecarlo, false);
-    getJtVar(nVs3PF_, Vs3PFPt_, Vs3PFPhi_, Vs3PFEta_, Vs3PFTrkMax_, Vs3PFRawPt_, Vs3PFRefPt_, Vs3PFRefPhi_, Vs3PFRefEta_, 17, montecarlo, false);
+    getJtVar(nT2_, T2Pt_, T2Phi_, T2Eta_, dummyArray2, dummyArray2, dummyArray2, dummyArray2, dummyArray2, 15, montecarlo, true);
+    getJtVar(nT3_, T3Pt_, T3Phi_, T3Eta_, dummyArray3, dummyArray3, dummyArray3, dummyArray3, dummyArray3, 16, montecarlo, true);
+    getJtVar(nT4_, T4Pt_, T4Phi_, T4Eta_, dummyArray4, dummyArray4, dummyArray4, dummyArray4, dummyArray4, 17, montecarlo, true);
+    getJtVar(nT5_, T5Pt_, T5Phi_, T5Eta_, dummyArray5, dummyArray5, dummyArray5, dummyArray5, dummyArray5, 18, montecarlo, true);
+    getJtVar(nPu3PF_, Pu3PFPt_, Pu3PFPhi_, Pu3PFEta_, Pu3PFTrkMax_, Pu3PFRawPt_, Pu3PFRefPt_, Pu3PFRefPhi_, Pu3PFRefEta_, 19, montecarlo, false);
+    getJtVar(nVs3PF_, Vs3PFPt_, Vs3PFPhi_, Vs3PFEta_, Vs3PFTrkMax_, Vs3PFRawPt_, Vs3PFRefPt_, Vs3PFRefPhi_, Vs3PFRefEta_, 20, montecarlo, false);
 
-    if(eventSet_[Pu3Calo] == false && eventSet_[Pu4Calo] == false && eventSet_[Pu5Calo] == false && eventSet_[Vs2Calo] == false && eventSet_[Vs3Calo] == false && eventSet_[Vs4Calo] == false && eventSet_[Vs5Calo] == false && eventSet_[Vs2CaloFrag] == false && eventSet_[Vs3CaloFrag] == false && eventSet_[Vs4CaloFrag] == false && eventSet_[Vs5CaloFrag] == false && eventSet_[Vs3CaloRes] == false && eventSet_[T2] == false && eventSet_[T3] == false && eventSet_[T4] == false && eventSet_[T5] == false && eventSet_[PuPF] == false && eventSet_[VsPF] == false){
+    Bool_t isEventPass = false;
+    for(Int_t evtIter = 0; evtIter < nJtAlg; evtIter++){
+      if(eventSet_[evtIter]){
+	isEventPass = true;
+	break;
+      }
+    }
+
+    if(!isEventPass){
       std::cout << "No event pass after IniSkim; Potential bug" << std::endl;
 
       for(Int_t iter = 0; iter < 10; iter++){
@@ -235,27 +256,43 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
     }
 
     if(TMath::Abs(AlgJtEta_[4][0]) && TMath::Abs(AlgJtEta_[4][1]) < 0.6){
-	leadEtaWeight_ = leadEtaWeightHist_p->GetBinContent(leadEtaWeightHist_p->FindBin(AlgJtEta_[4][0]));
-	subleadEtaWeight_ = subleadEtaWeightHist_p->GetBinContent(subleadEtaWeightHist_p->FindBin(AlgJtEta_[4][1]));
+	  leadEtaWeight_ = leadEtaWeightHist_p->GetBinContent(leadEtaWeightHist_p->FindBin(AlgJtEta_[4][0]));
+	  subleadEtaWeight_ = subleadEtaWeightHist_p->GetBinContent(subleadEtaWeightHist_p->FindBin(AlgJtEta_[4][1]));
+    }
+ 
+    for(Int_t algIter = 0; algIter < nJtAlg; algIter++){
+	  std::cout<<algIter<<std::endl;
+	  swap12Weight_[algIter] = GetJtSWAP12Prob(sType, jtAlgRBin[algIter], hiBin_, AlgJtAsymm12_[algIter]);
+	  if(AlgJtPt_[algIter][2] > 50 && TMath::Abs(AlgJtEta_[algIter][2]) < 2.0) swap23Weight_[algIter] = GetJtSWAP23Prob(sType, jtAlgRBin[algIter], hiBin_, AlgJtAsymm23_[algIter]);
     }
 
     if(sType == kHIMC){
-      for(Int_t algIter = 0; algIter < 12; algIter++){
-	centWeight_[algIter] = hist_DataOverMC_p[algIter]->GetBinContent(hist_DataOverMC_p[algIter]->FindBin(hiBin_));
+      for(Int_t algIter = 0; algIter < nSumAlg - 4; algIter++){
+	    centWeight_[algIter] = hist_DataOverMC_p[algIter]->GetBinContent(hist_DataOverMC_p[algIter]->FindBin(hiBin_));
       }
-      centWeight_[12] = hist_DataOverMC_p[3]->GetBinContent(hist_DataOverMC_p[3]->FindBin(hiBin_));
-      centWeight_[13] = hist_DataOverMC_p[4]->GetBinContent(hist_DataOverMC_p[4]->FindBin(hiBin_));
-      centWeight_[14] = hist_DataOverMC_p[5]->GetBinContent(hist_DataOverMC_p[5]->FindBin(hiBin_));
-      centWeight_[15] = hist_DataOverMC_p[6]->GetBinContent(hist_DataOverMC_p[6]->FindBin(hiBin_));
+      centWeight_[nSumAlg - 4] = hist_DataOverMC_p[3]->GetBinContent(hist_DataOverMC_p[3]->FindBin(hiBin_));
+      centWeight_[nSumAlg - 3] = hist_DataOverMC_p[4]->GetBinContent(hist_DataOverMC_p[4]->FindBin(hiBin_));
+      centWeight_[nSumAlg - 2] = hist_DataOverMC_p[5]->GetBinContent(hist_DataOverMC_p[5]->FindBin(hiBin_));
+      centWeight_[nSumAlg - 1] = hist_DataOverMC_p[6]->GetBinContent(hist_DataOverMC_p[6]->FindBin(hiBin_));
     }
     
+
    //Iterate over tracks
 
     InitProjPerp(sType);
 
     //Switch below to iterated OR EDIT HERE
 
-    if((eventSet_[Pu3Calo] || eventSet_[Pu4Calo] || eventSet_[Pu5Calo] || eventSet_[Vs2Calo] || eventSet_[Vs3Calo] || eventSet_[Vs4Calo] || eventSet_[Vs5Calo] || eventSet_[Vs2CaloFrag] || eventSet_[Vs3CaloFrag] || eventSet_[Vs4CaloFrag] || eventSet_[Vs5CaloFrag] || eventSet_[Vs3CaloRes] || eventSet_[T2] || eventSet_[T3] || eventSet_[T4] || eventSet_[T5]) && !justJt){
+    isEventPass = false;
+    for(Int_t evtIter = 0; evtIter < nSumAlg; evtIter++){
+      if(eventSet_[evtIter]){
+        isEventPass = true;
+        break;
+      }
+    }
+
+
+    if(isEventPass && !justJt){
       for(Int_t trkEntry = 0; trkEntry < nTrk_; trkEntry++){
         
 	//Grab proj. Pt Spectra For Tracks in each Event Subset
@@ -291,7 +328,10 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 	if(eventSet_[Vs3CaloFrag]) tempRMin[Vs3CaloFrag] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3CaloFrag_, Vs3CaloFragPt_, Vs3CaloFragPhi_, Vs3CaloFragEta_);
 	if(eventSet_[Vs4CaloFrag]) tempRMin[Vs4CaloFrag] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3CaloFrag_, Vs3CaloFragPt_, Vs3CaloFragPhi_, Vs3CaloFragEta_);
 	if(eventSet_[Vs5CaloFrag]) tempRMin[Vs5CaloFrag] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3CaloFrag_, Vs3CaloFragPt_, Vs3CaloFragPhi_, Vs3CaloFragEta_);
+	if(eventSet_[Vs2CaloRes]) tempRMin[Vs2CaloRes] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3CaloRes_, Vs3CaloResPt_, Vs3CaloResPhi_, Vs3CaloResEta_);
 	if(eventSet_[Vs3CaloRes]) tempRMin[Vs3CaloRes] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3CaloRes_, Vs3CaloResPt_, Vs3CaloResPhi_, Vs3CaloResEta_);
+	if(eventSet_[Vs4CaloRes]) tempRMin[Vs4CaloRes] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3CaloRes_, Vs3CaloResPt_, Vs3CaloResPhi_, Vs3CaloResEta_);
+	if(eventSet_[Vs5CaloRes]) tempRMin[Vs5CaloRes] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3CaloRes_, Vs3CaloResPt_, Vs3CaloResPhi_, Vs3CaloResEta_);
 	if(eventSet_[T2]) tempRMin[T2] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
 	if(eventSet_[T3]) tempRMin[T3] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
 	if(eventSet_[T4]) tempRMin[T4] = getTrkRMin(trkPhi_[trkEntry], trkEta_[trkEntry], nVs3Calo_, Vs3CaloPt_, Vs3CaloPhi_, Vs3CaloEta_);
@@ -341,10 +381,23 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 	  tempFact[Vs5CaloFrag] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[Vs5CaloFrag], sType);
 	  tempCorr[Vs5CaloFrag] = trkPt_[trkEntry]*tempFact[Vs5CaloFrag];
 	}
+	if(eventSet_[Vs2CaloRes]){
+	  tempFact[Vs2CaloRes] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[Vs2CaloRes], sType);
+	  tempCorr[Vs2CaloRes] = trkPt_[trkEntry]*tempFact[Vs2CaloRes];
+	}
 	if(eventSet_[Vs3CaloRes]){
 	  tempFact[Vs3CaloRes] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[Vs3CaloRes], sType);
 	  tempCorr[Vs3CaloRes] = trkPt_[trkEntry]*tempFact[Vs3CaloRes];
 	}
+	if(eventSet_[Vs4CaloRes]){
+	  tempFact[Vs4CaloRes] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[Vs4CaloRes], sType);
+	  tempCorr[Vs4CaloRes] = trkPt_[trkEntry]*tempFact[Vs4CaloRes];
+	}
+	if(eventSet_[Vs5CaloRes]){
+	  tempFact[Vs5CaloRes] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[Vs5CaloRes], sType);
+	  tempCorr[Vs5CaloRes] = trkPt_[trkEntry]*tempFact[Vs5CaloRes];
+	}
+
 	if(montecarlo){
 	  if(eventSet_[T2]){
 	    tempFact[T2] = factorizedPtCorr(ptPos, hiBin_, trkPt_[trkEntry], trkPhi_[trkEntry], trkEta_[trkEntry], tempRMin[T2], sType);
@@ -372,7 +425,17 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 
 	}	
       }
-
+      
+ 	for(Int_t jtIter = 0; jtIter < nSumAlg; jtIter++){
+    if(eventSet_[jtIter]){   
+      for( Int_t ptIter = 0; ptIter < nPtBins; ptIter++){
+        for(Int_t rIter = 0; rIter < 10; rIter++){
+    	    rAlgImbProjAR_Comb_[jtIter][ptIter][rIter] = getSwapComb(rAlgImbProjAR_[jtIter][ptIter][rIter], rAlgImbProjAR13_[jtIter][ptIter][rIter], swap12Weight_[jtIter], swap23Weight_[jtIter], AlgJtDelPhi13_[jtIter], AlgJtAsymm12_[jtIter], AlgJtAsymm23_[jtIter]);
+        }
+      }
+    }
+  }
+      
      if(montecarlo){
 	//Iterate over Truth
 	for(Int_t genEntry = 0; genEntry < nGen_; genEntry++){
@@ -380,7 +443,17 @@ int makeDiJetAnaSkim(std::string fList = "", sampleType sType = kHIDATA, Int_t n
 	    if(eventSet_[jtIter]) GetGenProjPerp(jtIter, genPt_[genEntry], genPhi_[genEntry], genEta_[genEntry]);
 	  }
 	}
+  
+    for(Int_t jtIter = 0; jtIter < nSumAlg; jtIter++){
+      if(eventSet_[jtIter]){   
+        for( Int_t ptIter = 0; ptIter < nPtBins; ptIter++){
+          for(Int_t rIter = 0; rIter < 10; rIter++){
+    	      gAlgImbProjAR_Comb_[jtIter][ptIter][rIter] = getSwapComb(gAlgImbProjAR_[jtIter][ptIter][rIter], gAlgImbProjAR13_[jtIter][ptIter][rIter], swap12Weight_[jtIter], swap23Weight_[jtIter], AlgJtDelPhi13_[jtIter], AlgJtAsymm12_[jtIter], AlgJtAsymm23_[jtIter]);
+          }
+        }
       }
+    }
+  }
 
     }
     jetTreeAna_p->Fill();
