@@ -825,14 +825,19 @@ void InitProjPerp(sampleType sType = kHIDATA)
   }
 }
 
+
 Float_t getSwapComb(Float_t imbProjAR, Float_t imbProjAR13, Float_t swap12Weight, Float_t swap23Weight, Float_t  JtDelPhi13, Float_t JtAsymm12, Float_t JtAsymm23){
+
   Float_t combinedImbProjAR = imbProjAR;
+  
   if( JtAsymm12 > 0.05 && (swap23Weight == 1 || JtDelPhi13 < 5*TMath::Pi()/6) ){ 
     combinedImbProjAR /=(2*swap12Weight - 1);
   }
-  else if(JtAsymm23 > 0.05){
-    combinedImbProjAR = swap23Weight*imbProjAR + (1-swap23Weight)*imbProjAR13;
+  
+  if( JtAsymm23 > 0.05 && JtDelPhi13 > 5*TMath::Pi()/6 ){
+    combinedImbProjAR = swap23Weight*combinedImbProjAR + (1-swap23Weight)*imbProjAR13;
   }
+  
   return combinedImbProjAR;
 }
 
